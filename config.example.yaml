@@ -12,6 +12,19 @@ development:
     sslmode: disable
     logmode: true
     timezone: Asia/Jakarta
+  kafka:
+    host: kafka
+    port: "9092"
+    user: asirauser
+    pass: asirapass
+    client_id: asira
+    sasl: false
+    log_verbose: true
+    topics:
+      produces:
+        for_borrower: asira_lender_to_borrower
+      consumes:
+        for_lender: asira_borrower_to_lender
   clients:
     admin: Z3JhZGlvczp1bHRpbXVz
     react: cmVhY3RrZXk6cmVhY3RwYXNz # reactkey:reactpass

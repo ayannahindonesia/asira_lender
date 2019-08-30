@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Shopify/sarama"
 	"github.com/fsnotify/fsnotify"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/spf13/viper"
-	"github.com/xlzd/gotp"
 )
 
 var (
@@ -21,18 +21,17 @@ var (
 
 type (
 	Application struct {
-		Name    string      `json:"name"`
-		Version string      `json:"version"`
-		ENV     string      `json:"env"`
-		Config  viper.Viper `json:"prog_config"`
-		DB      *gorm.DB    `json:"db"`
-		OTP     OTP         `json:"otp"`
-		// Redis   *redis.Client `json:"redis"`
+		Name    string        `json:"name"`
+		Version string        `json:"version"`
+		ENV     string        `json:"env"`
+		Config  viper.Viper   `json:"prog_config"`
+		DB      *gorm.DB      `json:"db"`
+		Kafka   KafkaInstance `json:"kafka"`
 	}
 
-	OTP struct {
-		HOTP *gotp.HOTP
-		TOTP *gotp.TOTP
+	KafkaInstance struct {
+		Producer sarama.AsyncProducer
+		Consumer sarama.Consumer
 	}
 )
 
@@ -49,11 +48,8 @@ func init() {
 	if err = App.DBinit(); err != nil {
 		log.Printf("DB init error : %v", err)
 	}
-
-	otpSecret := gotp.RandomSecret(16)
-	App.OTP = OTP{
-		HOTP: gotp.NewDefaultHOTP(otpSecret),
-		TOTP: gotp.NewDefaultTOTP(otpSecret),
+	if err = App.KafkaInit(); err != nil {
+		log.Printf("Kafka init error : %v", err)
 	}
 
 	// apply custom validator
@@ -61,13 +57,17 @@ func init() {
 	v.CustomValidatorRules()
 }
 
-func (x *Application) Close() (err error) {
-	err = x.DB.Close()
-
-	if err != nil {
-		return err
+func (x *Application) Close() {
+	var err error
+	if err = x.DB.Close(); err != nil {
+		log.Println(err)
 	}
-	return nil
+	if err = x.Kafka.Producer.Close(); err != nil {
+		log.Println(err)
+	}
+	if err = x.Kafka.Consumer.Close(); err != nil {
+		log.Println(err)
+	}
 }
 
 // Loads environtment setting
@@ -134,6 +134,50 @@ func (x *Application) DBinit() error {
 	db.DB().SetMaxOpenConns(dbconf["open_conns"].(int))
 
 	x.DB = db
+
+	return nil
+}
+
+func (x *Application) KafkaInit() (err error) {
+	kafkaConf := x.Config.GetStringMap(fmt.Sprintf("%s.kafka", x.ENV))
+
+	if kafkaConf["log_verbose"].(bool) {
+		sarama.Logger = log.New(os.Stdout, "[lender kafka] ", log.LstdFlags)
+	}
+
+	conf := sarama.NewConfig()
+
+	conf.ClientID = kafkaConf["client_id"].(string)
+	if kafkaConf["sasl"].(bool) {
+		conf.Net.SASL.Enable = true
+	}
+
+	conf.Net.SASL.User = kafkaConf["user"].(string)
+	conf.Net.SASL.Password = kafkaConf["pass"].(string)
+
+	conf.Producer.Return.Successes = true
+	conf.Producer.Partitioner = sarama.NewRandomPartitioner
+	conf.Producer.RequiredAcks = sarama.WaitForAll
+	conf.Producer.Flush.Frequency = 500 * time.Millisecond
+
+	conf.Consumer.Return.Errors = true
+
+	kafkaHost := strings.Join([]string{kafkaConf["host"].(string), kafkaConf["port"].(string)}, ":")
+
+	x.Kafka.Producer, err = sarama.NewAsyncProducer([]string{kafkaHost}, conf)
+	if err != nil {
+		return err
+	}
+	go func() {
+		for err := range x.Kafka.Producer.Errors() {
+			log.Printf("Failed producer. Error : %v", err)
+		}
+	}()
+
+	x.Kafka.Consumer, err = sarama.NewConsumer([]string{kafkaHost}, conf)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
