@@ -25,9 +25,6 @@ development:
         for_borrower: asira_lender_to_borrower
       consumes:
         for_lender: asira_borrower_to_lender
-  clients:
-    admin: Z3JhZGlvczp1bHRpbXVz
-    react: cmVhY3RrZXk6cmVhY3RwYXNz # reactkey:reactpass
   jwt:
     duration: 120 # in minutes
     jwt_secret: sXQ8jUMpueOvN5P3cdCR

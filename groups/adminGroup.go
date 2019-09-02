@@ -15,6 +15,9 @@ func AdminGroup(e *echo.Echo) {
 	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
 
+	// Internals Accounts Management
+	g.POST("/client_config", admin_handlers.CreateInternal)
+
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
 
