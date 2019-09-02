@@ -17,6 +17,25 @@ func Seed() {
 	defer seeder.Commit()
 
 	if asira.App.ENV == "development" {
+		// seed internals
+		internals := []models.Internals{
+			models.Internals{
+				Name:   "admin",
+				Key:    "adminkey",
+				Role:   "admin",
+				Secret: "adminsecret",
+			},
+			models.Internals{
+				Name:   "bank dashboard",
+				Key:    "reactkey",
+				Role:   "client",
+				Secret: "reactsecret",
+			},
+		}
+		for _, internal := range internals {
+			internal.Create()
+		}
+
 		// seed images
 		file, _ := os.Open("migration/image_dummy.txt")
 		defer file.Close()

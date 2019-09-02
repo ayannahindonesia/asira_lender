@@ -3,6 +3,7 @@ package tests
 import (
 	"asira_lender/asira"
 	"asira_lender/migration"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,8 +12,8 @@ import (
 )
 
 var (
-	clientBasicToken string = "cmVhY3RrZXk6cmVhY3RwYXNz"
-	adminBasicToken  string = "Z3JhZGlvczp1bHRpbXVz"
+	clientBasicToken string = base64.StdEncoding.EncodeToString([]byte("reactkey:reactsecret"))
+	adminBasicToken  string = base64.StdEncoding.EncodeToString([]byte("adminkey:adminsecret"))
 )
 
 func init() {
