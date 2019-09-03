@@ -222,9 +222,7 @@ func Seed() {
 				OtherIncome:          2000000,
 				RelatedPersonName:    "a big sis",
 				RelatedPhoneNumber:   "08987654321",
-				OTPverified:          true,
 				BankAccountNumber:    "520384716",
-				Password:             "password",
 				Bank: sql.NullInt64{
 					Int64: 1,
 					Valid: true,
@@ -268,8 +266,6 @@ func Seed() {
 				RelatedPersonName:    "b big sis",
 				RelatedPhoneNumber:   "08987654321",
 				RelatedAddress:       "big sis address",
-				OTPverified:          false,
-				Password:             "password",
 				Bank: sql.NullInt64{
 					Int64: 1,
 					Valid: true,
@@ -287,7 +283,7 @@ func Seed() {
 				Amount:      1000,
 			},
 		}
-		jMarshal, _ = json.Marshal(fees)
+		jMarshal, _ := json.Marshal(fees)
 		loans := []models.Loan{
 			models.Loan{
 				Bank: sql.NullInt64{
