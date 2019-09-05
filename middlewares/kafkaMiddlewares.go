@@ -48,7 +48,7 @@ func init() {
 			if message != nil {
 				err := processMessage(message)
 				if err != nil {
-					log.Println(err)
+					log.Printf("%v . message : %v", err, string(message))
 				}
 			}
 		}
@@ -83,7 +83,7 @@ func processMessage(kafkaMessage []byte) (err error) {
 	case "loan":
 		// create borrower first
 		var borrowerInfo BorrowerInfo
-		err = json.Unmarshal(kafkaMessage, &borrowerInfo)
+		err = json.Unmarshal([]byte(data[1]), &borrowerInfo)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func processMessage(kafkaMessage []byte) (err error) {
 
 		// create loan
 		var loan models.Loan
-		err = json.Unmarshal(kafkaMessage, &loan)
+		err = json.Unmarshal([]byte(data[1]), &loan)
 		if err != nil {
 			return err
 		}

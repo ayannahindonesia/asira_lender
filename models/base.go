@@ -251,7 +251,7 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			ID     uint64 `json:"id"`
 			Status string `json:"status"`
 		}
-		if e, ok := i.(Loan); ok {
+		if e, ok := i.(*Loan); ok {
 			payload = LoanStatusUpdate{
 				ID:     e.ID,
 				Status: e.Status,
