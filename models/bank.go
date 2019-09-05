@@ -47,8 +47,11 @@ func (b *Bank) BeforeCreate() (err error) {
 
 func (b *Bank) Create() (*Bank, error) {
 	err := Create(&b)
+	if err != nil {
+		return nil, err
+	}
 
-	KafkaSubmitModel(b, "bank")
+	err = KafkaSubmitModel(b, "bank")
 
 	return b, err
 }
@@ -60,16 +63,22 @@ func (b *Bank) BeforeSave() (err error) {
 
 func (b *Bank) Save() (*Bank, error) {
 	err := Save(&b)
+	if err != nil {
+		return nil, err
+	}
 
-	KafkaSubmitModel(b, "bank")
+	err = KafkaSubmitModel(b, "bank")
 
 	return b, err
 }
 
 func (b *Bank) Delete() (*Bank, error) {
 	err := Delete(&b)
+	if err != nil {
+		return nil, err
+	}
 
-	KafkaSubmitModel(b, "bank_delete")
+	err = KafkaSubmitModel(b, "bank_delete")
 
 	return b, err
 }

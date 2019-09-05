@@ -82,9 +82,9 @@ func (l *Loan) Approve() error {
 		return err
 	}
 
-	KafkaSubmitModel(l, "loan")
+	err = KafkaSubmitModel(l, "loan")
 
-	return nil
+	return err
 }
 
 func (l *Loan) Reject() error {
@@ -95,7 +95,7 @@ func (l *Loan) Reject() error {
 		return err
 	}
 
-	KafkaSubmitModel(l, "loan")
+	err = KafkaSubmitModel(l, "loan")
 
-	return nil
+	return err
 }
