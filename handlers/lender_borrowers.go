@@ -32,7 +32,7 @@ func LenderBorrowerList(c echo.Context) error {
 
 	type Filter struct {
 		Bank     sql.NullInt64 `json:"bank"`
-		Fullname string        `json:"fullname"`
+		Fullname string        `json:"fullname" condition:"LIKE"`
 		Status   string        `json:"status"`
 		ID       string        `json:"id"`
 	}

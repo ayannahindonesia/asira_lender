@@ -142,7 +142,7 @@ func PagedFilterSearch(i interface{}, page int, rows int, orderby string, sort s
 			default:
 				db = db.Where(fmt.Sprintf("%s = ?", refType.Field(x).Tag.Get("json")), field.Interface())
 			case "LIKE":
-				db = db.Where(fmt.Sprintf("%s %s ?", refType.Field(x).Tag.Get("json"), refType.Field(x).Tag.Get("condition")), "%"+field.Interface().(string)+"%")
+				db = db.Where(fmt.Sprintf("LOWER(%s) %s ?", refType.Field(x).Tag.Get("json"), refType.Field(x).Tag.Get("condition")), "%"+strings.ToLower(field.Interface().(string))+"%")
 			case "BETWEEN":
 				if values, ok := field.Interface().(CompareFilter); ok && values.Value1 != "" {
 					db = db.Where(fmt.Sprintf("%s %s ? %s ?", refType.Field(x).Tag.Get("json"), refType.Field(x).Tag.Get("condition"), "AND"), values.Value1, values.Value2)
