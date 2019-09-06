@@ -40,6 +40,11 @@ func TestLenderGetBankServiceProductList(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
+	//with part of name
+	obj := auth.GET("/admin/service_products").WithQuery("name", "prod").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("total_data").ValueEqual("total_data", 2)
 
 	// test query invalid
 	obj = auth.GET("/admin/service_products").WithQuery("name", "should not found this").
