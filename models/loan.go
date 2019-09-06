@@ -33,6 +33,11 @@ type (
 		Amount      float64 `json:"amount"`
 	}
 	LoanFees []LoanFee
+
+	LoanStatusUpdate struct {
+		ID     uint64 `json:"id"`
+		Status string `json:"status"`
+	}
 )
 
 func (l *Loan) Create() (*Loan, error) {
@@ -73,6 +78,12 @@ func (l *Loan) Approve() error {
 	l.Status = "approved"
 
 	_, err := l.Save()
+	if err != nil {
+		return err
+	}
+
+	err = KafkaSubmitModel(l, "loan")
+
 	return err
 }
 
@@ -80,5 +91,11 @@ func (l *Loan) Reject() error {
 	l.Status = "rejected"
 
 	_, err := l.Save()
+	if err != nil {
+		return err
+	}
+
+	err = KafkaSubmitModel(l, "loan")
+
 	return err
 }

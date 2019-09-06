@@ -22,13 +22,16 @@ func BankList(c echo.Context) error {
 
 	// filters
 	name := c.QueryParam("name")
+	id := c.QueryParam("id")
 
 	type Filter struct {
+		ID   string `json:"id"`
 		Name string `json:"name" condition:"LIKE"`
 	}
 
 	bank := models.Bank{}
 	result, err := bank.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		ID:   id,
 		Name: name,
 	})
 	if err != nil {

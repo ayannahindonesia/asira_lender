@@ -12,8 +12,14 @@ func AdminGroup(e *echo.Echo) {
 	g := e.Group("/admin")
 	middlewares.SetClientJWTmiddlewares(g, "admin")
 
-	// OTP
+	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
+
+	// Internals Accounts Management
+	g.POST("/client_config", admin_handlers.CreateInternal)
+
+	// Images
+	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
 
 	// Bank Types
 	g.GET("/bank_types", admin_handlers.BankTypeList)

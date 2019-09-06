@@ -49,9 +49,10 @@ func BankServiceNew(c echo.Context) error {
 	bank_service_payload := BankServicePayload{}
 
 	payloadRules := govalidator.MapData{
-		"name":   []string{"required"},
-		"image":  []string{"required"},
-		"status": []string{"required", "active_inactive"},
+		"name":        []string{"required"},
+		"image":       []string{"required"},
+		"status":      []string{"required", "active_inactive"},
+		"description": []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bank_service_payload)
@@ -108,9 +109,10 @@ func BankServicePatch(c echo.Context) error {
 
 	payloadBucket := BankServicePayload{}
 	servicePayloadRules := govalidator.MapData{
-		"name":   []string{},
-		"image":  []string{},
-		"status": []string{"active_inactive"},
+		"name":        []string{},
+		"image":       []string{},
+		"status":      []string{"active_inactive"},
+		"description": []string{},
 	}
 	validate := validateRequestPayload(c, servicePayloadRules, &payloadBucket)
 	if validate != nil {

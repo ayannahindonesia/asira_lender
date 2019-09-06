@@ -1,6 +1,17 @@
 -- +goose Up
 -- SQL in this section is executed when the migration is applied.
 
+CREATE TABLE "internals" (
+    "id" bigserial,
+    "name" varchar(255) NOT NULL,
+    "role" varchar(255) NOT NULL,
+    "secret" varchar(255) NOT NULL,
+    "key" varchar(255) NOT NULL,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
 CREATE TABLE "images" (
     "id" bigserial,
     "image_string" text,
@@ -15,6 +26,7 @@ CREATE TABLE "bank_types" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
+    "description" text,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -154,10 +166,11 @@ CREATE TABLE "loans" (
 
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
-DROP TABLE IF EXISTS "bank_types" CASCADE;
-DROP TABLE IF EXISTS "banks" CASCADE;
-DROP TABLE IF EXISTS "bank_services" CASCADE;
 DROP TABLE IF EXISTS "service_products" CASCADE;
+DROP TABLE IF EXISTS "bank_services" CASCADE;
+DROP TABLE IF EXISTS "banks" CASCADE;
+DROP TABLE IF EXISTS "bank_types" CASCADE;
 DROP TABLE IF EXISTS "borrowers" CASCADE;
 DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
+DROP TABLE IF EXISTS "internals" CASCADE;

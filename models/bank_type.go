@@ -7,21 +7,40 @@ type (
 		BaseModel
 		DeletedTime time.Time `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
 		Name        string    `json:"name" gorm:"name"`
+		Description string    `json:"description" gorm:"description"`
 	}
 )
 
 func (b *BankType) Create() (*BankType, error) {
 	err := Create(&b)
+	if err != nil {
+		return nil, err
+	}
+
+	err = KafkaSubmitModel(b, "bank_type")
+
 	return b, err
 }
 
 func (b *BankType) Save() (*BankType, error) {
 	err := Save(&b)
+	if err != nil {
+		return nil, err
+	}
+
+	err = KafkaSubmitModel(b, "bank_type")
+
 	return b, err
 }
 
 func (b *BankType) Delete() (*BankType, error) {
 	err := Delete(&b)
+	if err != nil {
+		return nil, err
+	}
+
+	err = KafkaSubmitModel(b, "bank_type_delete")
+
 	return b, err
 }
 
