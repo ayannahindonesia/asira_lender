@@ -133,6 +133,36 @@ func Seed() {
 			product.Create()
 		}
 
+		purposes := []models.LoanPurpose{
+			models.LoanPurpose{
+				Name:   "Pendidikan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Rumah Tangga",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Kesehatan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berdagang",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Bertani",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berjudi",
+				Status: "inactive",
+			},
+		}
+		for _, purpose := range purposes {
+			purpose.Create()
+		}
+
 		// seed lenders
 		lenders := []models.Bank{
 			models.Bank{
@@ -734,6 +764,36 @@ func TestSeed() {
 		}
 		for _, borrower := range borrowers {
 			borrower.Create()
+		}
+
+		purposes := []models.LoanPurpose{
+			models.LoanPurpose{
+				Name:   "Pendidikan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Rumah Tangga",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Kesehatan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berdagang",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Bertani",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berjudi",
+				Status: "inactive",
+			},
+		}
+		for _, purpose := range purposes {
+			purpose.Create()
 		}
 
 		// seed loans
