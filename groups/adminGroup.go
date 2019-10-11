@@ -23,6 +23,14 @@ func AdminGroup(e *echo.Echo) {
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
 
+	//Borrowers
+	g.GET("/borrower", admin_handlers.BorrowerGetAll)
+	g.GET("/borrower/:borrower_id", admin_handlers.BorrowerGetDetails)
+
+	//Loans
+	g.GET("/loan", admin_handlers.LoanGetAll)
+	g.GET("/loan/:loan_id", admin_handlers.LoanGetDetails)
+
 	// Bank Types
 	g.GET("/bank_types", admin_handlers.BankTypeList)
 	g.POST("/bank_types", admin_handlers.BankTypeNew)
