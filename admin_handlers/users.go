@@ -69,8 +69,8 @@ func AddUser(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"username": []string{"required", "unique:users,username"},
-		"email":    []string{"required", "unique:users,username"},
-		"phone":    []string{"required", "unique:users,username"},
+		"email":    []string{"required", "unique:users,email"},
+		"phone":    []string{"required", "unique:users,phone"},
 		"role_id":  []string{"required", "role_id"},
 		"status":   []string{},
 	}
