@@ -189,6 +189,17 @@ CREATE TABLE "loans" (
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
+CREATE TABLE "loan_purposes" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "name" varchar(255),
+    "status" varchar(255),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+
 CREATE TABLE "roles" (
     "id" bigserial,
     "name" varchar(255) NOT NULL,
@@ -245,6 +256,7 @@ DROP TABLE IF EXISTS "services" CASCADE;
 DROP TABLE IF EXISTS "banks" CASCADE;
 DROP TABLE IF EXISTS "bank_types" CASCADE;
 DROP TABLE IF EXISTS "borrowers" CASCADE;
+DROP TABLE IF EXISTS "loan_purposes" CASCADE;
 DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
 DROP TABLE IF EXISTS "internals" CASCADE;
