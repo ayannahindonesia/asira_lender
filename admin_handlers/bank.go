@@ -37,11 +37,11 @@ func BankList(c echo.Context) error {
 
 	// filters
 	name := c.QueryParam("name")
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 
 	type Filter struct {
-		ID   string `json:"id"`
-		Name string `json:"name" condition:"LIKE"`
+		ID   []string `json:"id"`
+		Name string   `json:"name" condition:"LIKE"`
 	}
 
 	bank := models.Bank{}

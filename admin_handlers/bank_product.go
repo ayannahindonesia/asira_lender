@@ -21,12 +21,12 @@ func BankProductList(c echo.Context) error {
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
-	productID := c.QueryParam("product_id")
-	bankID := c.QueryParam("bank_id")
+	productID := customSplit(c.QueryParam("product_id"), ",")
+	bankID := customSplit(c.QueryParam("bank_id"), ",")
 
 	type Filter struct {
-		ProductID string `json:"product_id"`
-		BankID    string `json:"bank_id"`
+		ProductID []string `json:"product_id"`
+		BankID    []string `json:"bank_id"`
 	}
 
 	bank_product := models.BankProduct{}

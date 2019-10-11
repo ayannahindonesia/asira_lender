@@ -194,7 +194,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	status := c.QueryParam("status")
 	owner := c.QueryParam("owner")
 	ownerName := c.QueryParam("owner_name")
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 	start_date := c.QueryParam("start_date")
 	end_date := c.QueryParam("end_date")
 
@@ -204,7 +204,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Owner       string                  `json:"owner"`
 		OwnerName   string                  `json:"owner_name" condition:"LIKE"`
 		DateBetween basemodel.CompareFilter `json:"created_time" condition:"BETWEEN"`
-		ID          string                  `json:"id"`
+		ID          []string                `json:"id"`
 	}
 
 	loan := models.Loan{}

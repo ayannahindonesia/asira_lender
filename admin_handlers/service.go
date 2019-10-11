@@ -27,14 +27,14 @@ func ServiceList(c echo.Context) error {
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 	name := c.QueryParam("name")
 	status := c.QueryParam("status")
 
 	type Filter struct {
-		ID     string `json:"id"`
-		Name   string `json:"name" condition:"LIKE"`
-		Status string `json:"status"`
+		ID     []string `json:"id"`
+		Name   string   `json:"name" condition:"LIKE"`
+		Status string   `json:"status"`
 	}
 
 	service := models.Service{}
