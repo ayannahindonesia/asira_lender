@@ -1,8 +1,10 @@
 package admin_handlers
 
 import (
+	"asira_lender/email"
 	"asira_lender/models"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -66,9 +68,9 @@ func AddUser(c echo.Context) error {
 	userM := models.User{}
 
 	payloadRules := govalidator.MapData{
-		"username": []string{"required"},
-		"email":    []string{"required"},
-		"phone":    []string{"required"},
+		"username": []string{"required", "unique:users,username"},
+		"email":    []string{"required", "unique:users,email"},
+		"phone":    []string{"required", "unique:users,phone"},
 		"role_id":  []string{"required", "role_id"},
 		"status":   []string{},
 	}
@@ -77,10 +79,21 @@ func AddUser(c echo.Context) error {
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
-	userM.Password = RandString(8)
+	tempPW := RandString(8)
+	userM.Password = tempPW
+
 	err := userM.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat User")
+	}
+
+	to := userM.Email
+	subject := "[NO REPLY] - Password Aplikasi ASIRA"
+	message := "Selamat Pagi,\n\nIni adalah password anda untuk login " + tempPW + " \n\n\n Ayannah Solusi Nusantara Team"
+
+	err = email.SendMail(to, subject, message)
+	if err != nil {
+		log.Println(err.Error())
 	}
 
 	return c.JSON(http.StatusCreated, userM)
@@ -97,9 +110,9 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	payloadRules := govalidator.MapData{
-		"username": []string{"required"},
-		"email":    []string{"required"},
-		"phone":    []string{"required"},
+		"username": []string{"required", "unique_distinct:users , username , username , 1"},
+		"email":    []string{"required", "unique_distinct:users , email , email , 1"},
+		"phone":    []string{"required", "unique_distinct:users , phone , phone , 1"},
 		"role_id":  []string{"required", "role_id"},
 		"status":   []string{},
 	}

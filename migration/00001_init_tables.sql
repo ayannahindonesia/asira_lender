@@ -56,8 +56,10 @@ CREATE TABLE "services" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
+    "image_id" bigserial,
     "status" varchar(255),
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("image_id") REFERENCES images(id)
 ) WITH (OIDS = FALSE);
 
 CREATE TABLE "bank_services" (
@@ -67,11 +69,8 @@ CREATE TABLE "bank_services" (
     "deleted_time" timestamptz,
     "service_id" bigserial,
     "bank_id" bigserial,
-    "image_id" bigserial,
-    "status" varchar(255),
     FOREIGN KEY ("service_id") REFERENCES services(id),
     FOREIGN KEY ("bank_id") REFERENCES banks(id),
-    FOREIGN KEY ("image_id") REFERENCES images(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -82,16 +81,7 @@ CREATE TABLE "products" (
     "deleted_time" timestamptz,
     "name" varchar(255),
     "status" varchar(255),
-    PRIMARY KEY ("id")
-) WITH (OIDS = FALSE);
-
-CREATE TABLE "bank_products" (
-    "id" bigserial,
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "deleted_time" timestamptz,
-    "product_id" bigserial,
-    "bank_service_id" bigserial,
+    "service_id" bigserial,
     "min_timespan" int,
     "max_timespan" int,
     "interest" int,
@@ -101,9 +91,19 @@ CREATE TABLE "bank_products" (
     "collaterals" varchar(255) ARRAY,
     "financing_sector" varchar(255) ARRAY,
     "assurance" varchar(255),
-    "status" varchar(255),
+    FOREIGN KEY ("service_id") REFERENCES services(id),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+CREATE TABLE "bank_products" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "product_id" bigserial,
+    "bank_id" bigserial,
     FOREIGN KEY ("product_id") REFERENCES products(id),
-    FOREIGN KEY ("bank_service_id") REFERENCES bank_services(id),
+    FOREIGN KEY ("bank_id") REFERENCES banks(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 

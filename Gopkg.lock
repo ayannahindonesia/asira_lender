@@ -2,20 +2,12 @@
 
 
 [[projects]]
-  digest = "1:82041ab48e5c76da656b723fdc13a2b9ec716cdc736f82adaac77f5c39d4fca8"
-  name = "github.com/DataDog/zstd"
-  packages = ["."]
-  pruneopts = ""
-  revision = "2347a397da4ee9c6b8226d4aff82c302d0e52773"
-  version = "v1.4.1"
-
-[[projects]]
-  digest = "1:5dd52495eaf9fad11f4742f341166aa9eb68f70061fc1a9b546f9481b284b6d8"
+  digest = "1:d2b153ad0607c776ac9aca92d072e3c6b74143747c6c6edbe8ba73549dfde1b5"
   name = "github.com/Shopify/sarama"
   packages = ["."]
   pruneopts = ""
-  revision = "46c83074a05474240f9620fb7c70fb0d80ca401a"
-  version = "v1.23.1"
+  revision = "1358e9c6e61694cd61b2daae79f5aa4b8073c976"
+  version = "v1.24.0"
 
 [[projects]]
   digest = "1:e8f914c174ebc670d1713986d5e4f47a21f349209ac929d00558a496f59c7384"
@@ -82,12 +74,12 @@
   version = "v1.4.7"
 
 [[projects]]
-  digest = "1:2d9a530dfb0af0d8a37e5c334b321ec40f9b646b517cd61cc828317af7fe38f5"
+  digest = "1:3c15270c5b4d083739d3ae1b5cf4955915c915748a2616ce5566e0be9b5cccd2"
   name = "github.com/gavv/httpexpect"
   packages = ["."]
   pruneopts = ""
-  revision = "30ddbb4755a80fb6a97cc4c26274250bae331cd5"
-  version = "v2.0.0"
+  revision = "f1807e85af0b542c4f114936650092eb0ac1bf6a"
+  version = "v2.0.2"
 
 [[projects]]
   digest = "1:e692d16fdfbddb94e9e4886aaf6c08bdbae5cb4ac80651445de9181b371c6e46"
@@ -176,7 +168,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:3755c1a3de6404d58d7767562d00a84ee4a507df69a1490c9cebb931d7b11b96"
+  digest = "1:9e6061d60fb018cec58795a2e645c6012312f8e7db1efaf7db25df5cbf3f7a2e"
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
@@ -184,8 +176,8 @@
     "dialects/postgres",
   ]
   pruneopts = ""
-  revision = "836fb2c19d84dac7b0272958dfb9af7cf0d0ade4"
-  version = "v1.9.10"
+  revision = "81c17a7e2529c59efc4e74c5b32c1fb71fb12fa2"
+  version = "v1.9.11"
 
 [[projects]]
   digest = "1:a7b97371fb9af808b6a4fcc6693276ef7869bb1f282c3c87038c6c7e74ef4ae6"
@@ -204,16 +196,21 @@
   version = "v1.2.1"
 
 [[projects]]
-  digest = "1:ab098f4361c705ca40263f79853fdd5f4e8346351313de84c89f148df84824d1"
+  digest = "1:602dba8749048b1d46cb0cb576ad014dbdf1812d7abc9bfe9d1b9e495bc4929c"
   name = "github.com/klauspost/compress"
   packages = [
     "flate",
+    "fse",
     "gzip",
+    "huff0",
+    "snappy",
     "zlib",
+    "zstd",
+    "zstd/internal/xxhash",
   ]
   pruneopts = ""
-  revision = "dbe23c5a61c1539a54e8a2927ca1a2e7bcc92caf"
-  version = "v1.8.4"
+  revision = "da9470192e5d0ad619defde5ded583e5e907d3e8"
+  version = "v1.8.6"
 
 [[projects]]
   digest = "1:cb39bebc72505b4120988fb9e258ecffba4ed679dc04794d517198887160df80"
@@ -269,20 +266,20 @@
   version = "v1.8.1"
 
 [[projects]]
-  digest = "1:d260ca4db8ced0871a1c06440b1e5835e2d982ed660ca529957d67f28cf24592"
+  digest = "1:9b58ad18b38cf0d44b1d006fce319e45f200eafa406fe7f65fe0d0194b9f7a9f"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   pruneopts = ""
-  revision = "8029fb3788e5a4a9c00e415f586a6d033f5d38b3"
-  version = "v0.1.2"
+  revision = "98ec13f34aabf44cc914c65a1cfb7b9bc815aef1"
+  version = "v0.1.4"
 
 [[projects]]
-  digest = "1:afc2714dedf683e571932f94f8a8ec444679eb84e076e021f63de871c5bc6cb1"
+  digest = "1:5794dadc5456af270fc564d98efbfa1f3627cd6c733ca772d14409793772064f"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = ""
-  revision = "e1f7b56ace729e4a73a29a6b4fac6cd5fcda7ab3"
-  version = "v0.0.9"
+  revision = "88ba11cfdc67c7588b30042edf244b2875f892b6"
+  version = "v0.0.10"
 
 [[projects]]
   digest = "1:bcc46a0fbd9e933087bef394871256b5c60269575bb661935874729c65bbbf60"
@@ -293,20 +290,12 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:fe67641b990bdc1802f8a1e462a4924210a8762a8a17b72e09656049c906b871"
-  name = "github.com/moul/http2curl"
-  packages = ["."]
-  pruneopts = ""
-  revision = "9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d"
-  version = "v1.0.0"
-
-[[projects]]
-  digest = "1:3d2c33720d4255686b9f4a7e4d3b94938ee36063f14705c5eb0f73347ed4c496"
+  digest = "1:67d84c0ff107908e53fb2c9f42f1181a1b8b33f0c230d47281cc20ab21824c0e"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   pruneopts = ""
-  revision = "728039f679cbcd4f6a54e080d2219a4c4928c546"
-  version = "v1.4.0"
+  revision = "8fe62057ea2d46ce44254c98e84e810044dbe197"
+  version = "v1.5.0"
 
 [[projects]]
   digest = "1:f45cc60ba08316192e5c40ec31432fde3e9cdc23e09ced4c944123c30e7f8c22"
@@ -442,12 +431,12 @@
   version = "v20180529"
 
 [[projects]]
-  digest = "1:1ad3ae8a5edf223abb8435e16ccc0696ce886c6f889e100809122e931e7423b2"
+  digest = "1:c8b536f08002f0916e288eb66b7d961e3a854542f50532255a7c737edd22987a"
   name = "github.com/valyala/fasttemplate"
   packages = ["."]
   pruneopts = ""
-  revision = "8b5e4e491ab636663841c42ea3c5a9adebabaf36"
-  version = "v1.0.1"
+  revision = "8fcc7a99b5795b7c3e95172237cf93282fc339a9"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -502,16 +491,16 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d58a2d83948b782f5cff116124090287b8c3e5f87b52af02c3585ff515d67efa"
+  digest = "1:b7538a142bd590a436bd46a3095abc88de7ead968ba372dc01a6ba9c8f54cedb"
   name = "gitlab.com/asira-ayannah/basemodel"
   packages = ["."]
   pruneopts = ""
-  revision = "5fb1c62d5486a5876f90267415451b462165e63c"
+  revision = "5c5a8bfdd5c5c8f1fbe9952dce9aab305aa1e988"
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@gitlab.com/asira-ayannah/basemodel.git"
 
 [[projects]]
   branch = "master"
-  digest = "1:dfb5b39cdf15fedcf18211253981cd7d4d881fcb3c9fa63140b02ec71aead457"
+  digest = "1:9026a485cbd92c93566178e917d1c049b94b592ad98a6188557f941f5d9360e7"
   name = "golang.org/x/crypto"
   packages = [
     "acme",
@@ -522,11 +511,11 @@
     "pbkdf2",
   ]
   pruneopts = ""
-  revision = "9ee001bba392397c76f100a2d5b13afc86f167f1"
+  revision = "af544f31c8ac5794d2134b792e9eb714d9d8f9ce"
 
 [[projects]]
   branch = "master"
-  digest = "1:b123a95f458db7b93e65276282e352cbf195095bc2ea2ec81601949de04f7365"
+  digest = "1:f18ed86e2dc96177f15764afe4a31c900cf85c2a7b50a57ce1320836223c64f0"
   name = "golang.org/x/net"
   packages = [
     "idna",
@@ -535,15 +524,15 @@
     "publicsuffix",
   ]
   pruneopts = ""
-  revision = "aa69164e4478b84860dc6769c710c699c67058a3"
+  revision = "d66e71096ffb9f08f36d9aefcae80ce319de6d68"
 
 [[projects]]
   branch = "master"
-  digest = "1:42fc128d889f326618df50aa7e4722f93524cd6dd7feee0b8b0dce4679ecd913"
+  digest = "1:055771f25c4d6493a840af5cbdb8da461be2ec1192049dbaebd6ae1a8cbcdea0"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "98129a5cf4a0207f7e2202f458737deeaca0514a"
+  revision = "b09406accb4736d857a32bf9444cd7edae2ffa79"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -571,12 +560,28 @@
   version = "v0.3.2"
 
 [[projects]]
-  digest = "1:d431fe261d516e259536a34770d1e6fd7cdac85d17b11f9e65aff2f1a7eec66f"
+  digest = "1:c4404231035fad619a12f82ae3f0f8f9edc1cc7f34e7edad7a28ccac5336cc96"
   name = "google.golang.org/appengine"
   packages = ["cloudsql"]
   pruneopts = ""
-  revision = "c71d63e301d75423acb410203c747cad31e9a5e7"
-  version = "v1.6.3"
+  revision = "971852bfffca25b069c31162ae8f247a3dba083b"
+  version = "v1.6.5"
+
+[[projects]]
+  branch = "v3"
+  digest = "1:fa33d1dde8ce5b0b37c38c767c250a7684ecd385f9dbabe594ea8543e4d55807"
+  name = "gopkg.in/alexcesaro/quotedprintable.v3"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2caba252f4dc53eaf6b553000885530023f54623"
+
+[[projects]]
+  digest = "1:cba75ccf02d7b1d508f860e1f579a986e6b94ccc26841d6dd67d18cd1196e132"
+  name = "gopkg.in/gomail.v2"
+  packages = ["."]
+  pruneopts = ""
+  revision = "41f3572897373c5538c50a2402db15db079fa4fd"
+  version = "2.0.0"
 
 [[projects]]
   digest = "1:4777ba481cc12866b89aafb0a67529e7ac48b9aea06a25f3737b2cf5a3ffda12"
@@ -645,12 +650,20 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:cedccf16b71e86db87a24f8d4c70b0a855872eb967cb906a66b95de56aefbd0d"
+  digest = "1:ab9547706f32a7535bb4f25d6b58ad00436630593cd3e3ed4602f1613ed84783"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = ""
-  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
-  version = "v2.2.2"
+  revision = "f221b8435cfb71e54062f6c6e99e9ade30b124d5"
+  version = "v2.2.4"
+
+[[projects]]
+  digest = "1:a007311f74ec15ad1c56672245793e98e67566e78a0bee8b575f9856a8d5299a"
+  name = "moul.io/http2curl"
+  packages = ["."]
+  pruneopts = ""
+  revision = "5cd742060b0e0de91f875277b77dd7d7e68b23ca"
+  version = "v2"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -672,6 +685,7 @@
     "github.com/thedevsaddam/govalidator",
     "gitlab.com/asira-ayannah/basemodel",
     "golang.org/x/crypto/bcrypt",
+    "gopkg.in/gomail.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

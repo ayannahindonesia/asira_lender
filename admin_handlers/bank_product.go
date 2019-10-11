@@ -21,48 +21,18 @@ func BankProductList(c echo.Context) error {
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
-	productID := c.QueryParam("product_id")
-	bankServiceID := c.QueryParam("bank_service_id")
-	minTimespan := c.QueryParam("min_timespan")
-	maxTimespan := c.QueryParam("max_timespan")
-	interest := c.QueryParam("interest")
-	minLoan := c.QueryParam("min_loan")
-	maxLoan := c.QueryParam("max_loan")
-	fee := c.QueryParam("fee")
-	collaterals := c.QueryParam("collaterals")
-	financingSector := c.QueryParam("financing_sector")
-	assurance := c.QueryParam("assurance")
-	status := c.QueryParam("status")
+	productID := customSplit(c.QueryParam("product_id"), ",")
+	bankID := customSplit(c.QueryParam("bank_id"), ",")
 
 	type Filter struct {
-		ProductID       string `json:"product_id"`
-		BankServiceID   string `json:"bank_service_id"`
-		MinTimeSpan     string `json:"min_timespan"`
-		MaxTimeSpan     string `json:"max_timespan"`
-		Interest        string `json:"interest" condition:"LIKE"`
-		MinLoan         string `json:"min_loan"`
-		MaxLoan         string `json:"max_loan"`
-		Fees            string `json:"fees" condition:"LIKE"`
-		Collaterals     string `json:"collaterals" condition:"LIKE"`
-		FinancingSector string `json:"financing_sector" condition:"LIKE"`
-		Assurance       string `json:"assurance" condition:"LIKE"`
-		Status          string `json:"status" condition:"LIKE"`
+		ProductID []string `json:"product_id"`
+		BankID    []string `json:"bank_id"`
 	}
 
 	bank_product := models.BankProduct{}
 	result, err := bank_product.PagedFindFilter(page, rows, order, sort, &Filter{
-		ProductID:       productID,
-		BankServiceID:   bankServiceID,
-		MinTimeSpan:     minTimespan,
-		MaxTimeSpan:     maxTimespan,
-		Interest:        interest,
-		MinLoan:         minLoan,
-		MaxLoan:         maxLoan,
-		Fees:            fee,
-		Collaterals:     collaterals,
-		FinancingSector: financingSector,
-		Assurance:       assurance,
-		Status:          status,
+		ProductID: productID,
+		BankID:    bankID,
 	})
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
@@ -77,18 +47,8 @@ func BankProductNew(c echo.Context) error {
 	bankProduct := models.BankProduct{}
 
 	payloadRules := govalidator.MapData{
-		"product_id":       []string{"required", "valid_id:products"},
-		"bank_service_id":  []string{"required", "valid_id:bank_services"},
-		"min_timespan":     []string{"required", "numeric"},
-		"max_timespan":     []string{"required", "numeric"},
-		"interest":         []string{"required", "numeric"},
-		"min_loan":         []string{"required", "numeric"},
-		"max_loan":         []string{"required", "numeric"},
-		"fees":             []string{},
-		"collaterals":      []string{"required"},
-		"financing_sector": []string{"required"},
-		"assurance":        []string{"required"},
-		"status":           []string{"required", "active_inactive"},
+		"product_id": []string{"required", "valid_id:products"},
+		"bank_id":    []string{"required", "valid_id:banks"},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bankProduct)
@@ -130,18 +90,8 @@ func BankProductPatch(c echo.Context) error {
 	}
 
 	productPayloadRules := govalidator.MapData{
-		"product_id":       []string{"valid_id:products"},
-		"bank_service_id":  []string{"valid_id:bank_services"},
-		"min_timespan":     []string{"numeric"},
-		"max_timespan":     []string{"numeric"},
-		"interest":         []string{"numeric"},
-		"min_loan":         []string{"numeric"},
-		"max_loan":         []string{"numeric"},
-		"fees":             []string{},
-		"collaterals":      []string{},
-		"financing_sector": []string{},
-		"assurance":        []string{},
-		"status":           []string{"active_inactive"},
+		"product_id": []string{"required", "valid_id:products"},
+		"bank_id":    []string{"required", "valid_id:banks"},
 	}
 	validate := validateRequestPayload(c, productPayloadRules, &bankProduct)
 	if validate != nil {

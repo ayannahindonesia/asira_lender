@@ -77,8 +77,6 @@ func TestNewBankService(t *testing.T) {
 	payload := map[string]interface{}{
 		"service_id": "1",
 		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "active",
 	}
 	auth.POST("/admin/bank_services").WithJSON(payload).
 		Expect().
@@ -86,8 +84,6 @@ func TestNewBankService(t *testing.T) {
 	payload = map[string]interface{}{
 		"service_id": "1",
 		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "inactive",
 	}
 	auth.POST("/admin/bank_services").WithJSON(payload).
 		Expect().
@@ -95,20 +91,8 @@ func TestNewBankService(t *testing.T) {
 
 	// invalids
 	payload = map[string]interface{}{
-		"service_id": "1",
-		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "not valid",
-	}
-	auth.POST("/admin/bank_services").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
-
-	payload = map[string]interface{}{
 		"service_id": "99",
 		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "active",
 	}
 	auth.POST("/admin/bank_services").WithJSON(payload).
 		Expect().
@@ -117,8 +101,6 @@ func TestNewBankService(t *testing.T) {
 	payload = map[string]interface{}{
 		"service_id": "1",
 		"bank_id":    "99",
-		"image":      "base64 encoded long string of image",
-		"status":     "active",
 	}
 	auth.POST("/admin/bank_services").WithJSON(payload).
 		Expect().
@@ -180,18 +162,18 @@ func TestPatchBankService(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"status": "inactive",
+		"bank_id": 2,
 	}
 
 	// valid response
 	obj := auth.PATCH("/admin/bank_services/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("status").ValueEqual("status", "inactive")
+	obj.ContainsKey("bank_id").ValueEqual("bank_id", 2)
 
 	// invalid status
 	payload = map[string]interface{}{
-		"status": "not valid",
+		"bank_id": 999,
 	}
 	auth.PATCH("/admin/bank_services/1").WithJSON(payload).
 		Expect().

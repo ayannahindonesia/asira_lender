@@ -12,6 +12,20 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
+type BankPayload struct {
+	Name          string   `json:"name"`
+	Type          uint64   `json:"type"`
+	Address       string   `json:"address"`
+	Province      string   `json:"province"`
+	City          string   `json:"city"`
+	Services      []uint64 `json:"services"`
+	Products      []uint64 `json:"products"`
+	PIC           string   `json:"pic"`
+	Phone         string   `json:"phone"`
+	AdminFeeSetup string   `json:"adminfee_setup"`
+	ConvFeeSetup  string   `json:"convfee_setup"`
+}
+
 func BankList(c echo.Context) error {
 	defer c.Request().Body.Close()
 
@@ -23,11 +37,11 @@ func BankList(c echo.Context) error {
 
 	// filters
 	name := c.QueryParam("name")
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 
 	type Filter struct {
-		ID   string `json:"id"`
-		Name string `json:"name" condition:"LIKE"`
+		ID   []string `json:"id"`
+		Name string   `json:"name" condition:"LIKE"`
 	}
 
 	bank := models.Bank{}
@@ -45,32 +59,59 @@ func BankList(c echo.Context) error {
 func BankNew(c echo.Context) error {
 	defer c.Request().Body.Close()
 
-	bank := models.Bank{}
+	var v uint64
+
+	bankPayload := BankPayload{}
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
-		"type":           []string{"bank_type_id"},
+		"type":           []string{"required", "valid_id:bank_types"},
 		"address":        []string{"required"},
 		"province":       []string{"required"},
 		"city":           []string{"required"},
-		"services":       []string{},
-		"products":       []string{},
+		"services":       []string{"required", "valid_id:services", "unique_distinct:bank_services,bank_id,service_id,0"},
+		"products":       []string{"required", "valid_id:products", "unique_distinct:bank_products,bank_id,product_id,0"},
 		"pic":            []string{"required"},
 		"phone":          []string{"required"},
 		"adminfee_setup": []string{"required"},
 		"convfee_setup":  []string{"required"},
-		// "username":       []string{"required", "unique:banks,username"},
-		// "password":       []string{"required"},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &bank)
+	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
+	bank := models.Bank{
+		Name:                bankPayload.Name,
+		Type:                bankPayload.Type,
+		Address:             bankPayload.Address,
+		Province:            bankPayload.Province,
+		City:                bankPayload.City,
+		PIC:                 bankPayload.PIC,
+		Phone:               bankPayload.Phone,
+		AdminFeeSetup:       bankPayload.AdminFeeSetup,
+		ConvenienceFeeSetup: bankPayload.ConvFeeSetup,
+	}
 	err := bank.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
+	}
+
+	for _, v = range bankPayload.Services {
+		bankService := models.BankService{
+			ServiceID: v,
+			BankID:    bank.ID,
+		}
+		bankService.Create()
+	}
+
+	for _, v = range bankPayload.Products {
+		bankProduct := models.BankProduct{
+			ProductID: v,
+			BankID:    bank.ID,
+		}
+		bankProduct.Create()
 	}
 
 	return c.JSON(http.StatusCreated, bank)
@@ -107,12 +148,12 @@ func BankPatch(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
-		"type":           []string{"bank_type_id"},
+		"type":           []string{"valid_id:bank_types"},
 		"address":        []string{},
 		"province":       []string{},
 		"city":           []string{},
-		"services":       []string{},
-		"products":       []string{},
+		"services":       []string{"valid_id:services", "unique_distinct:bank_services,bank_id,service_id,1"},
+		"products":       []string{"valid_id:products", "unique_distinct:bank_products,bank_id,product_id,1"},
 		"pic":            []string{},
 		"phone":          []string{},
 		"adminfee_setup": []string{},

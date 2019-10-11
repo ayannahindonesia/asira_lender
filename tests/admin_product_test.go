@@ -75,8 +75,27 @@ func TestNewProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"name":   "Test Product",
-		"status": "active",
+		"name":         "Test Product",
+		"service_id":   1,
+		"min_timespan": 3,
+		"max_timespan": 12,
+		"interest":     5,
+		"min_loan":     1000000,
+		"max_loan":     10000000,
+		"fees": []interface{}{
+			map[string]interface{}{
+				"description": "Admin Fee",
+				"amount":      "1%",
+			},
+			map[string]interface{}{
+				"description": "Convenience Fee",
+				"amount":      "2%",
+			},
+		},
+		"collaterals":      []string{"Surat Tanah", "BPKB"},
+		"financing_sector": []string{"Pendidikan"},
+		"assurance":        "assuransi",
+		"status":           "active",
 	}
 
 	// normal scenario

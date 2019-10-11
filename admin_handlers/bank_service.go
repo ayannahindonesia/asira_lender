@@ -14,8 +14,6 @@ import (
 type BankServicePayload struct {
 	ServiceID string `json:"service_id"`
 	BankID    string `json:"bank_id"`
-	Image     string `json:"image"`
-	Status    string `json:"status"`
 }
 
 func BankServiceList(c echo.Context) error {
@@ -28,12 +26,12 @@ func BankServiceList(c echo.Context) error {
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
-	bankID := c.QueryParam("bank_id")
-	serviceID := c.QueryParam("service_id")
+	bankID := customSplit(c.QueryParam("bank_id"), ",")
+	serviceID := customSplit(c.QueryParam("service_id"), ",")
 
 	type Filter struct {
-		BankID    string `json:"bank_id"`
-		ServiceID string `json:"service_id"`
+		BankID    []string `json:"bank_id"`
+		ServiceID []string `json:"service_id"`
 	}
 
 	bank_service := models.BankService{}
@@ -56,8 +54,6 @@ func BankServiceNew(c echo.Context) error {
 	payloadRules := govalidator.MapData{
 		"service_id": []string{"required", "valid_id:services"},
 		"bank_id":    []string{"required", "valid_id:banks"},
-		"image":      []string{"required"},
-		"status":     []string{"required", "active_inactive"},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bankServicePayload)
@@ -65,18 +61,11 @@ func BankServiceNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	image := models.Image{
-		Image_string: bankServicePayload.Image,
-	}
-	image.Create()
-
 	uint64ServiceID, _ := strconv.ParseUint(bankServicePayload.ServiceID, 10, 64)
 	uint64BankID, _ := strconv.ParseUint(bankServicePayload.BankID, 10, 64)
 	bankService := models.BankService{
 		ServiceID: uint64ServiceID,
 		BankID:    uint64BankID,
-		ImageID:   int(image.ID),
-		Status:    bankServicePayload.Status,
 	}
 
 	err := bankService.Create()
@@ -112,41 +101,19 @@ func BankServicePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", bankServiceID))
 	}
 
-	bankServiceImg := models.Image{}
-	err = bankServiceImg.FindbyID(bankService.ImageID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", bankServiceID))
 	}
-	bankServicePayload := BankServicePayload{}
 	servicePayloadRules := govalidator.MapData{
 		"service_id": []string{"valid_id:services"},
 		"bank_id":    []string{"valid_id:banks"},
-		"image":      []string{},
-		"status":     []string{"active_inactive"},
 	}
-	validate := validateRequestPayload(c, servicePayloadRules, &bankServicePayload)
+	validate := validateRequestPayload(c, servicePayloadRules, &bankService)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	if len(bankServicePayload.Image) > 0 {
-		bankServiceImg.Image_string = bankServicePayload.Image
-	}
-	if len(bankServicePayload.Status) > 0 {
-		bankService.Status = bankServicePayload.Status
-	}
-	if len(bankServicePayload.ServiceID) > 0 {
-		bankService.ServiceID, _ = strconv.ParseUint(bankServicePayload.ServiceID, 10, 64)
-	}
-	if len(bankServicePayload.BankID) > 0 {
-		bankService.BankID, _ = strconv.ParseUint(bankServicePayload.BankID, 10, 64)
-	}
-
 	err = bankService.Save()
-	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", bankServiceID))
-	}
-	err = bankServiceImg.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", bankServiceID))
 	}

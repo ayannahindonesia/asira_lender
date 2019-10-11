@@ -42,13 +42,13 @@ func TestBankProductList(t *testing.T) {
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
 	//with part of name
-	obj = auth.GET("/admin/bank_products").WithQuery("assurance", "assu").
+	obj = auth.GET("/admin/bank_products").WithQuery("bank_id", "1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 5)
+	obj.ContainsKey("total_data").ValueEqual("total_data", 3)
 
 	// test query invalid
-	obj = auth.GET("/admin/bank_products").WithQuery("assurance", "should not found this").
+	obj = auth.GET("/admin/bank_products").WithQuery("bank_id", "999").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
@@ -76,27 +76,8 @@ func TestNewBankProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"product_id":      1,
-		"bank_service_id": 1,
-		"min_timespan":    3,
-		"max_timespan":    12,
-		"interest":        5,
-		"min_loan":        1000000,
-		"max_loan":        10000000,
-		"fees": []interface{}{
-			map[string]interface{}{
-				"description": "Admin Fee",
-				"amount":      "1%",
-			},
-			map[string]interface{}{
-				"description": "Convenience Fee",
-				"amount":      "2%",
-			},
-		},
-		"collaterals":      []string{"Surat Tanah", "BPKB"},
-		"financing_sector": []string{"Pendidikan"},
-		"assurance":        "assuransi",
-		"status":           "active",
+		"product_id": 1,
+		"bank_id":    1,
 	}
 
 	// normal scenario
@@ -168,18 +149,18 @@ func TestPatchBankProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"status": "inactive",
+		"bank_id": 2,
 	}
 
 	// valid response
 	obj := auth.PATCH("/admin/bank_products/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("status").ValueEqual("status", "inactive")
+	obj.ContainsKey("bank_id").ValueEqual("bank_id", 2)
 
 	// valid response
 	payload = map[string]interface{}{
-		"status": "invalid",
+		"bank_id": 999,
 	}
 	auth.PATCH("/admin/bank_products/1").WithJSON(payload).
 		Expect().
