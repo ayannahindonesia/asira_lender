@@ -3,6 +3,8 @@ package admin_handlers
 import (
 	"asira_lender/asira"
 	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -86,4 +88,17 @@ func createJwtToken(id string, role string, roleID string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func customSplit(str string, separator string) []string {
+	split := strings.Split(str, separator)
+	log.Println(str)
+	log.Println(split)
+	if len(split) == 1 {
+		if split[0] == "" {
+			split = nil
+		}
+	}
+
+	return split
 }
