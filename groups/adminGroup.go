@@ -86,7 +86,7 @@ func AdminGroup(e *echo.Echo) {
 
 	// Reports
 	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
-	
+
 	// User
 	g.GET("/users", admin_handlers.GetAllUser)
 	g.GET("/users/:user_id", admin_handlers.UserGetDetails)
