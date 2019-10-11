@@ -110,9 +110,9 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	payloadRules := govalidator.MapData{
-		"username": []string{"required"},
-		"email":    []string{"required"},
-		"phone":    []string{"required"},
+		"username": []string{"required", "unique_distinct:users , username , username , 1"},
+		"email":    []string{"required", "unique_distinct:users , email , email , 1"},
+		"phone":    []string{"required", "unique_distinct:users , phone , phone , 1"},
 		"role_id":  []string{"required", "role_id"},
 		"status":   []string{},
 	}
