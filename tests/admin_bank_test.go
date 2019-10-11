@@ -82,6 +82,8 @@ func TestNewBank(t *testing.T) {
 		"city":           "test city",
 		"pic":            "test pic",
 		"phone":          "08123454321",
+		"services":       []int{1},
+		"products":       []int{1},
 		"adminfee_setup": "potong_plafon",
 		"convfee_setup":  "potong_plafon",
 	}

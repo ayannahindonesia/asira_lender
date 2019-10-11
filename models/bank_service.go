@@ -12,8 +12,6 @@ type (
 		DeletedTime time.Time `json:"deleted_time" gorm:"column:deleted_time"`
 		ServiceID   uint64    `json:"service_id" gorm:"column:service_id"`
 		BankID      uint64    `json:"bank_id" gorm:"column:bank_id"`
-		ImageID     int       `json:"image_id" gorm:"column:image_id"`
-		Status      string    `json:"status" gorm:"column:status"`
 	}
 )
 

@@ -77,6 +77,7 @@ func TestNewService(t *testing.T) {
 
 	payload := map[string]interface{}{
 		"name":   "Test New Bank Service",
+		"image":  "base64 super long image string",
 		"status": "active",
 	}
 

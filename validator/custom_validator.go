@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -51,38 +52,46 @@ func (a *AsiraValidator) CustomValidatorRules() {
 		return nil
 	})
 
-	// bank type. must be a listed bank type id.
-	govalidator.AddCustomRule("bank_type_id", func(field string, rule string, message string, value interface{}) error {
+	// valid_id. must be a listed id of a model.
+	govalidator.AddCustomRule("valid_id", func(field string, rule string, message string, value interface{}) error {
 		var (
-			queryRow *gorm.DB
-			total    int
+			db    *gorm.DB
+			total int
 		)
 
-		query := `SELECT COUNT(*) as total FROM bank_types WHERE id = ?`
-		queryRow = a.DB.Raw(query, value)
-		queryRow.Row().Scan(&total)
+		table := strings.TrimPrefix(rule, fmt.Sprintf("%s:", "valid_id"))
+		db = a.DB
+		db.Table(table).
+			Where("id IN (?)", value).
+			Count(&total)
 
 		if total < 1 {
-			return fmt.Errorf(fmt.Sprint("bank type %v is not found.", value), field)
+			return fmt.Errorf(fmt.Sprint("value %v is not found.", value), field)
 		}
 		return nil
 	})
 
-	// valid_id. must be a listed id of a model.
-	govalidator.AddCustomRule("valid_id", func(field string, rule string, message string, value interface{}) error {
+	// bank_service_unique. unique service id per bank. format : unique_distinct:[search_table],[distinct_column],[unique_column],[limit]
+	govalidator.AddCustomRule("unique_distinct", func(field string, rule string, message string, value interface{}) error {
 		var (
-			queryRow *gorm.DB
-			total    int
+			db    *gorm.DB
+			total int
 		)
 
-		table := strings.TrimPrefix(rule, fmt.Sprintf("%s:", "valid_id"))
-		query := fmt.Sprintf("SELECT COUNT(*) as total FROM %s WHERE id = ?", table)
-		queryRow = a.DB.Raw(query, value)
-		queryRow.Row().Scan(&total)
+		params := strings.Split(strings.TrimPrefix(rule, fmt.Sprintf("%s:", "unique_distinct")), ",")
+		if len(params) == 4 {
+			db = a.DB
+			db.Table(params[0]).
+				Where("? IN (SELECT DISTINCT ? FROM ?)", params[1], params[1], params[0]).
+				Where("? IN (?)", params[2], value).
+				Count(&total)
 
-		if total < 1 {
-			return fmt.Errorf(fmt.Sprint("service id %v is not found.", value), field)
+			limit, _ := strconv.Atoi(params[3])
+			if total > limit {
+				return fmt.Errorf(fmt.Sprint("value %v already used.", value), field)
+			}
 		}
+
 		return nil
 	})
 
