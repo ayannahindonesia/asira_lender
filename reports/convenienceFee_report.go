@@ -22,6 +22,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 	type ConvenienceFeeReport struct {
 		BankName       string    `json:"bank_name"`
 		ServiceName    string    `json:"service_name"`
+		ProductName    string    `json:"product_name"`
 		LoanID         string    `json:"loan_id"`
 		CreatedTime    time.Time `json:"created_time"`
 		Plafond        float64   `json:"plafond"`
@@ -29,25 +30,31 @@ func ConvenienceFeeReport(c echo.Context) error {
 	}
 	var results []ConvenienceFeeReport
 	var totalRows int
+	var offset int
+	var rows int
+	var page int
 
 	// pagination parameters
-	rows, _ := strconv.Atoi(c.QueryParam("rows"))
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	if page <= 0 {
-		page = 1
+	if c.QueryParam("rows") != "all" {
+		rows, _ = strconv.Atoi(c.QueryParam("rows"))
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
+		}
+		if rows <= 0 {
+			rows = 25
+		}
+		offset = (page * rows) - rows
 	}
-	if rows <= 0 {
-		rows = 25
-	}
-	offset := (page * rows) - rows
 
 	db = db.Table("loans l").
-		Select("b.name as bank_name, ss.name as service_name, l.id as loan_id, l.created_time, loan_amount as plafond, value->>'amount' as convenience_fee").
+		Select("b.name as bank_name, s.name as service_name, p.name ase product_name, l.id as loan_id, l.created_time, loan_amount as plafond, value->>'amount' as convenience_fee").
 		Joins("JOIN LATERAL jsonb_array_elements(l.fees) j ON true").
 		Joins("INNER JOIN banks b ON b.id = l.bank").
-		Joins("INNER JOIN bank_products p ON p.id = l.product").
-		Joins("INNER JOIN bank_services s ON s.id = p.bank_service_id").
-		Joins("INNER JOIN services ss ON ss.id = s.service_id").
+		Joins("INNER JOIN bank_products bp ON bp.id = l.product").
+		Joins("INNER JOIN products p ON p.id = bp.product_id").
+		Joins("INNER JOIN bank_services bs ON bs.id = p.service_id").
+		Joins("INNER JOIN services s ON s.id = bs.service_id").
 		Where("LOWER(value->>'description') LIKE 'convenience%'")
 
 	// filters
@@ -55,7 +62,10 @@ func ConvenienceFeeReport(c echo.Context) error {
 		db = db.Where("LOWER(b.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
 	}
 	if serviceName := c.QueryParam("service_name"); len(serviceName) > 0 {
-		db = db.Where("LOWER(ss.name) LIKE ?", "%"+strings.ToLower(serviceName)+"%")
+		db = db.Where("LOWER(s.name) LIKE ?", "%"+strings.ToLower(serviceName)+"%")
+	}
+	if productName := c.QueryParam("product_name"); len(productName) > 0 {
+		db = db.Where("LOWER(p.name) LIKE ?", "%"+strings.ToLower(productName)+"%")
 	}
 	if loanID := c.QueryParam("loan_id"); len(loanID) > 0 {
 		db = db.Where("l.id = ?", loanID)
@@ -74,8 +84,10 @@ func ConvenienceFeeReport(c echo.Context) error {
 		db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
 	}
 
-	err := db.Limit(rows).Offset(offset).
-		Find(&results).Count(&totalRows).Error
+	if rows > 0 && offset > 0 {
+		db = db.Limit(rows).Offset(offset)
+	}
+	err := db.Find(&results).Count(&totalRows).Error
 	if err != nil {
 		log.Println(err)
 	}
