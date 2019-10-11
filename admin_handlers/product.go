@@ -21,7 +21,7 @@ func ProductList(c echo.Context) error {
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 	name := c.QueryParam("name")
 	serviceID := c.QueryParam("service_id")
 	minTimespan := c.QueryParam("min_timespan")
@@ -36,19 +36,19 @@ func ProductList(c echo.Context) error {
 	status := c.QueryParam("status")
 
 	type Filter struct {
-		ID              string `json:"id"`
-		Name            string `json:"name" condition:"LIKE"`
-		ServiceID       string `json:"service_id"`
-		MinTimeSpan     string `json:"min_timespan"`
-		MaxTimeSpan     string `json:"max_timespan"`
-		Interest        string `json:"interest" condition:"LIKE"`
-		MinLoan         string `json:"min_loan"`
-		MaxLoan         string `json:"max_loan"`
-		Fees            string `json:"fees" condition:"LIKE"`
-		Collaterals     string `json:"collaterals" condition:"LIKE"`
-		FinancingSector string `json:"financing_sector" condition:"LIKE"`
-		Assurance       string `json:"assurance" condition:"LIKE"`
-		Status          string `json:"status" condition:"LIKE"`
+		ID              []string `json:"id"`
+		Name            string   `json:"name" condition:"LIKE"`
+		ServiceID       string   `json:"service_id"`
+		MinTimeSpan     string   `json:"min_timespan"`
+		MaxTimeSpan     string   `json:"max_timespan"`
+		Interest        string   `json:"interest" condition:"LIKE"`
+		MinLoan         string   `json:"min_loan"`
+		MaxLoan         string   `json:"max_loan"`
+		Fees            string   `json:"fees" condition:"LIKE"`
+		Collaterals     string   `json:"collaterals" condition:"LIKE"`
+		FinancingSector string   `json:"financing_sector" condition:"LIKE"`
+		Assurance       string   `json:"assurance" condition:"LIKE"`
+		Status          string   `json:"status" condition:"LIKE"`
 	}
 
 	product := models.Product{}
