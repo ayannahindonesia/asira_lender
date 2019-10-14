@@ -53,6 +53,12 @@ func (model *BankService) FindbyID(id int) error {
 	return err
 }
 
+func (model *BankService) FindFilter(order []string, sort []string, limit int, offset int, filter interface{}) ([]BankService, error) {
+	bankServices := []BankService{}
+	_, err := basemodel.FindFilter(&bankServices, order, sort, limit, offset, filter)
+	return bankServices, err
+}
+
 func (model *BankService) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
 	bank_type := []BankService{}
 	result, err = basemodel.PagedFindFilter(&bank_type, page, rows, order, sort, filter)

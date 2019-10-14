@@ -3,7 +3,6 @@ package admin_handlers
 import (
 	"asira_lender/asira"
 	"fmt"
-	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -103,8 +102,6 @@ func RandString(n int) string {
 
 func customSplit(str string, separator string) []string {
 	split := strings.Split(str, separator)
-	log.Println(str)
-	log.Println(split)
 	if len(split) == 1 {
 		if split[0] == "" {
 			split = nil

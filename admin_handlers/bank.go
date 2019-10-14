@@ -3,7 +3,6 @@ package admin_handlers
 import (
 	"asira_lender/models"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -134,10 +133,15 @@ func BankDetail(c echo.Context) error {
 func BankPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
 
+	var v uint64
+	var err error
+
+	bankPayload := BankPayload{}
+
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bank := models.Bank{}
-	err := bank.FindbyID(bank_id)
+	err = bank.FindbyID(bank_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}
@@ -160,10 +164,75 @@ func BankPatch(c echo.Context) error {
 		"convfee_setup":  []string{},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &bank)
-	log.Println(bank)
+	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+	}
+
+	if len(bankPayload.Name) > 0 {
+		bank.Name = bankPayload.Name
+	}
+	if bankPayload.Type > 0 {
+		bank.Type = bankPayload.Type
+	}
+	if len(bankPayload.Address) > 0 {
+		bank.Address = bankPayload.Address
+	}
+	if len(bankPayload.Province) > 0 {
+		bank.Province = bankPayload.Province
+	}
+	if len(bankPayload.City) > 0 {
+		bank.City = bankPayload.City
+	}
+	if len(bankPayload.PIC) > 0 {
+		bank.PIC = bankPayload.PIC
+	}
+	if len(bankPayload.Phone) > 0 {
+		bank.Phone = bankPayload.Phone
+	}
+	if len(bankPayload.AdminFeeSetup) > 0 {
+		bank.AdminFeeSetup = bankPayload.AdminFeeSetup
+	}
+	if len(bankPayload.ConvFeeSetup) > 0 {
+		bank.ConvenienceFeeSetup = bankPayload.ConvFeeSetup
+	}
+
+	type Filter struct {
+		BankID uint64 `json:"bank_id"`
+	}
+	if len(bankPayload.Services) > 0 {
+		bankService := models.BankService{}
+		bankServices, _ := bankService.FindFilter([]string{}, []string{}, 0, 0, &Filter{
+			BankID: bank.ID,
+		})
+
+		for _, bs := range bankServices {
+			bs.Delete()
+		}
+		for _, v = range bankPayload.Services {
+			bankService = models.BankService{
+				ServiceID: v,
+				BankID:    bank.ID,
+			}
+			bankService.Create()
+		}
+	}
+	if len(bankPayload.Products) > 0 {
+		bankProduct := models.BankProduct{}
+		bankProducts, _ := bankProduct.FindFilter([]string{}, []string{}, 0, 0, &Filter{
+			BankID: bank.ID,
+		})
+
+		for _, bp := range bankProducts {
+			bp.Delete()
+		}
+		for _, v = range bankPayload.Products {
+			bankProduct = models.BankProduct{
+				ProductID: v,
+				BankID:    bank.ID,
+			}
+			bankProduct.Create()
+		}
 	}
 
 	bank.Username = tempUsername
@@ -171,7 +240,7 @@ func BankPatch(c echo.Context) error {
 
 	err = bank.Save()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bank_id))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bank_id))
 	}
 
 	return c.JSON(http.StatusOK, bank)
