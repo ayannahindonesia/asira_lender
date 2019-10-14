@@ -88,9 +88,9 @@ func ProductNew(c echo.Context) error {
 		"min_loan":         []string{"required", "numeric"},
 		"max_loan":         []string{"required", "numeric"},
 		"fees":             []string{},
-		"collaterals":      []string{"required"},
-		"financing_sector": []string{"required"},
-		"assurance":        []string{"required"},
+		"collaterals":      []string{},
+		"financing_sector": []string{},
+		"assurance":        []string{},
 		"status":           []string{"required", "active_inactive"},
 	}
 
