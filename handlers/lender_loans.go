@@ -169,7 +169,11 @@ func LenderLoanApproveReject(c echo.Context) error {
 		}
 		loan.Approve(disburseDate)
 	case "reject":
-		loan.Reject()
+		reason := c.QueryParam("reason")
+		if len(reason) < 1 {
+			return returnInvalidResponse(http.StatusBadRequest, "", "please fill reject reason")
+		}
+		loan.Reject(reason)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loan_id, loan.Status)})
