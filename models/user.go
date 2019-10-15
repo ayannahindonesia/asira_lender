@@ -9,9 +9,9 @@ type (
 	User struct {
 		basemodel.BaseModel
 		RoleID   int    `json:"role_id" gorm:"column:role_id"`
-		Username string `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
-		Email    string `json:"email" gorm:"column:email;type:varchar(255);unique;not null"`
-		Phone    string `json:"phone" gorm:"column:phone;type:varchar(255);unique;not null"`
+		Username string `json:"username" gorm:"column:username;type:varchar(255);unique;not null;unique_index:idx_username"`
+		Email    string `json:"email" gorm:"column:email;type:varchar(255);unique;not null;unique_index:idx_email"`
+		Phone    string `json:"phone" gorm:"column:phone;type:varchar(255);unique;not null;unique_index:idx_phone"`
 		Password string `json:"password" gorm:"column:password;type:text;not null"`
 		Status   bool   `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
 	}

@@ -108,20 +108,20 @@ func UpdateUser(c echo.Context) error {
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
-
+	tempPassword := userM.Password
 	payloadRules := govalidator.MapData{
-		"username": []string{"required", "unique_distinct:users , username , username , 1"},
-		"email":    []string{"required", "unique_distinct:users , email , email , 1"},
-		"phone":    []string{"required", "unique_distinct:users , phone , phone , 1"},
+		"username": []string{"required", "unique:users,username"},
+		"email":    []string{"required", "unique:users,email"},
+		"phone":    []string{"required", "unique:users,phone"},
 		"role_id":  []string{"required", "role_id"},
 		"status":   []string{},
 	}
-
 	validate := validateRequestPayload(c, payloadRules, &userM)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
+	userM.Password = tempPassword
 	err = userM.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update User %v", userID))
