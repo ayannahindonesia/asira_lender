@@ -1,13 +1,11 @@
 package admin_handlers
 
 import (
-	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
@@ -116,23 +114,33 @@ func UpdateRole(c echo.Context) error {
 
 func GetAllData(c echo.Context) error {
 	defer c.Request().Body.Close()
-	user := c.Get("user")
-	token := user.(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
 
-	roleID, _ := strconv.Atoi(claims["role_id"].(string))
-	db := asira.App.DB
-	type User struct {
-		models.User
-		Permissions []models.Permissions `gorm:"foreignkey:role_id"`
+	Iroles := models.Roles{}
+	// pagination parameters
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	orderby := c.QueryParam("orderby")
+	sort := c.QueryParam("sort")
+
+	name := c.QueryParam("name")
+	id := c.QueryParam("id")
+	status := c.QueryParam("status")
+
+	type Filter struct {
+		ID     string `json:"id"`
+		Name   string `json:"name" condition:"LIKE"`
+		Status string `json:"status"`
 	}
 
-	var Users User
-	// var Permissions []models.Permissions
-	err := db.Where("role_id = ?", roleID).Preload("Permissions").First(&Users).Error
+	result, err := Iroles.FilterSearch(offset, limit, orderby, sort, &Filter{
+		ID:     id,
+		Name:   name,
+		Status: status,
+	})
+
 	if err != nil {
-		return err
+		return returnInvalidResponse(http.StatusNotFound, err, "Role tidak Ditemukan")
 	}
 
-	return c.JSON(http.StatusOK, Users)
+	return c.JSON(http.StatusOK, result)
 }
