@@ -21,8 +21,8 @@ func GetAllRole(c echo.Context) error {
 	sort := c.QueryParam("sort")
 
 	name := c.QueryParam("name")
-	status := c.QueryParam("status")
 	id := customSplit(c.QueryParam("id"), ",")
+	status := c.QueryParam("status")
 
 	type Filter struct {
 		ID     []string `json:"id"`
@@ -123,8 +123,8 @@ func GetAllData(c echo.Context) error {
 	sort := c.QueryParam("sort")
 
 	name := c.QueryParam("name")
-	status := c.QueryParam("status")
 	id := customSplit(c.QueryParam("id"), ",")
+	status := c.QueryParam("status")
 
 	type Filter struct {
 		ID     []string `json:"id"`
