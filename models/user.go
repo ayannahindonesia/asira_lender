@@ -10,7 +10,10 @@ type (
 		basemodel.BaseModel
 		RoleID   int    `json:"role_id" gorm:"column:role_id"`
 		Username string `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
+		Email    string `json:"email" gorm:"column:email;type:varchar(255);unique;not null"`
+		Phone    string `json:"phone" gorm:"column:phone;type:varchar(255);unique;not null"`
 		Password string `json:"password" gorm:"column:password;type:text;not null"`
+		Status   bool   `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
 	}
 )
 
@@ -43,4 +46,18 @@ func (u *User) Save() error {
 func (u *User) FindbyID(id int) error {
 	err := basemodel.FindbyID(&u, id)
 	return err
+}
+
+func (u *User) FilterSearchSingle(filter interface{}) error {
+	err := basemodel.SingleFindFilter(&u, filter)
+	return err
+}
+
+func (u *User) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+	user := []User{}
+	order := []string{orderby}
+	sorts := []string{sort}
+	result, err = basemodel.PagedFindFilter(&user, page, rows, order, sorts, filter)
+
+	return result, err
 }

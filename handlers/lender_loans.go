@@ -169,7 +169,11 @@ func LenderLoanApproveReject(c echo.Context) error {
 		}
 		loan.Approve(disburseDate)
 	case "reject":
-		loan.Reject()
+		reason := c.QueryParam("reason")
+		if len(reason) < 1 {
+			return returnInvalidResponse(http.StatusBadRequest, "", "please fill reject reason")
+		}
+		loan.Reject(reason)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loan_id, loan.Status)})
@@ -194,7 +198,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	status := c.QueryParam("status")
 	owner := c.QueryParam("owner")
 	ownerName := c.QueryParam("owner_name")
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 	start_date := c.QueryParam("start_date")
 	end_date := c.QueryParam("end_date")
 
@@ -204,7 +208,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Owner       string                  `json:"owner"`
 		OwnerName   string                  `json:"owner_name" condition:"LIKE"`
 		DateBetween basemodel.CompareFilter `json:"created_time" condition:"BETWEEN"`
-		ID          string                  `json:"id"`
+		ID          []string                `json:"id"`
 	}
 
 	loan := models.Loan{}

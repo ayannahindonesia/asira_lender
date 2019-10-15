@@ -4,6 +4,7 @@ import (
 	"asira_lender/admin_handlers"
 	"asira_lender/handlers"
 	"asira_lender/middlewares"
+	"asira_lender/reports"
 
 	"github.com/labstack/echo"
 )
@@ -14,12 +15,21 @@ func AdminGroup(e *echo.Echo) {
 
 	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
+	g.GET("/profile", admin_handlers.AdminProfile)
 
 	// Internals Accounts Management
 	g.POST("/client_config", admin_handlers.CreateInternal)
 
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
+
+	//Borrowers
+	g.GET("/borrower", admin_handlers.BorrowerGetAll)
+	g.GET("/borrower/:borrower_id", admin_handlers.BorrowerGetDetails)
+
+	//Loans
+	g.GET("/loan", admin_handlers.LoanGetAll)
+	g.GET("/loan/:loan_id", admin_handlers.LoanGetDetails)
 
 	// Bank Types
 	g.GET("/bank_types", admin_handlers.BankTypeList)
@@ -63,6 +73,13 @@ func AdminGroup(e *echo.Echo) {
 	g.PATCH("/bank_products/:id", admin_handlers.BankProductPatch)
 	g.DELETE("/bank_products/:id", admin_handlers.BankProductDelete)
 
+	// Loan Purpose
+	g.GET("/loan_purposes", admin_handlers.LoanPurposeList)
+	g.POST("/loan_purposes", admin_handlers.LoanPurposeNew)
+	g.GET("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDetail)
+	g.PATCH("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposePatch)
+	g.DELETE("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDelete)
+
 	// Role
 	g.GET("/roles", admin_handlers.GetAllRole)
 	g.GET("/roles/:role_id", admin_handlers.RoleGetDetails)
@@ -75,4 +92,13 @@ func AdminGroup(e *echo.Echo) {
 	g.GET("/permission/:permission_id", admin_handlers.PermissionGetDetails)
 	g.POST("/permission", admin_handlers.AddPermission)
 	g.PATCH("/permission", admin_handlers.UpdatePermission)
+
+	// Reports
+	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
+
+	// User
+	g.GET("/users", admin_handlers.GetAllUser)
+	g.GET("/users/:user_id", admin_handlers.UserGetDetails)
+	g.POST("/users", admin_handlers.AddUser)
+	g.PATCH("/users/:user_id", admin_handlers.UpdateUser)
 }

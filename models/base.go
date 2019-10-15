@@ -76,12 +76,14 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			ID           uint64    `json:"id"`
 			Status       string    `json:"status"`
 			DisburseDate time.Time `json:"disburse_date"`
+			RejectReason string    `json:"reject_reason"`
 		}
 		if e, ok := i.(*Loan); ok {
 			payload = LoanStatusUpdate{
 				ID:           e.ID,
 				Status:       e.Status,
 				DisburseDate: e.DisburseDate,
+				RejectReason: e.RejectReason,
 			}
 		}
 		break
@@ -90,7 +92,7 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			ID      uint64 `json:"id"`
 			Name    string `json:"name"`
 			BankID  uint64 `json:"bank_id"`
-			ImageID int    `json:"image_id"`
+			ImageID uint64 `json:"image_id"`
 			Status  string `json:"status"`
 		}
 		if e, ok := i.(*BankService); ok {
@@ -100,8 +102,8 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 				ID:      e.ID,
 				Name:    service.Name,
 				BankID:  e.BankID,
-				ImageID: e.ImageID,
-				Status:  e.Status,
+				ImageID: service.ImageID,
+				Status:  service.Status,
 			}
 		}
 		break
@@ -127,17 +129,17 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			payload = BankProductUpdate{
 				ID:              e.ID,
 				Name:            product.Name,
-				BankServiceID:   e.BankServiceID,
-				MinTimeSpan:     e.MinTimeSpan,
-				MaxTimeSpan:     e.MaxTimeSpan,
-				Interest:        e.Interest,
-				MinLoan:         e.MinLoan,
-				MaxLoan:         e.MaxLoan,
-				Fees:            e.Fees,
-				Collaterals:     e.Collaterals,
-				FinancingSector: e.FinancingSector,
-				Assurance:       e.Assurance,
-				Status:          e.Status,
+				BankServiceID:   product.ServiceID,
+				MinTimeSpan:     product.MinTimeSpan,
+				MaxTimeSpan:     product.MaxTimeSpan,
+				Interest:        product.Interest,
+				MinLoan:         product.MinLoan,
+				MaxLoan:         product.MaxLoan,
+				Fees:            product.Fees,
+				Collaterals:     product.Collaterals,
+				FinancingSector: product.FinancingSector,
+				Assurance:       product.Assurance,
+				Status:          product.Status,
 			}
 		}
 	}

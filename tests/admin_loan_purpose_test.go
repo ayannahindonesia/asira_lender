@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestBankProductList(t *testing.T) {
+func TestLoanPurposeList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -29,32 +29,24 @@ func TestBankProductList(t *testing.T) {
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
-
 	// valid response
-	auth.GET("/admin/bank_products").
+	obj := auth.GET("/admin/loan_purposes").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("total_data").NotEmpty()
 
-	// test query found
-	obj := auth.GET("/admin/bank_products").WithQuery("product_id", "1").
+	obj = auth.GET("/admin/banks").WithQuery("name", "Pendidikan").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
-	//with part of name
-	obj = auth.GET("/admin/bank_products").WithQuery("bank_id", "1").
+	// test query not found
+	auth.GET("/admin/loan_purposes").WithQuery("name", "should not be found").
 		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 3)
-
-	// test query invalid
-	obj = auth.GET("/admin/bank_products").WithQuery("bank_id", "999").
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
+		Status(http.StatusInternalServerError).JSON().Object()
 }
 
-func TestNewBankProduct(t *testing.T) {
+func TestNewLoanPurpose(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -76,25 +68,26 @@ func TestNewBankProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"product_id": 1,
-		"bank_id":    1,
+		"name":   "Test new purpose",
+		"status": "active",
 	}
 
 	// normal scenario
-	auth.POST("/admin/bank_products").WithJSON(payload).
+	obj := auth.POST("/admin/loan_purpose/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
+	obj.ContainsKey("name").ValueEqual("name", "Test new purpose")
 
 	// test invalid
 	payload = map[string]interface{}{
 		"name": "",
 	}
-	auth.POST("/admin/bank_products").WithJSON(payload).
+	auth.POST("/admin/banks").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
 
-func TestGetBankProductbyID(t *testing.T) {
+func TestGetLoanPurposeByID(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -116,18 +109,18 @@ func TestGetBankProductbyID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/bank_products/1").
+	obj := auth.GET("/admin/loan_purposes/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/bank_products/9999").
+	auth.GET("/admin/banks/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchBankProduct(t *testing.T) {
+func TestLoanPurposePatch(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -149,28 +142,51 @@ func TestPatchBankProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"bank_id": 2,
+		"name": "Test Patch",
 	}
 
 	// valid response
-	obj := auth.PATCH("/admin/bank_products/1").WithJSON(payload).
+	obj := auth.PATCH("/admin/loan_purposes/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("bank_id").ValueEqual("bank_id", 2)
-
-	// valid response
-	payload = map[string]interface{}{
-		"bank_id": 999,
-	}
-	auth.PATCH("/admin/bank_products/1").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
+	obj.ContainsKey("name").ValueEqual("name", "Test Patch")
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer wrong token")
 	})
-	auth.PATCH("/admin/bank_products/1").WithJSON(payload).
+	auth.PATCH("/admin/loan_purposes/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnauthorized).JSON().Object()
+}
+
+func TestDeleteLoanPurpose(t *testing.T) {
+	RebuildData()
+
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	adminToken := getAdminLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+adminToken)
+	})
+
+	// valid response
+	auth.DELETE("/admin/loan_purposes/1").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	auth.GET("/admin/bank_types/1").
+		Expect().
+		Status(http.StatusNotFound).JSON().Object()
 }

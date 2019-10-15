@@ -27,6 +27,7 @@ type (
 		LoanIntention    string         `json:"loan_intention" gorm:"column:loan_intention;type:varchar(255);not null"`
 		IntentionDetails string         `json:"intention_details" gorm:"column:intention_details;type:text;not null"`
 		DisburseDate     time.Time      `json:"disburse_date" gorm:"column:disburse_date"`
+		RejectReason     string         `json:"reject_reason" gorm:"column:reject_reason"`
 	}
 
 	LoanFee struct { // temporary hardcoded
@@ -92,8 +93,9 @@ func (l *Loan) Approve(disburseDate time.Time) error {
 	return err
 }
 
-func (l *Loan) Reject() error {
+func (l *Loan) Reject(reason string) error {
 	l.Status = "rejected"
+	l.RejectReason = reason
 
 	err := l.Save()
 	if err != nil {

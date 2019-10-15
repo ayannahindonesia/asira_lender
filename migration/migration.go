@@ -82,24 +82,29 @@ func Seed() {
 		// seed services
 		services := []models.Service{
 			models.Service{
-				Name:   "Pinjaman PNS",
-				Status: "active",
+				Name:    "Pinjaman PNS",
+				Status:  "active",
+				ImageID: 1,
 			},
 			models.Service{
-				Name:   "Pinjaman Pensiun",
-				Status: "active",
+				Name:    "Pinjaman Pensiun",
+				Status:  "active",
+				ImageID: 2,
 			},
 			models.Service{
-				Name:   "Pinjaman UMKN",
-				Status: "active",
+				Name:    "Pinjaman UMKN",
+				Status:  "active",
+				ImageID: 3,
 			},
 			models.Service{
-				Name:   "Pinjaman Mikro",
-				Status: "inactive",
+				Name:    "Pinjaman Mikro",
+				Status:  "inactive",
+				ImageID: 4,
 			},
 			models.Service{
-				Name:   "Pinjaman Lainnya",
-				Status: "inactive",
+				Name:    "Pinjaman Lainnya",
+				Status:  "inactive",
+				ImageID: 5,
 			},
 		}
 		for _, service := range services {
@@ -107,30 +112,117 @@ func Seed() {
 		}
 
 		// seed products
+		feesMarshal, _ := json.Marshal([]interface{}{map[string]interface{}{
+			"description": "Admin Fee",
+			"amount":      "1%",
+		}, map[string]interface{}{
+			"description": "Convenience Fee",
+			"amount":      "2%",
+		}})
 		products := []models.Product{
 			models.Product{
-				Name:   "Product A",
-				Status: "active",
+				Name:            "Product A",
+				ServiceID:       1,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product B",
-				Status: "active",
+				Name:            "Product B",
+				ServiceID:       2,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product C",
-				Status: "active",
+				Name:            "Product C",
+				ServiceID:       3,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product D",
-				Status: "active",
+				Name:            "Product D",
+				ServiceID:       4,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product E",
-				Status: "active",
+				Name:            "Product E",
+				ServiceID:       5,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 		}
 		for _, product := range products {
 			product.Create()
+		}
+
+		purposes := []models.LoanPurpose{
+			models.LoanPurpose{
+				Name:   "Pendidikan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Rumah Tangga",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Kesehatan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berdagang",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Bertani",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berjudi",
+				Status: "inactive",
+			},
+		}
+		for _, purpose := range purposes {
+			purpose.Create()
 		}
 
 		// seed lenders
@@ -235,11 +327,17 @@ func Seed() {
 				RoleID:   1,
 				Username: "adminkey",
 				Password: "adminsecret",
+				Email:    "asira@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 			models.User{
 				RoleID:   2,
 				Username: "manager",
 				Password: "password",
+				Email:    "asira@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 		}
 		for _, user := range users {
@@ -251,32 +349,22 @@ func Seed() {
 			models.BankService{
 				ServiceID: 1,
 				BankID:    1,
-				ImageID:   1,
-				Status:    "active",
 			},
 			models.BankService{
 				ServiceID: 2,
 				BankID:    1,
-				ImageID:   2,
-				Status:    "active",
 			},
 			models.BankService{
 				ServiceID: 3,
 				BankID:    1,
-				ImageID:   3,
-				Status:    "inactive",
 			},
 			models.BankService{
 				ServiceID: 4,
 				BankID:    2,
-				ImageID:   4,
-				Status:    "active",
 			},
 			models.BankService{
 				ServiceID: 5,
 				BankID:    2,
-				ImageID:   5,
-				Status:    "active",
 			},
 		}
 		for _, bankService := range bankServices {
@@ -284,83 +372,26 @@ func Seed() {
 		}
 
 		// seed bank products
-		feesMarshal, _ := json.Marshal([]interface{}{map[string]interface{}{
-			"description": "Admin Fee",
-			"amount":      "1%",
-		}, map[string]interface{}{
-			"description": "Convenience Fee",
-			"amount":      "2%",
-		}})
 		bankProducts := []models.BankProduct{
 			models.BankProduct{
-				ProductID:       1,
-				BankServiceID:   1,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 1,
+				BankID:    1,
 			},
 			models.BankProduct{
-				ProductID:       2,
-				BankServiceID:   2,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 2,
+				BankID:    1,
 			},
 			models.BankProduct{
-				ProductID:       3,
-				BankServiceID:   3,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 3,
+				BankID:    1,
 			},
 			models.BankProduct{
-				ProductID:       4,
-				BankServiceID:   4,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 4,
+				BankID:    2,
 			},
 			models.BankProduct{
-				ProductID:       5,
-				BankServiceID:   5,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 5,
+				BankID:    2,
 			},
 		}
 		for _, bankProduct := range bankProducts {
@@ -437,24 +468,29 @@ func TestSeed() {
 		// seed services
 		services := []models.Service{
 			models.Service{
-				Name:   "Pinjaman PNS",
-				Status: "active",
+				Name:    "Pinjaman PNS",
+				Status:  "active",
+				ImageID: 1,
 			},
 			models.Service{
-				Name:   "Pinjaman Pensiun",
-				Status: "active",
+				Name:    "Pinjaman Pensiun",
+				Status:  "active",
+				ImageID: 2,
 			},
 			models.Service{
-				Name:   "Pinjaman UMKN",
-				Status: "active",
+				Name:    "Pinjaman UMKN",
+				Status:  "active",
+				ImageID: 3,
 			},
 			models.Service{
-				Name:   "Pinjaman Mikro",
-				Status: "inactive",
+				Name:    "Pinjaman Mikro",
+				Status:  "inactive",
+				ImageID: 4,
 			},
 			models.Service{
-				Name:   "Pinjaman Lainnya",
-				Status: "inactive",
+				Name:    "Pinjaman Lainnya",
+				Status:  "inactive",
+				ImageID: 5,
 			},
 		}
 		for _, service := range services {
@@ -462,26 +498,83 @@ func TestSeed() {
 		}
 
 		// seed products
+		feesMarshal, _ := json.Marshal([]interface{}{map[string]interface{}{
+			"description": "Admin Fee",
+			"amount":      "1%",
+		}, map[string]interface{}{
+			"description": "Convenience Fee",
+			"amount":      "2%",
+		}})
 		products := []models.Product{
 			models.Product{
-				Name:   "Product A",
-				Status: "active",
+				Name:            "Product A",
+				ServiceID:       1,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product B",
-				Status: "active",
+				Name:            "Product B",
+				ServiceID:       2,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product C",
-				Status: "active",
+				Name:            "Product C",
+				ServiceID:       3,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product D",
-				Status: "active",
+				Name:            "Product D",
+				ServiceID:       4,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 			models.Product{
-				Name:   "Product E",
-				Status: "active",
+				Name:            "Product E",
+				ServiceID:       5,
+				MinTimeSpan:     3,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
 			},
 		}
 		for _, product := range products {
@@ -526,32 +619,22 @@ func TestSeed() {
 			models.BankService{
 				ServiceID: 1,
 				BankID:    1,
-				ImageID:   1,
-				Status:    "active",
 			},
 			models.BankService{
 				ServiceID: 2,
 				BankID:    1,
-				ImageID:   2,
-				Status:    "active",
 			},
 			models.BankService{
 				ServiceID: 3,
 				BankID:    1,
-				ImageID:   3,
-				Status:    "inactive",
 			},
 			models.BankService{
 				ServiceID: 4,
 				BankID:    2,
-				ImageID:   4,
-				Status:    "active",
 			},
 			models.BankService{
 				ServiceID: 5,
 				BankID:    2,
-				ImageID:   5,
-				Status:    "active",
 			},
 		}
 		for _, bankService := range bankServices {
@@ -559,83 +642,26 @@ func TestSeed() {
 		}
 
 		// seed bank products
-		feesMarshal, _ := json.Marshal([]interface{}{map[string]interface{}{
-			"description": "Admin Fee",
-			"amount":      "1%",
-		}, map[string]interface{}{
-			"description": "Convenience Fee",
-			"amount":      "2%",
-		}})
 		bankProducts := []models.BankProduct{
 			models.BankProduct{
-				ProductID:       1,
-				BankServiceID:   1,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 1,
+				BankID:    1,
 			},
 			models.BankProduct{
-				ProductID:       2,
-				BankServiceID:   2,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 2,
+				BankID:    1,
 			},
 			models.BankProduct{
-				ProductID:       3,
-				BankServiceID:   3,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 3,
+				BankID:    1,
 			},
 			models.BankProduct{
-				ProductID:       4,
-				BankServiceID:   4,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 4,
+				BankID:    2,
 			},
 			models.BankProduct{
-				ProductID:       5,
-				BankServiceID:   5,
-				MinTimeSpan:     3,
-				MaxTimeSpan:     12,
-				Interest:        5,
-				MinLoan:         5000000,
-				MaxLoan:         8000000,
-				Fees:            postgres.Jsonb{feesMarshal},
-				Collaterals:     []string{"Surat Tanah", "BPKB"},
-				FinancingSector: []string{"Pendidikan"},
-				Assurance:       "an Assurance",
-				Status:          "active",
+				ProductID: 5,
+				BankID:    2,
 			},
 		}
 		for _, bankProduct := range bankProducts {
@@ -736,7 +762,44 @@ func TestSeed() {
 			borrower.Create()
 		}
 
+		purposes := []models.LoanPurpose{
+			models.LoanPurpose{
+				Name:   "Pendidikan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Rumah Tangga",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Kesehatan",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berdagang",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Bertani",
+				Status: "active",
+			},
+			models.LoanPurpose{
+				Name:   "Berjudi",
+				Status: "inactive",
+			},
+		}
+		for _, purpose := range purposes {
+			purpose.Create()
+		}
+
 		// seed loans
+		feesMarshal, _ = json.Marshal([]interface{}{map[string]interface{}{
+			"description": "Admin Fee",
+			"amount":      "10000",
+		}, map[string]interface{}{
+			"description": "Convenience Fee",
+			"amount":      "50000",
+		}})
 		loans := []models.Loan{
 			models.Loan{
 				Bank: sql.NullInt64{
@@ -932,11 +995,17 @@ func TestSeed() {
 				RoleID:   1,
 				Username: "adminkey",
 				Password: "adminsecret",
+				Email:    "asira@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 			models.User{
 				RoleID:   2,
 				Username: "manager",
 				Password: "password",
+				Email:    "asira@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 		}
 		for _, user := range users {

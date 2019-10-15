@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestBankProductList(t *testing.T) {
+func TestGetUserList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -31,30 +31,24 @@ func TestBankProductList(t *testing.T) {
 	})
 
 	// valid response
-	auth.GET("/admin/bank_products").
+	auth.GET("/admin/users").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/bank_products").WithQuery("product_id", "1").
+	obj := auth.GET("/admin/users").WithQuery("name", "admin").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
-	//with part of name
-	obj = auth.GET("/admin/bank_products").WithQuery("bank_id", "1").
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 3)
-
 	// test query invalid
-	obj = auth.GET("/admin/bank_products").WithQuery("bank_id", "999").
+	obj = auth.GET("/admin/users").WithQuery("name", "should not found this").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
-func TestNewBankProduct(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -76,25 +70,29 @@ func TestNewBankProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"product_id": 1,
-		"bank_id":    1,
+		"username": "finance",
+		"email":    "finance@ayannah.id",
+		"phone":    "08111",
+		"status":   true,
+		"role_id":  1,
 	}
 
 	// normal scenario
-	auth.POST("/admin/bank_products").WithJSON(payload).
+	obj := auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
+	obj.ContainsKey("username").ValueEqual("username", "finance")
 
 	// test invalid
 	payload = map[string]interface{}{
 		"name": "",
 	}
-	auth.POST("/admin/bank_products").WithJSON(payload).
+	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
 
-func TestGetBankProductbyID(t *testing.T) {
+func TestGetUserbyID(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -116,18 +114,18 @@ func TestGetBankProductbyID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/bank_products/1").
+	obj := auth.GET("/admin/users/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/bank_products/9999").
+	auth.GET("/admin/users/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchBankProduct(t *testing.T) {
+func TestPatchUser(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -149,28 +147,24 @@ func TestPatchBankProduct(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"bank_id": 2,
+		"username": "finance1",
+		"email":    "finance@ayannah.id",
+		"phone":    "08111",
+		"status":   true,
+		"role_id":  1,
 	}
 
 	// valid response
-	obj := auth.PATCH("/admin/bank_products/1").WithJSON(payload).
+	obj := auth.PATCH("/admin/users/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("bank_id").ValueEqual("bank_id", 2)
-
-	// valid response
-	payload = map[string]interface{}{
-		"bank_id": 999,
-	}
-	auth.PATCH("/admin/bank_products/1").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
+	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer wrong token")
 	})
-	auth.PATCH("/admin/bank_products/1").WithJSON(payload).
+	auth.PATCH("/admin/users/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnauthorized).JSON().Object()
 }

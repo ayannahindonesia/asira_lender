@@ -21,13 +21,14 @@ func GetAllRole(c echo.Context) error {
 	sort := c.QueryParam("sort")
 
 	name := c.QueryParam("name")
-	id := c.QueryParam("id")
 	status := c.QueryParam("status")
 
+	id := customSplit(c.QueryParam("id"), ",")
+
 	type Filter struct {
-		ID     string `json:"id"`
-		Name   string `json:"name" condition:"LIKE"`
-		Status string `json:"status"`
+		ID     []string `json:"id"`
+		Name   string   `json:"name" condition:"LIKE"`
+		Status string   `json:"status"`
 	}
 
 	result, err := Iroles.PagedFilterSearch(page, rows, orderby, sort, &Filter{

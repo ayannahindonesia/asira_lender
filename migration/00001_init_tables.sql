@@ -56,8 +56,10 @@ CREATE TABLE "services" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
+    "image_id" bigserial,
     "status" varchar(255),
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("image_id") REFERENCES images(id)
 ) WITH (OIDS = FALSE);
 
 CREATE TABLE "bank_services" (
@@ -67,11 +69,8 @@ CREATE TABLE "bank_services" (
     "deleted_time" timestamptz,
     "service_id" bigserial,
     "bank_id" bigserial,
-    "image_id" bigserial,
-    "status" varchar(255),
     FOREIGN KEY ("service_id") REFERENCES services(id),
     FOREIGN KEY ("bank_id") REFERENCES banks(id),
-    FOREIGN KEY ("image_id") REFERENCES images(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -82,16 +81,7 @@ CREATE TABLE "products" (
     "deleted_time" timestamptz,
     "name" varchar(255),
     "status" varchar(255),
-    PRIMARY KEY ("id")
-) WITH (OIDS = FALSE);
-
-CREATE TABLE "bank_products" (
-    "id" bigserial,
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "deleted_time" timestamptz,
-    "product_id" bigserial,
-    "bank_service_id" bigserial,
+    "service_id" bigserial,
     "min_timespan" int,
     "max_timespan" int,
     "interest" int,
@@ -101,9 +91,19 @@ CREATE TABLE "bank_products" (
     "collaterals" varchar(255) ARRAY,
     "financing_sector" varchar(255) ARRAY,
     "assurance" varchar(255),
-    "status" varchar(255),
+    FOREIGN KEY ("service_id") REFERENCES services(id),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+CREATE TABLE "bank_products" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "product_id" bigserial,
+    "bank_id" bigserial,
     FOREIGN KEY ("product_id") REFERENCES products(id),
-    FOREIGN KEY ("bank_service_id") REFERENCES bank_services(id),
+    FOREIGN KEY ("bank_id") REFERENCES banks(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -157,7 +157,7 @@ CREATE TABLE "borrowers" (
     "related_phonenumber" varchar(255) NOT NULL,
     "related_homenumber" varchar(255),
     "related_address" text,
-    "bank" bigint,
+    "bank" bigserial,
     "bank_accountnumber" varchar(255),
     FOREIGN KEY ("bank") REFERENCES banks(id),
     PRIMARY KEY ("id")
@@ -168,10 +168,10 @@ CREATE TABLE "loans" (
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
-    "owner" bigint,
+    "owner" bigserial,
     "owner_name" varchar(255),
-    "bank" bigint,
-    "product" bigint,
+    "bank" bigserial,
+    "product" bigserial,
     "status" varchar(255) DEFAULT  ('processing'),
     "loan_amount" FLOAT NOT NULL,
     "installment" int NOT NULL,
@@ -183,10 +183,23 @@ CREATE TABLE "loans" (
     "loan_intention" varchar(255) NOT NULL,
     "intention_details" text NOT NULL,
     "disburse_date" timestamptz,
+    "reject_reason" text,
     FOREIGN KEY ("owner") REFERENCES borrowers(id),
+    FOREIGN KEY ("bank") REFERENCES banks(id),
     FOREIGN KEY ("product") REFERENCES bank_products(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
+
+CREATE TABLE "loan_purposes" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "name" varchar(255),
+    "status" varchar(255),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
 
 CREATE TABLE "roles" (
     "id" bigserial,
@@ -213,7 +226,10 @@ CREATE TABLE "users" (
     "id" bigserial,
     "role_id" bigint,
     "username" varchar(255) NOT NULL,
+    "email" varchar(255) NOT NULL,
+    "phone" varchar(255) NOT NULL,
     "password" text NOT NULL,
+    "status" BOOLEAN,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("role_id") REFERENCES roles(id),
@@ -241,6 +257,7 @@ DROP TABLE IF EXISTS "services" CASCADE;
 DROP TABLE IF EXISTS "banks" CASCADE;
 DROP TABLE IF EXISTS "bank_types" CASCADE;
 DROP TABLE IF EXISTS "borrowers" CASCADE;
+DROP TABLE IF EXISTS "loan_purposes" CASCADE;
 DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
 DROP TABLE IF EXISTS "internals" CASCADE;

@@ -13,4 +13,8 @@ func ClientGroup(e *echo.Echo) {
 	middlewares.SetClientJWTmiddlewares(g, "client")
 	g.POST("/lender_login", handlers.LenderLogin)
 	g.POST("/admin_login", admin_handlers.AdminLogin)
+
+	// loan purposes
+	g.GET("/loan_purposes", admin_handlers.LoanPurposeList)
+	g.GET("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDetail)
 }
