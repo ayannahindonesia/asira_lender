@@ -24,24 +24,30 @@ func (a *AsiraValidator) CustomValidatorRules() {
 			queryRow *gorm.DB
 			total    int
 		)
+		var limit = 0
 
 		query := `SELECT COUNT(*) as total FROM %s WHERE %s = ?`
 		params := strings.Split(strings.TrimPrefix(rule, fmt.Sprintf("%s:", "unique")), ",")
 
-		if len(params) == 2 {
-			query = fmt.Sprintf(query, params[0], params[1])
-			queryRow = a.DB.Raw(query, value)
-		} else if len(params) == 4 {
-			query += ` AND %s != ?`
-			query = fmt.Sprintf(query, params[0], params[1], params[2])
-			queryRow = a.DB.Raw(query, value, params[3])
-		} else {
-			return fmt.Errorf("Arguments not enough")
+		query = fmt.Sprintf(query, params[0], params[1])
+		queryRow = a.DB.Raw(query, value)
+		if len(params) == 3 {
+			limit, _ = strconv.Atoi(params[2])
 		}
+		// if len(params) == 2 {
+		//     query = fmt.Sprintf(query, params[0], params[1])
+		//     queryRow = a.DB.Raw(query, value)
+		// } else if len(params) == 4 {
+		//     query += ` AND %s != ?`
+		//     query = fmt.Sprintf(query, params[0], params[1], params[2])
+		//     queryRow = a.DB.Raw(query, value, params[3])
+		// } else {
+		//     return fmt.Errorf("Arguments not enough")
+		// }
 
 		queryRow.Row().Scan(&total)
 
-		if total > 0 {
+		if total > limit {
 			if message != "" {
 				return errors.New(message)
 			}
@@ -51,7 +57,6 @@ func (a *AsiraValidator) CustomValidatorRules() {
 
 		return nil
 	})
-
 	// valid_id. must be a listed id of a model.
 	govalidator.AddCustomRule("valid_id", func(field string, rule string, message string, value interface{}) error {
 		var (
