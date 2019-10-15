@@ -1,11 +1,13 @@
 package admin_handlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
@@ -22,15 +24,18 @@ func GetAllRole(c echo.Context) error {
 
 	name := c.QueryParam("name")
 	id := c.QueryParam("id")
+	status := c.QueryParam("status")
 
 	type Filter struct {
-		ID   string `json:"id"`
-		Name string `json:"name" condition:"LIKE"`
+		ID     string `json:"id"`
+		Name   string `json:"name" condition:"LIKE"`
+		Status string `json:"status"`
 	}
 
 	result, err := Iroles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-		ID:   id,
-		Name: name,
+		ID:     id,
+		Name:   name,
+		Status: status,
 	})
 
 	if err != nil {
@@ -107,4 +112,27 @@ func UpdateRole(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, Iroles)
+}
+
+func GetAllData(c echo.Context) error {
+	defer c.Request().Body.Close()
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	roleID, _ := strconv.Atoi(claims["role_id"].(string))
+	db := asira.App.DB
+	type User struct {
+		models.User
+		Permissions []models.Permissions `gorm:"foreignkey:role_id"`
+	}
+
+	var Users User
+	// var Permissions []models.Permissions
+	err := db.Where("role_id = ?", roleID).Preload("Permissions").First(&Users).Error
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, Users)
 }
