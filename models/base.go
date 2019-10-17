@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/lib/pq"
 )
 
 func KafkaSubmitModel(i interface{}, model string) (err error) {
@@ -85,61 +83,6 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			}
 		}
 		break
-	case "bank_service":
-		type BankServiceUpdate struct {
-			ID      uint64 `json:"id"`
-			Name    string `json:"name"`
-			BankID  uint64 `json:"bank_id"`
-			ImageID uint64 `json:"image_id"`
-			Status  string `json:"status"`
-		}
-		if e, ok := i.(*BankService); ok {
-			service := Service{}
-			service.FindbyID(int(e.ServiceID))
-			payload = BankServiceUpdate{
-				ID:      e.ID,
-				Name:    service.Name,
-				BankID:  e.BankID,
-				ImageID: service.ImageID,
-				Status:  service.Status,
-			}
-		}
-		break
-	case "bank_product":
-		type BankProductUpdate struct {
-			ID              uint64         `json:"id"`
-			Name            string         `json:"name"`
-			BankServiceID   uint64         `json:"bank_service_id"`
-			MinTimeSpan     int            `json:"min_timespan"`
-			MaxTimeSpan     int            `json:"max_timespan"`
-			Interest        float64        `json:"interest"`
-			MinLoan         int            `json:"min_loan"`
-			MaxLoan         int            `json:"max_loan"`
-			Fees            postgres.Jsonb `json:"fees"`
-			Collaterals     pq.StringArray `json:"collaterals"`
-			FinancingSector pq.StringArray `json:"financing_sector"`
-			Assurance       string         `json:"assurance"`
-			Status          string         `json:"status"`
-		}
-		if e, ok := i.(*BankProduct); ok {
-			product := Product{}
-			product.FindbyID(int(e.ProductID))
-			payload = BankProductUpdate{
-				ID:              e.ID,
-				Name:            product.Name,
-				BankServiceID:   product.ServiceID,
-				MinTimeSpan:     product.MinTimeSpan,
-				MaxTimeSpan:     product.MaxTimeSpan,
-				Interest:        product.Interest,
-				MinLoan:         product.MinLoan,
-				MaxLoan:         product.MaxLoan,
-				Fees:            product.Fees,
-				Collaterals:     product.Collaterals,
-				FinancingSector: product.FinancingSector,
-				Assurance:       product.Assurance,
-				Status:          product.Status,
-			}
-		}
 	}
 
 	return payload

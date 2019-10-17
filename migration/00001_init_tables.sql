@@ -44,6 +44,8 @@ CREATE TABLE "banks" (
     "phone" varchar(255),
     "adminfee_setup" varchar(255),
     "convfee_setup" varchar(255),
+    "services" int ARRAY,
+    "products" int ARRAY,
     "username" varchar(255) NOT NULL UNIQUE,
     "password" text NOT NULL,
     FOREIGN KEY ("type") REFERENCES bank_types(id),
@@ -60,18 +62,6 @@ CREATE TABLE "services" (
     "status" varchar(255),
     PRIMARY KEY ("id"),
     FOREIGN KEY ("image_id") REFERENCES images(id)
-) WITH (OIDS = FALSE);
-
-CREATE TABLE "bank_services" (
-    "id" bigserial,
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "deleted_time" timestamptz,
-    "service_id" bigserial,
-    "bank_id" bigserial,
-    FOREIGN KEY ("service_id") REFERENCES services(id),
-    FOREIGN KEY ("bank_id") REFERENCES banks(id),
-    PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
 CREATE TABLE "products" (
@@ -92,18 +82,6 @@ CREATE TABLE "products" (
     "financing_sector" varchar(255) ARRAY,
     "assurance" varchar(255),
     FOREIGN KEY ("service_id") REFERENCES services(id),
-    PRIMARY KEY ("id")
-) WITH (OIDS = FALSE);
-
-CREATE TABLE "bank_products" (
-    "id" bigserial,
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "deleted_time" timestamptz,
-    "product_id" bigserial,
-    "bank_id" bigserial,
-    FOREIGN KEY ("product_id") REFERENCES products(id),
-    FOREIGN KEY ("bank_id") REFERENCES banks(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -184,7 +162,7 @@ CREATE TABLE "loans" (
     "intention_details" text NOT NULL,
     "disburse_date" timestamptz,
     FOREIGN KEY ("owner") REFERENCES borrowers(id),
-    FOREIGN KEY ("product") REFERENCES bank_products(id),
+    FOREIGN KEY ("product") REFERENCES products(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -234,8 +212,6 @@ CREATE TABLE "user_relations" (
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
 
-DROP TABLE IF EXISTS "bank_products" CASCADE;
-DROP TABLE IF EXISTS "bank_services" CASCADE;
 DROP TABLE IF EXISTS "products" CASCADE;
 DROP TABLE IF EXISTS "services" CASCADE;
 DROP TABLE IF EXISTS "banks" CASCADE;

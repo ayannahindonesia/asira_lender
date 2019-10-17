@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -207,6 +209,8 @@ func Seed() {
 				ConvenienceFeeSetup: "potong_plafon",
 				PIC:                 "Bank A PIC",
 				Phone:               "081234567890",
+				Services:            pq.Int64Array{1, 2},
+				Products:            pq.Int64Array{1, 2},
 				Username:            "Banktoib",
 				Password:            "password",
 			},
@@ -220,6 +224,8 @@ func Seed() {
 				ConvenienceFeeSetup: "potong_plafon",
 				PIC:                 "Bank B PIC",
 				Phone:               "081234567891",
+				Services:            pq.Int64Array{1, 2},
+				Products:            pq.Int64Array{1, 2},
 				Username:            "Banktoic",
 				Password:            "password",
 			},
@@ -306,60 +312,6 @@ func Seed() {
 		}
 		for _, user := range users {
 			user.Create()
-		}
-
-		// seed bank services
-		bankServices := []models.BankService{
-			models.BankService{
-				ServiceID: 1,
-				BankID:    1,
-			},
-			models.BankService{
-				ServiceID: 2,
-				BankID:    1,
-			},
-			models.BankService{
-				ServiceID: 3,
-				BankID:    1,
-			},
-			models.BankService{
-				ServiceID: 4,
-				BankID:    2,
-			},
-			models.BankService{
-				ServiceID: 5,
-				BankID:    2,
-			},
-		}
-		for _, bankService := range bankServices {
-			bankService.Create()
-		}
-
-		// seed bank products
-		bankProducts := []models.BankProduct{
-			models.BankProduct{
-				ProductID: 1,
-				BankID:    1,
-			},
-			models.BankProduct{
-				ProductID: 2,
-				BankID:    1,
-			},
-			models.BankProduct{
-				ProductID: 3,
-				BankID:    1,
-			},
-			models.BankProduct{
-				ProductID: 4,
-				BankID:    2,
-			},
-			models.BankProduct{
-				ProductID: 5,
-				BankID:    2,
-			},
-		}
-		for _, bankProduct := range bankProducts {
-			bankProduct.Create()
 		}
 	}
 }
@@ -557,6 +509,8 @@ func TestSeed() {
 				ConvenienceFeeSetup: "potong_plafon",
 				PIC:                 "Bank A PIC",
 				Phone:               "081234567890",
+				Services:            pq.Int64Array{1, 2},
+				Products:            pq.Int64Array{1, 2},
 				Username:            "Banktoib",
 				Password:            "password",
 			},
@@ -570,66 +524,14 @@ func TestSeed() {
 				ConvenienceFeeSetup: "potong_plafon",
 				PIC:                 "Bank B PIC",
 				Phone:               "081234567891",
+				Services:            pq.Int64Array{1, 2},
+				Products:            pq.Int64Array{1, 2},
 				Username:            "Banktoic",
 				Password:            "password",
 			},
 		}
 		for _, lender := range lenders {
 			lender.Create()
-		}
-
-		// seed bank services
-		bankServices := []models.BankService{
-			models.BankService{
-				ServiceID: 1,
-				BankID:    1,
-			},
-			models.BankService{
-				ServiceID: 2,
-				BankID:    1,
-			},
-			models.BankService{
-				ServiceID: 3,
-				BankID:    1,
-			},
-			models.BankService{
-				ServiceID: 4,
-				BankID:    2,
-			},
-			models.BankService{
-				ServiceID: 5,
-				BankID:    2,
-			},
-		}
-		for _, bankService := range bankServices {
-			bankService.Create()
-		}
-
-		// seed bank products
-		bankProducts := []models.BankProduct{
-			models.BankProduct{
-				ProductID: 1,
-				BankID:    1,
-			},
-			models.BankProduct{
-				ProductID: 2,
-				BankID:    1,
-			},
-			models.BankProduct{
-				ProductID: 3,
-				BankID:    1,
-			},
-			models.BankProduct{
-				ProductID: 4,
-				BankID:    2,
-			},
-			models.BankProduct{
-				ProductID: 5,
-				BankID:    2,
-			},
-		}
-		for _, bankProduct := range bankProducts {
-			bankProduct.Create()
 		}
 
 		// @ToDo borrower and loans should be get from borrower platform
@@ -941,8 +843,6 @@ func Truncate(tableList []string) (err error) {
 		if tableList[0] == "all" {
 			tableList = []string{
 				"internals",
-				"bank_products",
-				"bank_services",
 				"products",
 				"services",
 				"banks",
