@@ -5,13 +5,15 @@ ARG APPNAME="asira_lender"
 ADD . $GOPATH/src/"${APPNAME}"
 WORKDIR $GOPATH/src/"${APPNAME}"
 
-RUN apk add --update git gcc libc-dev;
+RUN apk add --update git gcc libc-dev tzdata;
 #  tzdata wget gcc libc-dev make openssl py-pip;
+
+ENV TZ=Asia/Jakarta
 
 RUN go get -u github.com/golang/dep/cmd/dep
 
 CMD if [ "${APPENV}" = "staging" ] || [ "${APPENV}" = "production" ] ; then \
-        cp deploy/conf.yaml config.yaml \
+        cp deploy/conf.yaml config.yaml ; \
     elif [ "${ENV}" = "dev" ] ; then \
         cp deploy/dev-config.yaml config.yaml ; \
     fi \
