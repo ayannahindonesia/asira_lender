@@ -162,6 +162,7 @@ CREATE TABLE "loans" (
     "intention_details" text NOT NULL,
     "disburse_date" timestamptz,
     FOREIGN KEY ("owner") REFERENCES borrowers(id),
+    FOREIGN KEY ("bank") REFERENCES banks(id),
     FOREIGN KEY ("product") REFERENCES products(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
