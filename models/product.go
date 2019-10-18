@@ -29,16 +29,34 @@ type (
 
 func (model *Product) Create() error {
 	err := basemodel.Create(&model)
+	if err != nil {
+		return err
+	}
+
+	err = KafkaSubmitModel(model, "product")
+
 	return err
 }
 
 func (model *Product) Save() error {
 	err := basemodel.Save(&model)
+	if err != nil {
+		return err
+	}
+
+	err = KafkaSubmitModel(model, "product")
+
 	return err
 }
 
 func (model *Product) Delete() error {
 	err := basemodel.Delete(&model)
+	if err != nil {
+		return err
+	}
+
+	err = KafkaSubmitModel(model, "product_delete")
+
 	return err
 }
 
