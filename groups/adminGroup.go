@@ -4,6 +4,7 @@ import (
 	"asira_lender/admin_handlers"
 	"asira_lender/handlers"
 	"asira_lender/middlewares"
+	"asira_lender/reports"
 
 	"github.com/labstack/echo"
 )
@@ -74,4 +75,7 @@ func AdminGroup(e *echo.Echo) {
 	g.GET("/permission/:permission_id", admin_handlers.PermissionGetDetails)
 	g.POST("/permission", admin_handlers.AddPermission)
 	g.PATCH("/permission", admin_handlers.UpdatePermission)
+
+	// Reports
+	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
 }

@@ -629,6 +629,13 @@ func TestSeed() {
 		}
 
 		// seed loans
+		feesMarshal, _ = json.Marshal([]interface{}{map[string]interface{}{
+			"description": "Admin Fee",
+			"amount":      "10000",
+		}, map[string]interface{}{
+			"description": "Convenience Fee",
+			"amount":      "50000",
+		}})
 		loans := []models.Loan{
 			models.Loan{
 				Bank: sql.NullInt64{
