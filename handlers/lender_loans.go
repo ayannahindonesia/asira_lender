@@ -205,7 +205,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		db = db.Where("LOWER(l.owner_name) = ?", strings.ToLower(ownerName))
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("LOWER(l.id) IN ?", id)
+		db = db.Where("LOWER(l.id) IN (?)", id)
 	}
 	if start_date := c.QueryParam("start_date"); len(start_date) > 0 {
 		if end_date := c.QueryParam("end_date"); len(end_date) > 0 {
