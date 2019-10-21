@@ -21,20 +21,17 @@ func TestBorrowerAdminGetAll(t *testing.T) {
 	e := httpexpect.New(t, server.URL)
 
 	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+adminBasicToken)
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
 
-	obj := auth.GET("/clientauth").
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-
-	admintoken := obj.Value("token").String().Raw()
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Bearer "+admintoken)
+		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
+
 	// valid response of borrowers
-	obj = auth.GET("/admin/borrower").
+	auth.GET("/admin/borrower").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 }
@@ -51,19 +48,17 @@ func TestBorrowerGetAdminDetails(t *testing.T) {
 	e := httpexpect.New(t, server.URL)
 
 	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+adminBasicToken)
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
-	obj := auth.GET("/clientauth").
-		Expect().
-		Status(http.StatusOK).JSON().Object()
 
-	admintoken := obj.Value("token").String().Raw()
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Bearer "+admintoken)
+		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
+
 	// valid response of loan details
-	obj = auth.GET("/admin/borrower/1").
+	obj := auth.GET("/admin/borrower/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)

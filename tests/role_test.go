@@ -33,8 +33,7 @@ func TestGetRoleAllList(t *testing.T) {
 	// valid response
 	auth.GET("/admin/roles_all").
 		Expect().
-		Status(http.StatusOK).JSON().Object()
-
+		Status(http.StatusOK).JSON().Array()
 }
 
 func TestGetRoleList(t *testing.T) {

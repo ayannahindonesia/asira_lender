@@ -35,15 +35,16 @@ func TestLoanPurposeList(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").NotEmpty()
 
-	obj = auth.GET("/admin/banks").WithQuery("name", "Pendidikan").
+	obj = auth.GET("/admin/loan_purposes").WithQuery("name", "Pendidikan").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
 	// test query not found
-	auth.GET("/admin/loan_purposes").WithQuery("name", "should not be found").
+	obj = auth.GET("/admin/loan_purposes").WithQuery("name", "should not be found").
 		Expect().
-		Status(http.StatusInternalServerError).JSON().Object()
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
 func TestNewLoanPurpose(t *testing.T) {
@@ -73,7 +74,7 @@ func TestNewLoanPurpose(t *testing.T) {
 	}
 
 	// normal scenario
-	obj := auth.POST("/admin/loan_purpose/1").WithJSON(payload).
+	obj := auth.POST("/admin/loan_purposes").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 	obj.ContainsKey("name").ValueEqual("name", "Test new purpose")
@@ -82,7 +83,7 @@ func TestNewLoanPurpose(t *testing.T) {
 	payload = map[string]interface{}{
 		"name": "",
 	}
-	auth.POST("/admin/banks").WithJSON(payload).
+	auth.POST("/admin/loan_purposes").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
@@ -115,7 +116,7 @@ func TestGetLoanPurposeByID(t *testing.T) {
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/banks/9999").
+	auth.GET("/admin/loan_purposes/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
@@ -186,7 +187,8 @@ func TestDeleteLoanPurpose(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	auth.GET("/admin/bank_types/1").
+	obj := auth.GET("/admin/loan_purposes/1").
 		Expect().
-		Status(http.StatusNotFound).JSON().Object()
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("name").ValueNotEqual("deleted_time", "0001-01-01 00:00:00+00")
 }

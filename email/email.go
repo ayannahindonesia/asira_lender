@@ -2,6 +2,7 @@ package email
 
 import (
 	"asira_lender/asira"
+	"flag"
 	"fmt"
 
 	"gopkg.in/gomail.v2"
@@ -20,11 +21,12 @@ func SendMail(to string, subject, message string) error {
 		Config["email"].(string),
 		Config["password"].(string))
 
-	err := dialer.DialAndSend(mailer)
-	if err != nil {
-		return err
+	if flag.Lookup("test.v") == nil {
+		err := dialer.DialAndSend(mailer)
+		if err != nil {
+			return err
+		}
 	}
-	//
 
 	return nil
 }

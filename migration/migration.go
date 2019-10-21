@@ -38,7 +38,7 @@ func Seed() {
 		}
 
 		// seed images
-		file, _ := os.Open("migration/image_dummy.txt")
+		file, _ := os.Open("./image_dummy.txt")
 		defer file.Close()
 		b64image, _ := ioutil.ReadAll(file)
 		images := []models.Image{
@@ -342,7 +342,7 @@ func Seed() {
 				Username: "manager",
 				Password: "password",
 				Email:    "asira@ayannah.com",
-				Phone:    "081234567890",
+				Phone:    "081234567891",
 				Status:   true,
 			},
 		}
@@ -933,6 +933,7 @@ func Truncate(tableList []string) (err error) {
 				"permissions",
 				"users",
 				"user_relations",
+				"loan_purposes",
 			}
 		}
 

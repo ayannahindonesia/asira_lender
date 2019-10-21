@@ -70,8 +70,8 @@ func TestNewUser(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"username": "finance",
-		"email":    "finance@ayannah.id",
+		"username": "test user",
+		"email":    "testuser@ayannah.id",
 		"phone":    "08111",
 		"status":   true,
 		"role_id":  1,
@@ -81,7 +81,7 @@ func TestNewUser(t *testing.T) {
 	obj := auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
-	obj.ContainsKey("username").ValueEqual("username", "finance")
+	obj.ContainsKey("username").ValueEqual("username", "test user")
 
 	// test invalid
 	payload = map[string]interface{}{
