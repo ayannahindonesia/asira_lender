@@ -15,6 +15,7 @@ func AdminGroup(e *echo.Echo) {
 
 	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
+	g.GET("/profile", admin_handlers.AdminProfile)
 
 	// Internals Accounts Management
 	g.POST("/client_config", admin_handlers.CreateInternal)
@@ -90,6 +91,12 @@ func AdminGroup(e *echo.Echo) {
 	g.GET("/permission/:permission_id", admin_handlers.PermissionGetDetails)
 	g.POST("/permission", admin_handlers.AddPermission)
 	g.PATCH("/permission", admin_handlers.UpdatePermission)
+
+	// User
+	g.GET("/users", admin_handlers.GetAllUser)
+	g.GET("/users/:user_id", admin_handlers.UserGetDetails)
+	g.POST("/users", admin_handlers.AddUser)
+	g.PATCH("/users/:user_id", admin_handlers.UpdateUser)
 
 	// Reports
 	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)

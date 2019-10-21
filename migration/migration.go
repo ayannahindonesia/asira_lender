@@ -333,11 +333,17 @@ func Seed() {
 				RoleID:   1,
 				Username: "adminkey",
 				Password: "adminsecret",
+				Email:    "admin@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 			models.User{
 				RoleID:   2,
 				Username: "manager",
 				Password: "password",
+				Email:    "asira@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 		}
 		for _, user := range users {
@@ -891,11 +897,17 @@ func TestSeed() {
 				RoleID:   1,
 				Username: "adminkey",
 				Password: "adminsecret",
+				Email:    "admin@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 			models.User{
 				RoleID:   2,
 				Username: "manager",
 				Password: "password",
+				Email:    "asira@ayannah.com",
+				Phone:    "081234567890",
+				Status:   true,
 			},
 		}
 		for _, user := range users {

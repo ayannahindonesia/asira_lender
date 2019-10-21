@@ -3,8 +3,6 @@ GET:
   Bank_Type_List: /admin/bank_types
   Bank_Service_List: /admin/bank_services
   Service_Product_List: /admin/service_products
-  Role_List: /admin/roles
-  Permission_List: /admin/permission
   Borrower_List: /admin/borrower
   Loan_List: /admin/loan
 POST:

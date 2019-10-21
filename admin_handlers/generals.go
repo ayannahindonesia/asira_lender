@@ -3,6 +3,7 @@ package admin_handlers
 import (
 	"asira_lender/asira"
 	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -19,6 +20,8 @@ type (
 		jwt.StandardClaims
 	}
 )
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
 // general function to validate all kind of api request payload / body
 func validateRequestPayload(c echo.Context, rules govalidator.MapData, data interface{}) (i interface{}) {
@@ -87,6 +90,14 @@ func createJwtToken(id string, role string, roleID string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func RandString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
 
 func customSplit(str string, separator string) []string {

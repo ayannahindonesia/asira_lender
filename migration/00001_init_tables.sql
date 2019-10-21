@@ -202,8 +202,11 @@ CREATE TABLE "permissions" (
 CREATE TABLE "users" (
     "id" bigserial,
     "role_id" bigint,
-    "username" varchar(255) NOT NULL,
+    "username" varchar(255) UNIQUE,
+    "email" varchar(255) UNIQUE,
+    "phone" varchar(255) UNIQUE,
     "password" text NOT NULL,
+    "status" BOOLEAN,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("role_id") REFERENCES roles(id),

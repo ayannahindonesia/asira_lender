@@ -568,6 +568,22 @@
   version = "v1.6.5"
 
 [[projects]]
+  branch = "v3"
+  digest = "1:fa33d1dde8ce5b0b37c38c767c250a7684ecd385f9dbabe594ea8543e4d55807"
+  name = "gopkg.in/alexcesaro/quotedprintable.v3"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2caba252f4dc53eaf6b553000885530023f54623"
+
+[[projects]]
+  digest = "1:cba75ccf02d7b1d508f860e1f579a986e6b94ccc26841d6dd67d18cd1196e132"
+  name = "gopkg.in/gomail.v2"
+  packages = ["."]
+  pruneopts = ""
+  revision = "41f3572897373c5538c50a2402db15db079fa4fd"
+  version = "2.0.0"
+
+[[projects]]
   digest = "1:4777ba481cc12866b89aafb0a67529e7ac48b9aea06a25f3737b2cf5a3ffda12"
   name = "gopkg.in/jcmturner/aescts.v1"
   packages = ["."]
@@ -669,6 +685,7 @@
     "github.com/thedevsaddam/govalidator",
     "gitlab.com/asira-ayannah/basemodel",
     "golang.org/x/crypto/bcrypt",
+    "gopkg.in/gomail.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
