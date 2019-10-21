@@ -40,11 +40,6 @@ func TestLenderGetBankList(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
-	// test query found with part name
-	obj = auth.GET("/admin/banks").WithQuery("name", "bank").
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 2)
 
 	// test query invalid
 	obj = auth.GET("/admin/banks").WithQuery("name", "should not found this").
@@ -82,6 +77,8 @@ func TestNewBank(t *testing.T) {
 		"city":           "test city",
 		"pic":            "test pic",
 		"phone":          "08123454321",
+		"services":       []int{1},
+		"products":       []int{1},
 		"adminfee_setup": "potong_plafon",
 		"convfee_setup":  "potong_plafon",
 	}

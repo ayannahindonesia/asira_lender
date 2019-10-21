@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/lib/pq"
 )
 
 func KafkaSubmitModel(i interface{}, model string) (err error) {
@@ -76,70 +74,17 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			ID           uint64    `json:"id"`
 			Status       string    `json:"status"`
 			DisburseDate time.Time `json:"disburse_date"`
+			RejectReason string    `json:"reject_reason"`
 		}
 		if e, ok := i.(*Loan); ok {
 			payload = LoanStatusUpdate{
 				ID:           e.ID,
 				Status:       e.Status,
 				DisburseDate: e.DisburseDate,
+				RejectReason: e.RejectReason,
 			}
 		}
 		break
-	case "bank_service":
-		type BankServiceUpdate struct {
-			ID      uint64 `json:"id"`
-			Name    string `json:"name"`
-			BankID  uint64 `json:"bank_id"`
-			ImageID int    `json:"image_id"`
-			Status  string `json:"status"`
-		}
-		if e, ok := i.(*BankService); ok {
-			service := Service{}
-			service.FindbyID(int(e.ServiceID))
-			payload = BankServiceUpdate{
-				ID:      e.ID,
-				Name:    service.Name,
-				BankID:  e.BankID,
-				ImageID: e.ImageID,
-				Status:  e.Status,
-			}
-		}
-		break
-	case "bank_product":
-		type BankProductUpdate struct {
-			ID              uint64         `json:"id"`
-			Name            string         `json:"name"`
-			BankServiceID   uint64         `json:"bank_service_id"`
-			MinTimeSpan     int            `json:"min_timespan"`
-			MaxTimeSpan     int            `json:"max_timespan"`
-			Interest        float64        `json:"interest"`
-			MinLoan         int            `json:"min_loan"`
-			MaxLoan         int            `json:"max_loan"`
-			Fees            postgres.Jsonb `json:"fees"`
-			Collaterals     pq.StringArray `json:"collaterals"`
-			FinancingSector pq.StringArray `json:"financing_sector"`
-			Assurance       string         `json:"assurance"`
-			Status          string         `json:"status"`
-		}
-		if e, ok := i.(*BankProduct); ok {
-			product := Product{}
-			product.FindbyID(int(e.ProductID))
-			payload = BankProductUpdate{
-				ID:              e.ID,
-				Name:            product.Name,
-				BankServiceID:   e.BankServiceID,
-				MinTimeSpan:     e.MinTimeSpan,
-				MaxTimeSpan:     e.MaxTimeSpan,
-				Interest:        e.Interest,
-				MinLoan:         e.MinLoan,
-				MaxLoan:         e.MaxLoan,
-				Fees:            e.Fees,
-				Collaterals:     e.Collaterals,
-				FinancingSector: e.FinancingSector,
-				Assurance:       e.Assurance,
-				Status:          e.Status,
-			}
-		}
 	}
 
 	return payload

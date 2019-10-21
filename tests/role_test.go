@@ -9,6 +9,33 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
+func TestGetRoleAllList(t *testing.T) {
+	RebuildData()
+
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	adminToken := getAdminLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+adminToken)
+	})
+
+	// valid response
+	auth.GET("/admin/roles_all").
+		Expect().
+		Status(http.StatusOK).JSON().Array()
+}
+
 func TestGetRoleList(t *testing.T) {
 	RebuildData()
 

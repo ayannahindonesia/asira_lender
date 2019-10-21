@@ -3,7 +3,6 @@ package admin_handlers
 import (
 	"asira_lender/models"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,6 +10,20 @@ import (
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
+
+// type BankPayload struct {
+// 	Name          string   `json:"name"`
+// 	Type          uint64   `json:"type"`
+// 	Address       string   `json:"address"`
+// 	Province      string   `json:"province"`
+// 	City          string   `json:"city"`
+// 	Services      []uint64 `json:"services"`
+// 	Products      []uint64 `json:"products"`
+// 	PIC           string   `json:"pic"`
+// 	Phone         string   `json:"phone"`
+// 	AdminFeeSetup string   `json:"adminfee_setup"`
+// 	ConvFeeSetup  string   `json:"convfee_setup"`
+// }
 
 func BankList(c echo.Context) error {
 	defer c.Request().Body.Close()
@@ -23,11 +36,11 @@ func BankList(c echo.Context) error {
 
 	// filters
 	name := c.QueryParam("name")
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 
 	type Filter struct {
-		ID   string `json:"id"`
-		Name string `json:"name" condition:"LIKE"`
+		ID   []string `json:"id"`
+		Name string   `json:"name" condition:"LIKE"`
 	}
 
 	bank := models.Bank{}
@@ -49,18 +62,16 @@ func BankNew(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
-		"type":           []string{"bank_type_id"},
+		"type":           []string{"required", "valid_id:bank_types"},
 		"address":        []string{"required"},
 		"province":       []string{"required"},
 		"city":           []string{"required"},
-		"services":       []string{},
-		"products":       []string{},
+		"services":       []string{"required"},
+		"products":       []string{"required"},
 		"pic":            []string{"required"},
 		"phone":          []string{"required"},
 		"adminfee_setup": []string{"required"},
 		"convfee_setup":  []string{"required"},
-		// "username":       []string{"required", "unique:banks,username"},
-		// "password":       []string{"required"},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bank)
@@ -70,7 +81,7 @@ func BankNew(c echo.Context) error {
 
 	err := bank.Create()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
 
 	return c.JSON(http.StatusCreated, bank)
@@ -93,12 +104,14 @@ func BankDetail(c echo.Context) error {
 func BankPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
 
+	var err error
+
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bank := models.Bank{}
-	err := bank.FindbyID(bank_id)
+	err = bank.FindbyID(bank_id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank %v tidak ditemukan", bank_id))
 	}
 
 	// dont allow admin to change bank credentials
@@ -107,7 +120,7 @@ func BankPatch(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
-		"type":           []string{"bank_type_id"},
+		"type":           []string{"valid_id:bank_types"},
 		"address":        []string{},
 		"province":       []string{},
 		"city":           []string{},
@@ -120,7 +133,6 @@ func BankPatch(c echo.Context) error {
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bank)
-	log.Println(bank)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
@@ -130,7 +142,7 @@ func BankPatch(c echo.Context) error {
 
 	err = bank.Save()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bank_id))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bank_id))
 	}
 
 	return c.JSON(http.StatusOK, bank)

@@ -40,10 +40,19 @@ func (b *Roles) FilterSearchSingle(filter interface{}) error {
 }
 
 func (b *Roles) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
-	internal := []Roles{}
+	role := []Roles{}
 	order := []string{orderby}
 	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&internal, page, rows, order, sorts, filter)
+	result, err = basemodel.PagedFindFilter(&role, page, rows, order, sorts, filter)
+
+	return result, err
+}
+
+func (b *Roles) FilterSearch(limit int, offset int, orderby string, sort string, filter interface{}) (result interface{}, err error) {
+	role := []Roles{}
+	order := []string{orderby}
+	sorts := []string{sort}
+	result, err = basemodel.FindFilter(&role, order, sorts, limit, offset, filter)
 
 	return result, err
 }

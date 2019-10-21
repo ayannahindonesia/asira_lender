@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestBankServiceList(t *testing.T) {
+func TestGetUserList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -31,28 +31,24 @@ func TestBankServiceList(t *testing.T) {
 	})
 
 	// valid response
-	auth.GET("/admin/bank_services").
+	auth.GET("/admin/users").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/bank_services").WithQuery("service_id", "1").
+	obj := auth.GET("/admin/users").WithQuery("name", "admin").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
-	obj = auth.GET("/admin/bank_services").WithQuery("bank_id", "1").
-		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 3)
 
-	// test query not found
-	obj = auth.GET("/admin/bank_services").WithQuery("bank_id", "99").
+	// test query invalid
+	obj = auth.GET("/admin/users").WithQuery("name", "should not found this").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
-func TestNewBankService(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -73,59 +69,30 @@ func TestNewBankService(t *testing.T) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
 
-	// normal scenario
 	payload := map[string]interface{}{
-		"service_id": "1",
-		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "active",
+		"username": "test user",
+		"email":    "testuser@ayannah.id",
+		"phone":    "08111",
+		"status":   true,
+		"role_id":  1,
 	}
-	auth.POST("/admin/bank_services").WithJSON(payload).
+
+	// normal scenario
+	obj := auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
-	payload = map[string]interface{}{
-		"service_id": "1",
-		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "inactive",
-	}
-	auth.POST("/admin/bank_services").WithJSON(payload).
-		Expect().
-		Status(http.StatusCreated).JSON().Object()
+	obj.ContainsKey("username").ValueEqual("username", "test user")
 
-	// invalids
+	// test invalid
 	payload = map[string]interface{}{
-		"service_id": "1",
-		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "not valid",
+		"name": "",
 	}
-	auth.POST("/admin/bank_services").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
-
-	payload = map[string]interface{}{
-		"service_id": "99",
-		"bank_id":    "1",
-		"image":      "base64 encoded long string of image",
-		"status":     "active",
-	}
-	auth.POST("/admin/bank_services").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
-
-	payload = map[string]interface{}{
-		"service_id": "1",
-		"bank_id":    "99",
-		"image":      "base64 encoded long string of image",
-		"status":     "active",
-	}
-	auth.POST("/admin/bank_services").WithJSON(payload).
+	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
 
-func TestGetBankServicebyID(t *testing.T) {
+func TestGetUserbyID(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -147,18 +114,18 @@ func TestGetBankServicebyID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/bank_services/1").
+	obj := auth.GET("/admin/users/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/bank_services/9999").
+	auth.GET("/admin/users/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchBankService(t *testing.T) {
+func TestPatchUser(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -180,28 +147,24 @@ func TestPatchBankService(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"status": "inactive",
+		"username": "finance1",
+		"email":    "finance@ayannah.id",
+		"phone":    "08111",
+		"status":   true,
+		"role_id":  1,
 	}
 
 	// valid response
-	obj := auth.PATCH("/admin/bank_services/1").WithJSON(payload).
+	obj := auth.PATCH("/admin/users/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("status").ValueEqual("status", "inactive")
-
-	// invalid status
-	payload = map[string]interface{}{
-		"status": "not valid",
-	}
-	auth.PATCH("/admin/bank_services/1").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
+	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer wrong token")
 	})
-	auth.PATCH("/admin/bank_services/1").WithJSON(payload).
+	auth.PATCH("/admin/users/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnauthorized).JSON().Object()
 }

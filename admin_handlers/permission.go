@@ -21,13 +21,13 @@ func GetAllPermission(c echo.Context) error {
 	sort := c.QueryParam("sort")
 
 	name := c.QueryParam("name")
-	id := c.QueryParam("id")
-	role_id := c.QueryParam("role_id")
+	id := customSplit(c.QueryParam("id"), ",")
+	role_id := customSplit(c.QueryParam("role_id"), ",")
 
 	type Filter struct {
-		ID         string `json:"id"`
-		RoleID     string `json:"role_id"`
-		Permission string `json:"permissions" condition:"LIKE"`
+		ID         []string `json:"id"`
+		RoleID     []string `json:"role_id"`
+		Permission string   `json:"permissions" condition:"LIKE"`
 	}
 
 	result, err := Permission.FilterSearch(offset, limit, orderby, sort, &Filter{

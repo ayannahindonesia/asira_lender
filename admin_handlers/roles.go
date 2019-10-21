@@ -21,16 +21,19 @@ func GetAllRole(c echo.Context) error {
 	sort := c.QueryParam("sort")
 
 	name := c.QueryParam("name")
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
+	status := c.QueryParam("status")
 
 	type Filter struct {
-		ID   string `json:"id"`
-		Name string `json:"name" condition:"LIKE"`
+		ID     []string `json:"id"`
+		Name   string   `json:"name" condition:"LIKE"`
+		Status string   `json:"status"`
 	}
 
 	result, err := Iroles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-		ID:   id,
-		Name: name,
+		ID:     id,
+		Name:   name,
+		Status: status,
 	})
 
 	if err != nil {
@@ -107,4 +110,37 @@ func UpdateRole(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, Iroles)
+}
+
+func GetAllData(c echo.Context) error {
+	defer c.Request().Body.Close()
+
+	Iroles := models.Roles{}
+	// pagination parameters
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	orderby := c.QueryParam("orderby")
+	sort := c.QueryParam("sort")
+
+	name := c.QueryParam("name")
+	id := customSplit(c.QueryParam("id"), ",")
+	status := c.QueryParam("status")
+
+	type Filter struct {
+		ID     []string `json:"id"`
+		Name   string   `json:"name" condition:"LIKE"`
+		Status string   `json:"status"`
+	}
+
+	result, err := Iroles.FilterSearch(offset, limit, orderby, sort, &Filter{
+		ID:     id,
+		Name:   name,
+		Status: status,
+	})
+
+	if err != nil {
+		return returnInvalidResponse(http.StatusNotFound, err, "Role tidak Ditemukan")
+	}
+
+	return c.JSON(http.StatusOK, result)
 }
