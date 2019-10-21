@@ -11,6 +11,12 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
+type ServicePayload struct {
+	Name   string `json:"name"`
+	Image  string `json:"image"`
+	Status string `json:"status"`
+}
+
 func ServiceList(c echo.Context) error {
 	defer c.Request().Body.Close()
 
@@ -21,14 +27,14 @@ func ServiceList(c echo.Context) error {
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
-	id := c.QueryParam("id")
+	id := customSplit(c.QueryParam("id"), ",")
 	name := c.QueryParam("name")
 	status := c.QueryParam("status")
 
 	type Filter struct {
-		ID     string `json:"id"`
-		Name   string `json:"name" condition:"LIKE"`
-		Status string `json:"status"`
+		ID     []string `json:"id"`
+		Name   string   `json:"name" condition:"LIKE"`
+		Status string   `json:"status"`
 	}
 
 	service := models.Service{}
@@ -47,18 +53,29 @@ func ServiceList(c echo.Context) error {
 func ServiceNew(c echo.Context) error {
 	defer c.Request().Body.Close()
 
-	service := models.Service{}
+	servicePayload := ServicePayload{}
 
 	payloadRules := govalidator.MapData{
 		"name":   []string{"required"},
+		"image":  []string{"required"},
 		"status": []string{"required", "active_inactive"},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &service)
+	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
+	image := models.Image{
+		Image_string: servicePayload.Image,
+	}
+	image.Create()
+
+	service := models.Service{
+		Name:    servicePayload.Name,
+		ImageID: image.ID,
+		Status:  servicePayload.Status,
+	}
 	err := service.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
@@ -92,16 +109,35 @@ func ServicePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceId))
 	}
 
+	serviceImg := models.Image{}
+	err = serviceImg.FindbyID(int(service.ImageID))
+
+	servicePayload := ServicePayload{}
 	payloadRules := govalidator.MapData{
-		"name":   []string{"required"},
+		"name":   []string{},
+		"image":  []string{},
 		"status": []string{"active_inactive"},
 	}
-	validate := validateRequestPayload(c, payloadRules, &service)
+	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
+	if len(servicePayload.Name) > 0 {
+		service.Name = servicePayload.Name
+	}
+	if len(servicePayload.Image) > 0 {
+		serviceImg.Image_string = servicePayload.Image
+	}
+	if len(servicePayload.Status) > 0 {
+		service.Status = servicePayload.Status
+	}
+
 	err = service.Save()
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceId))
+	}
+	err = serviceImg.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceId))
 	}
