@@ -22,6 +22,14 @@ func AdminGroup(e *echo.Echo) {
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
 
+	//Borrowers
+	g.GET("/borrower", admin_handlers.BorrowerGetAll)
+	g.GET("/borrower/:borrower_id", admin_handlers.BorrowerGetDetails)
+
+	//Loans
+	g.GET("/loan", admin_handlers.LoanGetAll)
+	g.GET("/loan/:loan_id", admin_handlers.LoanGetDetails)
+
 	// Bank Types
 	g.GET("/bank_types", admin_handlers.BankTypeList)
 	g.POST("/bank_types", admin_handlers.BankTypeNew)
@@ -63,6 +71,13 @@ func AdminGroup(e *echo.Echo) {
 	// g.GET("/bank_products/:id", admin_handlers.BankProductDetail)
 	// g.PATCH("/bank_products/:id", admin_handlers.BankProductPatch)
 	// g.DELETE("/bank_products/:id", admin_handlers.BankProductDelete)
+
+	// Loan Purpose
+	g.GET("/loan_purposes", admin_handlers.LoanPurposeList)
+	g.POST("/loan_purposes", admin_handlers.LoanPurposeNew)
+	g.GET("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDetail)
+	g.PATCH("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposePatch)
+	g.DELETE("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDelete)
 
 	// Role
 	g.GET("/roles", admin_handlers.GetAllRole)
