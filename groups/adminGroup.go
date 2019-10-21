@@ -85,6 +85,7 @@ func AdminGroup(e *echo.Echo) {
 	g.GET("/roles/:role_id", admin_handlers.RoleGetDetails)
 	g.POST("/roles", admin_handlers.AddRole)
 	g.PATCH("/roles/:role_id", admin_handlers.UpdateRole)
+	g.GET("/roles_all", admin_handlers.GetAllData)
 
 	//Permission
 	g.GET("/permission", admin_handlers.GetAllPermission)
