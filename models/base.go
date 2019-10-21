@@ -74,12 +74,14 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			ID           uint64    `json:"id"`
 			Status       string    `json:"status"`
 			DisburseDate time.Time `json:"disburse_date"`
+			RejectReason string    `json:"reject_reason"`
 		}
 		if e, ok := i.(*Loan); ok {
 			payload = LoanStatusUpdate{
 				ID:           e.ID,
 				Status:       e.Status,
 				DisburseDate: e.DisburseDate,
+				RejectReason: e.RejectReason,
 			}
 		}
 		break
