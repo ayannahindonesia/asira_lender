@@ -1,14 +1,13 @@
 -- +goose Up
 -- SQL in this section is executed when the migration is applied.
 
-CREATE TABLE "internals" (
+CREATE TABLE "clients" (
     "id" bigserial,
-    "name" varchar(255) NOT NULL,
-    "role" varchar(255) NOT NULL,
-    "secret" varchar(255) NOT NULL,
-    "key" varchar(255) NOT NULL,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "name" varchar(255) NOT NULL,
+    "key" varchar(255) NOT NULL,
+    "secret" varchar(255) NOT NULL,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -236,7 +235,7 @@ DROP TABLE IF EXISTS "borrowers" CASCADE;
 DROP TABLE IF EXISTS "loan_purposes" CASCADE;
 DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
-DROP TABLE IF EXISTS "internals" CASCADE;
+DROP TABLE IF EXISTS "clients" CASCADE;
 DROP TABLE IF EXISTS "roles" CASCADE;
 DROP TABLE IF EXISTS "permissions" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;

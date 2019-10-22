@@ -33,11 +33,10 @@ func TestNewInternal(t *testing.T) {
 	payload := map[string]interface{}{
 		"name": "new client",
 		"key":  "client key",
-		"role": "client",
 	}
 
 	// normal scenario
-	obj := auth.POST("/admin/client_config").WithJSON(payload).
+	obj := auth.POST("/admin/client").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 	obj.ContainsKey("name").ValueEqual("name", "new client")
@@ -46,7 +45,7 @@ func TestNewInternal(t *testing.T) {
 	payload = map[string]interface{}{
 		"secret": "fawef",
 	}
-	auth.POST("/admin/client_config").WithJSON(payload).
+	auth.POST("/admin/client").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }

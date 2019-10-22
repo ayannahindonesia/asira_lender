@@ -18,23 +18,21 @@ import (
 
 func Seed() {
 	if asira.App.ENV == "development" {
-		// seed internals
-		internals := []models.Internals{
-			models.Internals{
+		// seed clients
+		clients := []models.Client{
+			models.Client{
 				Name:   "admin",
 				Key:    "adminkey",
-				Role:   "admin",
 				Secret: "adminsecret",
 			},
-			models.Internals{
+			models.Client{
 				Name:   "bank dashboard",
 				Key:    "reactkey",
-				Role:   "client",
 				Secret: "reactsecret",
 			},
 		}
-		for _, internal := range internals {
-			internal.Create()
+		for _, client := range clients {
+			client.Create()
 		}
 
 		// seed images
@@ -354,23 +352,21 @@ func Seed() {
 
 func TestSeed() {
 	if asira.App.ENV == "development" {
-		// seed internals
-		internals := []models.Internals{
-			models.Internals{
+		// seed clients
+		clients := []models.Client{
+			models.Client{
 				Name:   "admin",
 				Key:    "adminkey",
-				Role:   "admin",
 				Secret: "adminsecret",
 			},
-			models.Internals{
+			models.Client{
 				Name:   "bank dashboard",
 				Key:    "reactkey",
-				Role:   "client",
 				Secret: "reactsecret",
 			},
 		}
-		for _, internal := range internals {
-			internal.Create()
+		for _, client := range clients {
+			client.Create()
 		}
 
 		// seed images
@@ -921,7 +917,7 @@ func Truncate(tableList []string) (err error) {
 	if len(tableList) > 0 {
 		if tableList[0] == "all" {
 			tableList = []string{
-				"internals",
+				"clients",
 				"products",
 				"services",
 				"banks",

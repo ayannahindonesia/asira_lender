@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// AdminGroup func
 func AdminGroup(e *echo.Echo) {
 	g := e.Group("/admin")
 	middlewares.SetClientJWTmiddlewares(g, "admin")
@@ -17,8 +18,8 @@ func AdminGroup(e *echo.Echo) {
 	g.GET("/info", handlers.AsiraAppInfo)
 	g.GET("/profile", admin_handlers.AdminProfile)
 
-	// Internals Accounts Management
-	g.POST("/client_config", admin_handlers.CreateInternal)
+	// Client Management
+	g.POST("/client", admin_handlers.CreateClient)
 
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
