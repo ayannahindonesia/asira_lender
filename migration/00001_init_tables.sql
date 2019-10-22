@@ -161,6 +161,7 @@ CREATE TABLE "loans" (
     "loan_intention" varchar(255) NOT NULL,
     "intention_details" text NOT NULL,
     "disburse_date" timestamptz,
+    "disburse_status" varchar(255) DEFAULT ('processing'),
     "reject_reason" text,
     FOREIGN KEY ("owner") REFERENCES borrowers(id),
     FOREIGN KEY ("bank") REFERENCES banks(id),

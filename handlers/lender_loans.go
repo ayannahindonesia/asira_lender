@@ -229,3 +229,45 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, string(b))
 }
+
+func LenderLoanConfirmDisbursement(c echo.Context) error {
+	defer c.Request().Body.Close()
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+
+	loan_id, _ := strconv.Atoi(c.Param("loan_id"))
+
+	type Filter struct {
+		Bank           sql.NullInt64 `json:"bank"`
+		ID             int           `json:"id"`
+		Status         string        `json:"status"`
+		DisburseStatus string        `json:"disburse_status"`
+	}
+
+	loan := models.Loan{}
+	err := loan.FilterSearchSingle(&Filter{
+		Bank: sql.NullInt64{
+			Int64: int64(lenderID),
+			Valid: true,
+		},
+		ID:             loan_id,
+		Status:         "approved",
+		DisburseStatus: "processing", // only search for processing loan.
+	})
+
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+	}
+	if loan.ID == 0 {
+		return returnInvalidResponse(http.StatusNotFound, "", "not found")
+	}
+
+	loan.DisburseStatus = "confirmed"
+	loan.Save()
+
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loan_id, loan.DisburseStatus)})
+}

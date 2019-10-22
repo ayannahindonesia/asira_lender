@@ -20,6 +20,7 @@ func LenderGroup(e *echo.Echo) {
 	g.GET("/loanrequest_list", handlers.LenderLoanRequestList)
 	g.GET("/loanrequest_list/:loan_id/detail", handlers.LenderLoanRequestListDetail)
 	g.GET("/loanrequest_list/:loan_id/detail/:approve_reject", handlers.LenderLoanApproveReject)
+	g.GET("/loanrequest_list/:loan_id/detail/confirm_disbursement", handlers.LenderLoanConfirmDisbursement)
 	g.GET("/loanrequest_list/download", handlers.LenderLoanRequestListDownload)
 
 	// Borrowers endpoints

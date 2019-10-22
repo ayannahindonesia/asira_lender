@@ -27,6 +27,7 @@ type (
 		LoanIntention    string         `json:"loan_intention" gorm:"column:loan_intention;type:varchar(255);not null"`
 		IntentionDetails string         `json:"intention_details" gorm:"column:intention_details;type:text;not null"`
 		DisburseDate     time.Time      `json:"disburse_date" gorm:"column:disburse_date"`
+		DisburseStatus   string         `json:"disburse_status" gorm:"column:disburse_status" sql:"DEFAULT:'processing'"`
 		RejectReason     string         `json:"reject_reason" gorm:"column:reject_reason"`
 	}
 
