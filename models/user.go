@@ -13,7 +13,7 @@ type (
 		Email    string `json:"email" gorm:"column:email;type:varchar(255);unique;not null"`
 		Phone    string `json:"phone" gorm:"column:phone;type:varchar(255);unique;not null"`
 		Password string `json:"password" gorm:"column:password;type:text;not null"`
-		Status   bool   `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
+		Status   string `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
 	}
 )
 

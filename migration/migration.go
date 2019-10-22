@@ -16,6 +16,7 @@ import (
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
+// Seed func
 func Seed() {
 	if asira.App.ENV == "development" {
 		// seed clients
@@ -239,8 +240,6 @@ func Seed() {
 				Phone:               "081234567890",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoib",
-				Password:            "password",
 			},
 			models.Bank{
 				Name:                "Bank B",
@@ -254,8 +253,6 @@ func Seed() {
 				Phone:               "081234567891",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoic",
-				Password:            "password",
 			},
 		}
 		for _, lender := range lenders {
@@ -333,7 +330,7 @@ func Seed() {
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
 				Phone:    "081234567890",
-				Status:   true,
+				Status:   "active",
 			},
 			models.User{
 				RoleID:   2,
@@ -341,7 +338,17 @@ func Seed() {
 				Password: "password",
 				Email:    "asira@ayannah.com",
 				Phone:    "081234567891",
-				Status:   true,
+				Status:   "active",
+			},
+			models.User{
+				Username: "Banktoib",
+				Password: "password",
+				Status:   "active",
+			},
+			models.User{
+				Username: "Banktoic",
+				Password: "password",
+				Status:   "active",
 			},
 		}
 		for _, user := range users {
@@ -350,6 +357,7 @@ func Seed() {
 	}
 }
 
+// TestSeed func
 func TestSeed() {
 	if asira.App.ENV == "development" {
 		// seed clients
@@ -895,7 +903,7 @@ func TestSeed() {
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
 				Phone:    "081234567890",
-				Status:   true,
+				Status:   "active",
 			},
 			models.User{
 				RoleID:   2,
@@ -903,7 +911,17 @@ func TestSeed() {
 				Password: "password",
 				Email:    "asira@ayannah.com",
 				Phone:    "081234567890",
-				Status:   true,
+				Status:   "active",
+			},
+			models.User{
+				Username: "Banktoib",
+				Password: "password",
+				Status:   "active",
+			},
+			models.User{
+				Username: "Banktoic",
+				Password: "password",
+				Status:   "active",
 			},
 		}
 		for _, user := range users {
@@ -912,7 +930,7 @@ func TestSeed() {
 	}
 }
 
-// truncate defined tables. []string{"all"} to truncate all tables.
+// Truncate defined tables. []string{"all"} to truncate all tables.
 func Truncate(tableList []string) (err error) {
 	if len(tableList) > 0 {
 		if tableList[0] == "all" {

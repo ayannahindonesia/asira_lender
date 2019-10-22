@@ -45,8 +45,6 @@ CREATE TABLE "banks" (
     "convfee_setup" varchar(255),
     "services" int ARRAY,
     "products" int ARRAY,
-    "username" varchar(255) NOT NULL UNIQUE,
-    "password" text NOT NULL,
     FOREIGN KEY ("type") REFERENCES bank_types(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
@@ -149,7 +147,7 @@ CREATE TABLE "loans" (
     "owner_name" varchar(255),
     "bank" bigserial,
     "product" bigserial,
-    "status" varchar(255) DEFAULT  ('processing'),
+    "status" varchar(255) DEFAULT ('processing'),
     "loan_amount" FLOAT NOT NULL,
     "installment" int NOT NULL,
     "fees" jsonb DEFAULT '[]',
@@ -177,13 +175,12 @@ CREATE TABLE "loan_purposes" (
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
-
 CREATE TABLE "roles" (
     "id" bigserial,
     "name" varchar(255) NOT NULL,
     "description" text,
     "system" varchar(255),
-    "status" BOOLEAN,
+    "status" varchar(255),
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
@@ -202,11 +199,11 @@ CREATE TABLE "permissions" (
 CREATE TABLE "users" (
     "id" bigserial,
     "role_id" bigint,
-    "username" varchar(255) UNIQUE,
+    "username" varchar(255) NOT NULL UNIQUE,
+    "password" text NOT NULL,
     "email" varchar(255) UNIQUE,
     "phone" varchar(255) UNIQUE,
-    "password" text NOT NULL,
-    "status" BOOLEAN,
+    "status" varchar(255),
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("role_id") REFERENCES roles(id),
@@ -215,8 +212,8 @@ CREATE TABLE "users" (
 
 CREATE TABLE "user_relations" (
     "id" bigserial,
-    "bank_id" bigint,
-    "user_id" bigint,
+    "bank_id" bigserial,
+    "user_id" bigserial,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("bank_id") REFERENCES banks(id),
