@@ -110,6 +110,30 @@ func TestLenderApproveRejectLoan(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 }
 
+func TestLenderChangeDisburseDate(t *testing.T) {
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	lendertoken := getLenderLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+lendertoken)
+	})
+
+	auth.GET("/lender/loanrequest_list/1/detail/change_disburse_date").WithQuery("disburse_date", "2019-10-11").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+}
+
 func TestLenderConfirmDisbursement(t *testing.T) {
 	// RebuildData()
 

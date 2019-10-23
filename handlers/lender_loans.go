@@ -60,14 +60,17 @@ func LenderLoanRequestList(c echo.Context) error {
 	id := c.QueryParam("id")
 	start_date := c.QueryParam("start_date")
 	end_date := c.QueryParam("end_date")
+	start_disburse_date := c.QueryParam("start_disburse_date")
+	end_disburse_date := c.QueryParam("end_disburse_date")
 
 	type Filter struct {
-		Bank        sql.NullInt64           `json:"bank"`
-		Status      string                  `json:"status"`
-		Owner       string                  `json:"owner"`
-		OwnerName   string                  `json:"owner_name" condition:"LIKE"`
-		DateBetween basemodel.CompareFilter `json:"created_time" condition:"BETWEEN"`
-		ID          string                  `json:"id"`
+		Bank                sql.NullInt64           `json:"bank"`
+		Status              string                  `json:"status"`
+		Owner               string                  `json:"owner"`
+		OwnerName           string                  `json:"owner_name" condition:"LIKE"`
+		DateBetween         basemodel.CompareFilter `json:"created_time" condition:"BETWEEN"`
+		DisburseDateBetween basemodel.CompareFilter `json:"disburse_date" condition:"BETWEEN"`
+		ID                  string                  `json:"id"`
 	}
 
 	loan := models.Loan{}
@@ -83,6 +86,10 @@ func LenderLoanRequestList(c echo.Context) error {
 		DateBetween: basemodel.CompareFilter{
 			Value1: start_date,
 			Value2: end_date,
+		},
+		DisburseDateBetween: basemodel.CompareFilter{
+			Value1: start_disburse_date,
+			Value2: end_disburse_date,
 		},
 	})
 
@@ -214,6 +221,13 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 			db = db.Where("l.created_time BETWEEN ? AND ?", start_date, start_date)
 		}
 	}
+	if start_disburse_date := c.QueryParam("start_disburse_date"); len(start_disburse_date) > 0 {
+		if end_disburse_date := c.QueryParam("end_disburse_date"); len(end_disburse_date) > 0 {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, end_disburse_date)
+		} else {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, start_disburse_date)
+		}
+	}
 	orderby := c.QueryParam("orderby")
 	sort := c.QueryParam("sort")
 	if len(orderby) > 0 && len(sort) > 0 {
@@ -270,4 +284,45 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 	loan.Save()
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loan_id, loan.DisburseStatus)})
+}
+
+// LenderLoanChangeDisburseDate func
+func LenderLoanChangeDisburseDate(c echo.Context) error {
+	defer c.Request().Body.Close()
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+
+	loan_id, err := strconv.Atoi(c.Param("loan_id"))
+
+	type Filter struct {
+		Bank sql.NullInt64 `json:"bank"`
+		ID   int           `json:"id"`
+	}
+
+	loan := models.Loan{}
+	err = loan.FilterSearchSingle(&Filter{
+		Bank: sql.NullInt64{
+			Int64: int64(lenderID),
+			Valid: true,
+		},
+		ID: loan_id,
+	})
+
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+	}
+
+	disburseDate, err := time.Parse("2006-01-02", c.QueryParam("disburse_date"))
+	if err != nil {
+		return returnInvalidResponse(http.StatusBadRequest, err, "error parsing disburse date")
+	}
+	if err = loan.ChangeDisburseDate(disburseDate); err != nil {
+		return returnInvalidResponse(http.StatusBadRequest, err, "error changing disburse date")
+	}
+
+	return c.JSON(http.StatusOK, loan)
 }
