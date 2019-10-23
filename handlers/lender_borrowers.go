@@ -85,13 +85,13 @@ func LenderBorrowerList(c echo.Context) error {
 	// filters
 	fullname := c.QueryParam("fullname")
 	status := c.QueryParam("status")
-	id := customSplit(c.QueryParam("id"), ",")
+	id := c.QueryParam("id")
 
 	type Filter struct {
 		Bank     sql.NullInt64 `json:"bank"`
 		Fullname string        `json:"fullname" condition:"LIKE"`
 		Status   string        `json:"status"`
-		ID       []string      `json:"id"`
+		ID       string        `json:"id"`
 	}
 
 	borrower := models.Borrower{}
