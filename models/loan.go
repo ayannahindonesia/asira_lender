@@ -114,6 +114,7 @@ func (l *Loan) Reject(reason string) error {
 func (l *Loan) ChangeDisburseDate(disburseDate time.Time) (err error) {
 	if l.DisburseDateChanged != true {
 		l.DisburseDate = disburseDate
+		l.DisburseDateChanged = true
 
 		err = l.Save()
 		if err != nil {
