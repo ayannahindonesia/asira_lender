@@ -299,8 +299,9 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	loan_id, err := strconv.Atoi(c.Param("loan_id"))
 
 	type Filter struct {
-		Bank sql.NullInt64 `json:"bank"`
-		ID   int           `json:"id"`
+		Bank           sql.NullInt64 `json:"bank"`
+		ID             int           `json:"id"`
+		DisburseStatus bool          `json:"disburse_status"`
 	}
 
 	loan := models.Loan{}
@@ -309,7 +310,8 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 			Int64: int64(lenderID),
 			Valid: true,
 		},
-		ID: loan_id,
+		ID:             loan_id,
+		DisburseStatus: false,
 	})
 
 	if err != nil {

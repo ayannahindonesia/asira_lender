@@ -83,6 +83,13 @@ func ConvenienceFeeReport(c echo.Context) error {
 		}
 		db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
 	}
+	if start_disburse_date := c.QueryParam("start_disburse_date"); len(start_disburse_date) > 0 {
+		if end_disburse_date := c.QueryParam("end_disburse_date"); len(end_disburse_date) > 0 {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, end_disburse_date)
+		} else {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, start_disburse_date)
+		}
+	}
 
 	if rows > 0 && offset > 0 {
 		db = db.Limit(rows).Offset(offset)
