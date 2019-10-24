@@ -21,7 +21,10 @@ func LenderProfile(c echo.Context) error {
 	lenderModel := models.Bank{}
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
-	err := lenderModel.FindbyID(lenderID)
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err := lenderModel.FindbyID(int(bankRep.BankID))
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
@@ -39,7 +42,10 @@ func LenderProfileEdit(c echo.Context) error {
 	lenderModel := models.Bank{}
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
-	err := lenderModel.FindbyID(lenderID)
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err := lenderModel.FindbyID(int(bankRep.BankID))
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}

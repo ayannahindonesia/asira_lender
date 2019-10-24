@@ -71,7 +71,7 @@ func AddUser(c echo.Context) error {
 		"username": []string{"required", "unique:users,username"},
 		"email":    []string{"required", "unique:users,email"},
 		"phone":    []string{"required", "unique:users,phone"},
-		"role_id":  []string{"required", "role_id"},
+		"role_id":  []string{"required"},
 		"status":   []string{},
 	}
 
@@ -113,7 +113,7 @@ func UpdateUser(c echo.Context) error {
 		"username": []string{"required", "unique:users,username,1"},
 		"email":    []string{"required", "unique:users,email,1"},
 		"phone":    []string{"required", "unique:users,phone,1"},
-		"role_id":  []string{"required", "role_id"},
+		"role_id":  []string{"required"},
 		"status":   []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &userM)

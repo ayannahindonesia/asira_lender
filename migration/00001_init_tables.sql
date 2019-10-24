@@ -198,19 +198,18 @@ CREATE TABLE "permissions" (
 
 CREATE TABLE "users" (
     "id" bigserial,
-    "role_id" bigint,
+    "role_id" int ARRAY,
     "username" varchar(255) NOT NULL UNIQUE,
     "password" text NOT NULL,
-    "email" varchar(255) UNIQUE,
-    "phone" varchar(255) UNIQUE,
+    "email" varchar(255),
+    "phone" varchar(255),
     "status" varchar(255),
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY ("role_id") REFERENCES roles(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
-CREATE TABLE "user_relations" (
+CREATE TABLE "bank_representatives" (
     "id" bigserial,
     "bank_id" bigserial,
     "user_id" bigserial,
@@ -236,4 +235,4 @@ DROP TABLE IF EXISTS "clients" CASCADE;
 DROP TABLE IF EXISTS "roles" CASCADE;
 DROP TABLE IF EXISTS "permissions" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
-DROP TABLE IF EXISTS "user_relations" CASCADE;
+DROP TABLE IF EXISTS "bank_representatives" CASCADE;

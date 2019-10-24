@@ -325,7 +325,7 @@ func Seed() {
 
 		users := []models.User{
 			models.User{
-				RoleID:   1,
+				RoleID:   pq.Int64Array{1},
 				Username: "adminkey",
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
@@ -333,7 +333,7 @@ func Seed() {
 				Status:   "active",
 			},
 			models.User{
-				RoleID:   2,
+				RoleID:   pq.Int64Array{2},
 				Username: "manager",
 				Password: "password",
 				Email:    "asira@ayannah.com",
@@ -353,6 +353,20 @@ func Seed() {
 		}
 		for _, user := range users {
 			user.Create()
+		}
+
+		bankReps := []models.BankRepresentatives{
+			models.BankRepresentatives{
+				UserID: 3,
+				BankID: 1,
+			},
+			models.BankRepresentatives{
+				UserID: 4,
+				BankID: 2,
+			},
+		}
+		for _, bankRep := range bankReps {
+			bankRep.Create()
 		}
 	}
 }
@@ -551,8 +565,6 @@ func TestSeed() {
 				Phone:               "081234567890",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoib",
-				Password:            "password",
 			},
 			models.Bank{
 				Name:                "Bank B",
@@ -566,8 +578,6 @@ func TestSeed() {
 				Phone:               "081234567891",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoic",
-				Password:            "password",
 			},
 		}
 		for _, lender := range lenders {
@@ -898,7 +908,7 @@ func TestSeed() {
 
 		users := []models.User{
 			models.User{
-				RoleID:   1,
+				RoleID:   pq.Int64Array{1},
 				Username: "adminkey",
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
@@ -906,7 +916,7 @@ func TestSeed() {
 				Status:   "active",
 			},
 			models.User{
-				RoleID:   2,
+				RoleID:   pq.Int64Array{2},
 				Username: "manager",
 				Password: "password",
 				Email:    "asira@ayannah.com",
@@ -927,6 +937,20 @@ func TestSeed() {
 		for _, user := range users {
 			user.Create()
 		}
+
+		bankReps := []models.BankRepresentatives{
+			models.BankRepresentatives{
+				UserID: 3,
+				BankID: 1,
+			},
+			models.BankRepresentatives{
+				UserID: 4,
+				BankID: 2,
+			},
+		}
+		for _, bankRep := range bankReps {
+			bankRep.Create()
+		}
 	}
 }
 
@@ -946,7 +970,7 @@ func Truncate(tableList []string) (err error) {
 				"roles",
 				"permissions",
 				"users",
-				"user_relations",
+				"bank_representatives",
 				"loan_purposes",
 			}
 		}

@@ -73,8 +73,8 @@ func TestNewUser(t *testing.T) {
 		"username": "test user",
 		"email":    "testuser@ayannah.id",
 		"phone":    "08111",
-		"status":   true,
-		"role_id":  1,
+		"status":   "active",
+		"role_id":  []int{1},
 	}
 
 	// normal scenario
@@ -150,8 +150,8 @@ func TestPatchUser(t *testing.T) {
 		"username": "finance1",
 		"email":    "finance@ayannah.id",
 		"phone":    "08111",
-		"status":   true,
-		"role_id":  1,
+		"status":   "inactive",
+		"role_id":  []int{1},
 	}
 
 	// valid response

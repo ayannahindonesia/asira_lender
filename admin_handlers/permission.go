@@ -69,7 +69,7 @@ func AddPermission(c echo.Context) error {
 	valPermissions := validatePermissions{}
 
 	payloadRules := govalidator.MapData{
-		"role_id":     []string{"required", "role_id", "numeric"},
+		"role_id":     []string{"required", "valid_id:roles", "numeric"},
 		"permissions": []string{},
 	}
 
@@ -103,7 +103,7 @@ func UpdatePermission(c echo.Context) error {
 	Permissions := []models.Permissions{}
 
 	payloadRules := govalidator.MapData{
-		"role_id":     []string{"required", "role_id", "numeric"},
+		"role_id":     []string{"required", "valid_id:roles", "numeric"},
 		"permissions": []string{},
 	}
 

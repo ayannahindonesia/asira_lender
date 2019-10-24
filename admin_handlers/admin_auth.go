@@ -51,13 +51,12 @@ func AdminLogin(c echo.Context) error {
 			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
 		}
 
-		if user.Status == false {
+		if user.Status == "inactive" {
 			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
 		}
 
 		tokenrole := "admin"
-		RoleID := strconv.Itoa(user.RoleID)
-		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), tokenrole, RoleID)
+		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), tokenrole, "1")
 		if err != nil {
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}

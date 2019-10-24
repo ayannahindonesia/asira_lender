@@ -114,10 +114,6 @@ func BankPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank %v tidak ditemukan", bank_id))
 	}
 
-	// dont allow admin to change bank credentials
-	tempUsername := bank.Username
-	tempPassword := bank.Password
-
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
 		"type":           []string{"valid_id:bank_types"},
@@ -136,9 +132,6 @@ func BankPatch(c echo.Context) error {
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
-
-	bank.Username = tempUsername
-	bank.Password = tempPassword
 
 	err = bank.Save()
 	if err != nil {

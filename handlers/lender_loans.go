@@ -46,6 +46,8 @@ func LenderLoanRequestList(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -73,7 +75,7 @@ func LenderLoanRequestList(c echo.Context) error {
 	loan := models.Loan{}
 	result, err := loan.PagedFilterSearch(page, rows, orderby, sort, &Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		Owner:     owner,
@@ -101,6 +103,8 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	loan_id, err := strconv.Atoi(c.Param("loan_id"))
 
@@ -112,7 +116,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	loan := models.Loan{}
 	err = loan.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		ID: loan_id,
@@ -133,6 +137,8 @@ func LenderLoanApproveReject(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	loan_id, _ := strconv.Atoi(c.Param("loan_id"))
 
@@ -145,7 +151,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 	loan := models.Loan{}
 	err := loan.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		ID:     loan_id,
@@ -187,6 +193,8 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	db := asira.App.DB
 	var results []LoanRequestListCSV
@@ -195,7 +203,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Select("l.id, l.owner_name, ba.name as bank_name, l.status, l.loan_amount, l.installment, l.total_loan, l.due_date, l.layaway_plan, l.loan_intention, l.intention_details, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
 		Joins("INNER JOIN borrowers b ON b.id = l.owner").
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").
-		Where("b.id = ?", lenderID)
+		Where("b.id = ?", bankRep.BankID)
 
 	// filters
 	if status := c.QueryParam("status"); len(status) > 0 {

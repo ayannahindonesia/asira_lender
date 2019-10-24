@@ -120,6 +120,8 @@ func LenderBorrowerListDetail(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	borrower_id, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
@@ -133,7 +135,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 	borrower := models.Borrower{}
 	err = borrower.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		ID: borrower_id,
