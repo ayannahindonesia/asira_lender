@@ -195,7 +195,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Select("l.id, l.owner_name, ba.name as bank_name, l.status, l.loan_amount, l.installment, l.total_loan, l.due_date, l.layaway_plan, l.loan_intention, l.intention_details, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
 		Joins("INNER JOIN borrowers b ON b.id = l.owner").
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").
-		Where("b.id = ?", lenderID)
+		Where("ba.id = ?", lenderID)
 
 	// filters
 	if status := c.QueryParam("status"); len(status) > 0 {
