@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"asira_lender/asira"
-	"asira_lender/permission"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -28,7 +28,6 @@ func SetClientJWTmiddlewares(g *echo.Group, role string) {
 		break
 	case "admin":
 		g.Use(validateJWTadmin)
-		g.Use(permission.ValidatePermissions)
 		break
 	}
 }
@@ -39,10 +38,10 @@ func validateJWTadmin(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["role"] == "admin" {
+			if claims["group"] == "admin" {
 				return next(c)
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid role"))
+				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
 		}
 
@@ -56,10 +55,10 @@ func validateJWTclient(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["role"] == "client" {
+			if claims["group"] == "client" {
 				return next(c)
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid role"))
+				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
 		}
 
@@ -73,13 +72,31 @@ func validateJWTlender(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["role"] == "lender" {
+			if claims["group"] == "lender" {
 				return next(c)
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid role"))
+				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
 		}
 
 		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
+	}
+}
+
+func validatePermission(next echo.HandlerFunc, permission string) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user := c.Get("user")
+		token := user.(*jwt.Token)
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			for i := range claims["permissions"].([]interface{}) {
+				if strings.ToLower(claims["permissions"].([]interface{})[i].(string)) == strings.ToLower(permission) || strings.ToLower(claims["permissions"].([]interface{})[i].(string)) == "all" {
+					return next(c)
+				}
+			}
+			return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid permission"))
+		}
+
+		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid permission"))
 	}
 }

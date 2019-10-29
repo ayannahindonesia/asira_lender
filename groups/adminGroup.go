@@ -76,9 +76,6 @@ func AdminGroup(e *echo.Echo) {
 
 	//Permission
 	g.GET("/permission", admin_handlers.GetAllPermission)
-	g.GET("/permission/:permission_id", admin_handlers.PermissionGetDetails)
-	g.POST("/permission", admin_handlers.AddPermission)
-	g.PATCH("/permission", admin_handlers.UpdatePermission)
 
 	// User
 	g.GET("/users", admin_handlers.GetAllUser)

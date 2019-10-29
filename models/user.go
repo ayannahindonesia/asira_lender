@@ -9,7 +9,7 @@ import (
 type (
 	User struct {
 		basemodel.BaseModel
-		RoleID   pq.Int64Array `json:"role_id" gorm:"column:role_id"`
+		Roles    pq.Int64Array `json:"roles" gorm:"column:roles"`
 		Username string        `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
 		Email    string        `json:"email" gorm:"column:email;type:varchar(255)"`
 		Phone    string        `json:"phone" gorm:"column:phone;type:varchar(255)"`

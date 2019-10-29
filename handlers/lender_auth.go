@@ -51,7 +51,7 @@ func LenderLogin(c echo.Context) error {
 			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
 		}
 
-		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "lender")
+		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "users")
 		if err != nil {
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}

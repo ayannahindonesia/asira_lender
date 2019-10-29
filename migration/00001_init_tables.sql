@@ -177,35 +177,26 @@ CREATE TABLE "loan_purposes" (
 
 CREATE TABLE "roles" (
     "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "name" varchar(255) NOT NULL,
     "description" text,
     "system" varchar(255),
     "status" varchar(255),
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("id")
-) WITH (OIDS = FALSE);
-
-CREATE TABLE "permissions" (
-    "id" bigserial,
-    "role_id" bigint,
-    "permissions" varchar(255),
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY ("role_id") REFERENCES roles(id),
+    "permissions" varchar(255) ARRAY,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
 CREATE TABLE "users" (
     "id" bigserial,
-    "role_id" int ARRAY,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "roles" int ARRAY,
     "username" varchar(255) NOT NULL UNIQUE,
     "password" text NOT NULL,
     "email" varchar(255),
     "phone" varchar(255),
     "status" varchar(255),
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -233,6 +224,5 @@ DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
 DROP TABLE IF EXISTS "clients" CASCADE;
 DROP TABLE IF EXISTS "roles" CASCADE;
-DROP TABLE IF EXISTS "permissions" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "bank_representatives" CASCADE;

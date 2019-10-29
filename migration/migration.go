@@ -262,70 +262,26 @@ func Seed() {
 		roles := []models.Roles{
 			models.Roles{
 				Name:        "Core",
-				Status:      true,
+				Status:      "active",
 				Description: "ini Super Admin",
 				System:      "Core",
+				Permissions: pq.StringArray{"all"},
 			},
 			models.Roles{
-				Name:        "Manager",
-				Status:      true,
+				Name:        "Banker",
+				Status:      "active",
 				Description: "ini untuk Finance",
-				System:      "Core",
+				System:      "Dashboard",
+				Permissions: pq.StringArray{"bank_type_list"},
 			},
 		}
 		for _, role := range roles {
 			role.Create()
 		}
 
-		permis := []models.Permissions{
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Edit",
-			},
-			models.Permissions{
-				RoleID:      1,
-				Permissions: "All",
-			},
-		}
-		for _, per := range permis {
-			per.Create()
-		}
-
 		users := []models.User{
 			models.User{
-				RoleID:   pq.Int64Array{1},
+				Roles:    pq.Int64Array{1},
 				Username: "adminkey",
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
@@ -333,7 +289,7 @@ func Seed() {
 				Status:   "active",
 			},
 			models.User{
-				RoleID:   pq.Int64Array{2},
+				Roles:    pq.Int64Array{2},
 				Username: "manager",
 				Password: "password",
 				Email:    "asira@ayannah.com",
@@ -845,70 +801,26 @@ func TestSeed() {
 		roles := []models.Roles{
 			models.Roles{
 				Name:        "Core",
-				Status:      true,
-				Description: "ini Super Admin",
+				Status:      "active",
+				Description: "Super Admin",
 				System:      "Core",
+				Permissions: pq.StringArray{"all"},
 			},
 			models.Roles{
-				Name:        "Manager",
-				Status:      true,
+				Name:        "Banker",
+				Status:      "active",
 				Description: "ini untuk Finance",
-				System:      "Core",
+				System:      "Dashboard",
+				Permissions: pq.StringArray{"bank_type_list"},
 			},
 		}
 		for _, role := range roles {
 			role.Create()
 		}
 
-		permis := []models.Permissions{
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Edit",
-			},
-			models.Permissions{
-				RoleID:      1,
-				Permissions: "All",
-			},
-		}
-		for _, per := range permis {
-			per.Create()
-		}
-
 		users := []models.User{
 			models.User{
-				RoleID:   pq.Int64Array{1},
+				Roles:    pq.Int64Array{1},
 				Username: "adminkey",
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
@@ -916,7 +828,7 @@ func TestSeed() {
 				Status:   "active",
 			},
 			models.User{
-				RoleID:   pq.Int64Array{2},
+				Roles:    pq.Int64Array{2},
 				Username: "manager",
 				Password: "password",
 				Email:    "asira@ayannah.com",
@@ -968,7 +880,6 @@ func Truncate(tableList []string) (err error) {
 				"loans",
 				"images",
 				"roles",
-				"permissions",
 				"users",
 				"bank_representatives",
 				"loan_purposes",

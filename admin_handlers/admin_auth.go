@@ -55,8 +55,7 @@ func AdminLogin(c echo.Context) error {
 			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
 		}
 
-		tokenrole := "admin"
-		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), tokenrole, "1")
+		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), "users")
 		if err != nil {
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}
