@@ -10,6 +10,10 @@ import (
 
 func GetAllPermission(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_get_all_permission")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	permissions := asira.App.Permission.GetStringMap(fmt.Sprintf("%s", "permissions"))
 

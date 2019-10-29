@@ -24,11 +24,11 @@ func AdminGroup(e *echo.Echo) {
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
 
-	//Borrowers
+	// Borrowers
 	g.GET("/borrower", admin_handlers.BorrowerGetAll)
 	g.GET("/borrower/:borrower_id", admin_handlers.BorrowerGetDetails)
 
-	//Loans
+	// Loans
 	g.GET("/loan", admin_handlers.LoanGetAll)
 	g.GET("/loan/:loan_id", admin_handlers.LoanGetDetails)
 
@@ -74,7 +74,7 @@ func AdminGroup(e *echo.Echo) {
 	g.PATCH("/roles/:role_id", admin_handlers.UpdateRole)
 	g.GET("/roles_all", admin_handlers.GetAllData)
 
-	//Permission
+	// Permission
 	g.GET("/permission", admin_handlers.GetAllPermission)
 
 	// User

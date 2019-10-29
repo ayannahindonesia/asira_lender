@@ -19,6 +19,10 @@ type ServicePayload struct {
 
 func ServiceList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_service_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -52,6 +56,10 @@ func ServiceList(c echo.Context) error {
 
 func ServiceNew(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_service_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	servicePayload := ServicePayload{}
 
@@ -76,7 +84,7 @@ func ServiceNew(c echo.Context) error {
 		ImageID: image.ID,
 		Status:  servicePayload.Status,
 	}
-	err := service.Create()
+	err = service.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
 	}
@@ -86,11 +94,15 @@ func ServiceNew(c echo.Context) error {
 
 func ServiceDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_service_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	serviceId, _ := strconv.Atoi(c.Param("id"))
 
 	service := models.Service{}
-	err := service.FindbyID(serviceId)
+	err = service.FindbyID(serviceId)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceId))
 	}
@@ -100,11 +112,15 @@ func ServiceDetail(c echo.Context) error {
 
 func ServicePatch(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_service_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	serviceId, _ := strconv.Atoi(c.Param("id"))
 
 	service := models.Service{}
-	err := service.FindbyID(serviceId)
+	err = service.FindbyID(serviceId)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceId))
 	}
@@ -147,11 +163,15 @@ func ServicePatch(c echo.Context) error {
 
 func ServiceDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_service_delete")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	serviceId, _ := strconv.Atoi(c.Param("id"))
 
 	service := models.Service{}
-	err := service.FindbyID(serviceId)
+	err = service.FindbyID(serviceId)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", serviceId))
 	}

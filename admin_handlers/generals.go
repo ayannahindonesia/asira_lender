@@ -131,3 +131,22 @@ func customSplit(str string, separator string) []string {
 
 	return split
 }
+
+func validatePermission(c echo.Context, permission string) error {
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if claimPermissions, ok := claims["permissions"]; ok {
+			s := strings.Split(strings.Trim(fmt.Sprintf("%v", claimPermissions), "[]"), " ")
+			for _, v := range s {
+				if strings.ToLower(v) == strings.ToLower(permission) || strings.ToLower(v) == "all" {
+					return nil
+				}
+			}
+		}
+		return fmt.Errorf("Permission Denied")
+	}
+
+	return fmt.Errorf("Permission Denied")
+}

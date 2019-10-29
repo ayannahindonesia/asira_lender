@@ -4,7 +4,6 @@ import (
 	"asira_lender/asira"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -72,7 +71,7 @@ func validateJWTlender(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["group"] == "lender" {
+			if claims["group"] == "users" {
 				return next(c)
 			} else {
 				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
@@ -80,23 +79,5 @@ func validateJWTlender(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
-	}
-}
-
-func validatePermission(next echo.HandlerFunc, permission string) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		user := c.Get("user")
-		token := user.(*jwt.Token)
-
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			for i := range claims["permissions"].([]interface{}) {
-				if strings.ToLower(claims["permissions"].([]interface{})[i].(string)) == strings.ToLower(permission) || strings.ToLower(claims["permissions"].([]interface{})[i].(string)) == "all" {
-					return next(c)
-				}
-			}
-			return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid permission"))
-		}
-
-		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid permission"))
 	}
 }

@@ -14,6 +14,10 @@ import (
 
 func GetAllUser(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_get_all_user")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	userM := models.User{}
 	// pagination parameters
@@ -50,11 +54,15 @@ func GetAllUser(c echo.Context) error {
 
 func UserGetDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_user_get_details")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	userM := models.User{}
 
 	userID, _ := strconv.Atoi(c.Param("user_id"))
-	err := userM.FindbyID(userID)
+	err = userM.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
 	}
@@ -64,6 +72,10 @@ func UserGetDetails(c echo.Context) error {
 
 func AddUser(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_add_user")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	userM := models.User{}
 
@@ -82,7 +94,7 @@ func AddUser(c echo.Context) error {
 	tempPW := RandString(8)
 	userM.Password = tempPW
 
-	err := userM.Create()
+	err = userM.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat User")
 	}
@@ -101,10 +113,15 @@ func AddUser(c echo.Context) error {
 
 func UpdateUser(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_update_user")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
 	userID, _ := strconv.Atoi(c.Param("user_id"))
 
 	userM := models.User{}
-	err := userM.FindbyID(userID)
+	err = userM.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}

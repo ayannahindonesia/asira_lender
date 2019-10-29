@@ -4,6 +4,7 @@ import (
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -70,6 +71,10 @@ type (
 
 func LenderBorrowerList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_borrower_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -114,6 +119,10 @@ func LenderBorrowerList(c echo.Context) error {
 
 func LenderBorrowerListDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_borrower_list_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -150,6 +159,11 @@ func LenderBorrowerListDetail(c echo.Context) error {
 
 func LenderBorrowerListDownload(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_borrower_list_download")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
 	user := c.Get("user")
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)

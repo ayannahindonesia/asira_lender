@@ -40,6 +40,10 @@ type (
 
 func LenderLoanRequestList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_request_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -97,6 +101,10 @@ func LenderLoanRequestList(c echo.Context) error {
 
 func LenderLoanRequestListDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_request_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -131,6 +139,10 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 
 func LenderLoanApproveReject(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_approve_reject")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -149,7 +161,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 	}
 
 	loan := models.Loan{}
-	err := loan.FilterSearchSingle(&Filter{
+	err = loan.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
 			Int64: int64(bankRep.BankID),
 			Valid: true,
@@ -185,8 +197,13 @@ func LenderLoanApproveReject(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loan_id, loan.Status)})
 }
+
 func LenderLoanRequestListDownload(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_request_list_download")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)

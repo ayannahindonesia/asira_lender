@@ -2,6 +2,7 @@ package admin_handlers
 
 import (
 	"asira_lender/models"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -11,6 +12,10 @@ import (
 // CreateClient func
 func CreateClient(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_create_client")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	client := models.Client{}
 
@@ -25,7 +30,7 @@ func CreateClient(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := client.Create()
+	err = client.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Client Config")
 	}

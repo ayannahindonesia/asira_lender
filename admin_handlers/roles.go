@@ -12,6 +12,10 @@ import (
 
 func GetAllRole(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_get_all_role")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	Iroles := models.Roles{}
 	// pagination parameters
@@ -45,11 +49,15 @@ func GetAllRole(c echo.Context) error {
 
 func RoleGetDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_role_get_details")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	Iroles := models.Roles{}
 
 	IrolesID, _ := strconv.Atoi(c.Param("role_id"))
-	err := Iroles.FindbyID(IrolesID)
+	err = Iroles.FindbyID(IrolesID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Role ID tidak ditemukan")
 	}
@@ -59,6 +67,10 @@ func RoleGetDetails(c echo.Context) error {
 
 func AddRole(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_add_role")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	Iroles := models.Roles{}
 
@@ -74,7 +86,7 @@ func AddRole(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := Iroles.Create()
+	err = Iroles.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Internal Roles")
 	}
@@ -84,10 +96,15 @@ func AddRole(c echo.Context) error {
 
 func UpdateRole(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_update_role")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
 	Iroles_id, _ := strconv.Atoi(c.Param("role_id"))
 
 	Iroles := models.Roles{}
-	err := Iroles.FindbyID(Iroles_id)
+	err = Iroles.FindbyID(Iroles_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Internal Role %v tidak ditemukan", Iroles_id))
 	}
@@ -114,6 +131,10 @@ func UpdateRole(c echo.Context) error {
 
 func GetAllData(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_get_all_data")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	Iroles := models.Roles{}
 	// pagination parameters
