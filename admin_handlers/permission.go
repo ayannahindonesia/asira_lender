@@ -8,9 +8,9 @@ import (
 	"github.com/labstack/echo"
 )
 
-func GetAllPermission(c echo.Context) error {
+func PermissionList(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_get_all_permission")
+	err := validatePermission(c, "core_permission_list")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}

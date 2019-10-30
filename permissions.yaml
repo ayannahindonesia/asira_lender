@@ -39,14 +39,14 @@ permissions:
   core_loan_purpose_detail: core_loan_purpose_detail
   core_loan_purpose_patch: core_loan_purpose_patch
   core_loan_purpose_delete: core_loan_purpose_delete
-  core_get_all_role: core_get_all_role
-  core_role_get_details: core_role_get_details
-  core_add_role: core_add_role
-  core_update_role: core_update_role
-  core_get_all_data: core_get_all_data
-  core_get_all_permission: core_get_all_permission
-  core_get_all_user: core_get_all_user
-  core_user_get_details: core_user_get_details
-  core_add_user: core_add_user
-  core_update_user: core_update_user
+  core_role_list: core_role_list
+  core_role_details: core_role_details
+  core_role_new: core_role_new
+  core_role_patch: core_role_patch
+  core_role_range: core_role_range
+  core_permission_list: core_permission_list
+  core_user_list: core_user_list
+  core_user_details: core_user_details
+  core_user_new: core_user_new
+  core_user_patch: core_user_patch
   convenience_fee_report: convenience_fee_report

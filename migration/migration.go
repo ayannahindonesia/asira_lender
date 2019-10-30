@@ -261,18 +261,25 @@ func Seed() {
 
 		roles := []models.Roles{
 			models.Roles{
-				Name:        "Core",
+				Name:        "Administrator",
 				Status:      "active",
-				Description: "ini Super Admin",
+				Description: "Super Admin",
 				System:      "Core",
 				Permissions: pq.StringArray{"all"},
+			},
+			models.Roles{
+				Name:        "Ops",
+				Status:      "active",
+				Description: "Ops",
+				System:      "Core",
+				Permissions: pq.StringArray{"core_create_client", "core_view_image", "core_borrower_get_all", "core_borrower_get_details", "core_loan_get_all", "core_loan_get_details", "core_bank_type_list", "core_bank_type_new", "core_bank_type_detail", "core_bank_type_patch", "core_bank_list", "core_bank_new", "core_bank_detail", "core_bank_patch", "core_service_list", "core_service_new", "core_service_detail", "core_service_patch", "core_product_list", "core_product_new", "core_product_detail", "core_product_patch", "core_loan_purpose_list", "core_loan_purpose_new", "core_loan_purpose_detail", "core_loan_purpose_patch", "core_role_list", "core_role_details", "core_role_new", "core_role_patch", "core_role_range", "core_permission_list", "core_user_list", "core_user_details", "core_user_new", "core_user_patch", "convenience_fee_report"},
 			},
 			models.Roles{
 				Name:        "Banker",
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"bank_type_list"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download"},
 			},
 		}
 		for _, role := range roles {
@@ -290,18 +297,20 @@ func Seed() {
 			},
 			models.User{
 				Roles:    pq.Int64Array{2},
-				Username: "manager",
+				Username: "viewer",
 				Password: "password",
 				Email:    "asira@ayannah.com",
 				Phone:    "081234567891",
 				Status:   "active",
 			},
 			models.User{
+				Roles:    pq.Int64Array{3},
 				Username: "Banktoib",
 				Password: "password",
 				Status:   "active",
 			},
 			models.User{
+				Roles:    pq.Int64Array{3},
 				Username: "Banktoic",
 				Password: "password",
 				Status:   "active",
@@ -800,18 +809,25 @@ func TestSeed() {
 
 		roles := []models.Roles{
 			models.Roles{
-				Name:        "Core",
+				Name:        "Administrator",
 				Status:      "active",
 				Description: "Super Admin",
 				System:      "Core",
 				Permissions: pq.StringArray{"all"},
 			},
 			models.Roles{
+				Name:        "Ops",
+				Status:      "active",
+				Description: "Ops",
+				System:      "Core",
+				Permissions: pq.StringArray{"core_create_client", "core_view_image", "core_borrower_get_all", "core_borrower_get_details", "core_loan_get_all", "core_loan_get_details", "core_bank_type_list", "core_bank_type_new", "core_bank_type_detail", "core_bank_type_patch", "core_bank_list", "core_bank_new", "core_bank_detail", "core_bank_patch", "core_service_list", "core_service_new", "core_service_detail", "core_service_patch", "core_product_list", "core_product_new", "core_product_detail", "core_product_patch", "core_loan_purpose_list", "core_loan_purpose_new", "core_loan_purpose_detail", "core_loan_purpose_patch", "core_role_list", "core_role_details", "core_role_new", "core_role_patch", "core_role_range", "core_permission_list", "core_user_list", "core_user_details", "core_user_new", "core_user_patch", "convenience_fee_report"},
+			},
+			models.Roles{
 				Name:        "Banker",
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"bank_type_list"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download"},
 			},
 		}
 		for _, role := range roles {
@@ -829,18 +845,20 @@ func TestSeed() {
 			},
 			models.User{
 				Roles:    pq.Int64Array{2},
-				Username: "manager",
+				Username: "viewer",
 				Password: "password",
 				Email:    "asira@ayannah.com",
-				Phone:    "081234567890",
+				Phone:    "081234567891",
 				Status:   "active",
 			},
 			models.User{
+				Roles:    pq.Int64Array{3},
 				Username: "Banktoib",
 				Password: "password",
 				Status:   "active",
 			},
 			models.User{
+				Roles:    pq.Int64Array{3},
 				Username: "Banktoic",
 				Password: "password",
 				Status:   "active",

@@ -82,7 +82,7 @@ func createJwtToken(id string, group string) (string, error) {
 	switch group {
 	case "users":
 		err := db.Table("roles r").
-			Select("TRIM(UNNEST(r.permissions)) as permissions").
+			Select("DISTINCT TRIM(UNNEST(r.permissions)) as permissions").
 			Joins("INNER JOIN users u ON r.id IN (SELECT UNNEST(u.roles))").
 			Where("u.id = ?", id).Scan(&permModel).Error
 		if err != nil {

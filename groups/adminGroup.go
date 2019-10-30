@@ -12,7 +12,7 @@ import (
 // AdminGroup func
 func AdminGroup(e *echo.Echo) {
 	g := e.Group("/admin")
-	middlewares.SetClientJWTmiddlewares(g, "admin")
+	middlewares.SetClientJWTmiddlewares(g, "users")
 
 	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
@@ -68,20 +68,20 @@ func AdminGroup(e *echo.Echo) {
 	g.DELETE("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDelete)
 
 	// Role
-	g.GET("/roles", admin_handlers.GetAllRole)
-	g.GET("/roles/:role_id", admin_handlers.RoleGetDetails)
-	g.POST("/roles", admin_handlers.AddRole)
-	g.PATCH("/roles/:role_id", admin_handlers.UpdateRole)
-	g.GET("/roles_all", admin_handlers.GetAllData)
+	g.GET("/roles", admin_handlers.RoleList)
+	g.GET("/roles/:role_id", admin_handlers.RoleDetails)
+	g.POST("/roles", admin_handlers.RoleNew)
+	g.PATCH("/roles/:role_id", admin_handlers.RolePatch)
+	g.GET("/roles_all", admin_handlers.RoleRange)
 
 	// Permission
-	g.GET("/permission", admin_handlers.GetAllPermission)
+	g.GET("/permission", admin_handlers.PermissionList)
 
 	// User
-	g.GET("/users", admin_handlers.GetAllUser)
-	g.GET("/users/:user_id", admin_handlers.UserGetDetails)
-	g.POST("/users", admin_handlers.AddUser)
-	g.PATCH("/users/:user_id", admin_handlers.UpdateUser)
+	g.GET("/users", admin_handlers.UserList)
+	g.GET("/users/:user_id", admin_handlers.UserDetails)
+	g.POST("/users", admin_handlers.UserNew)
+	g.PATCH("/users/:user_id", admin_handlers.UserPatch)
 
 	// Reports
 	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)

@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestGetUserList(t *testing.T) {
+func TestGetRoleAllList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -31,24 +31,51 @@ func TestGetUserList(t *testing.T) {
 	})
 
 	// valid response
-	auth.GET("/admin/users").
+	auth.GET("/admin/roles_all").
+		Expect().
+		Status(http.StatusOK).JSON().Array()
+}
+
+func TestGetRoleList(t *testing.T) {
+	RebuildData()
+
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	adminToken := getAdminLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+adminToken)
+	})
+
+	// valid response
+	auth.GET("/admin/roles").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/users").WithQuery("name", "admin").
+	obj := auth.GET("/admin/roles").WithQuery("name", "Administrator").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
 	// test query invalid
-	obj = auth.GET("/admin/users").WithQuery("name", "should not found this").
+	obj = auth.GET("/admin/roles").WithQuery("name", "should not found this").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
-func TestNewUser(t *testing.T) {
+func TestNewRole(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -70,29 +97,27 @@ func TestNewUser(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"username": "test user",
-		"email":    "testuser@ayannah.id",
-		"phone":    "08111",
-		"status":   "active",
-		"role_id":  []int{1},
+		"name":        "Manager",
+		"system":      "Bank Dashboard",
+		"description": "ini description",
 	}
 
 	// normal scenario
-	obj := auth.POST("/admin/users").WithJSON(payload).
+	obj := auth.POST("/admin/roles").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
-	obj.ContainsKey("username").ValueEqual("username", "test user")
+	obj.ContainsKey("name").ValueEqual("name", "Manager")
 
 	// test invalid
 	payload = map[string]interface{}{
 		"name": "",
 	}
-	auth.POST("/admin/users").WithJSON(payload).
+	auth.POST("/admin/roles").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
 
-func TestGetUserbyID(t *testing.T) {
+func TestGetRolebyID(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -114,18 +139,18 @@ func TestGetUserbyID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/users/1").
+	obj := auth.GET("/admin/roles/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/users/9999").
+	auth.GET("/admin/roles/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchUser(t *testing.T) {
+func TestPatchRole(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -147,15 +172,13 @@ func TestPatchUser(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"username": "finance1",
-		"email":    "finance@ayannah.id",
-		"phone":    "08111",
-		"status":   "inactive",
-		"role_id":  []int{1},
+		"name":        "Finance1",
+		"system":      "Bank Dashboard",
+		"description": "ini deskripsi",
 	}
 
 	// valid response
-	obj := auth.PATCH("/admin/users/1").WithJSON(payload).
+	obj := auth.PATCH("/admin/roles/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
@@ -164,7 +187,7 @@ func TestPatchUser(t *testing.T) {
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer wrong token")
 	})
-	auth.PATCH("/admin/users/1").WithJSON(payload).
+	auth.PATCH("/admin/roles/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnauthorized).JSON().Object()
 }

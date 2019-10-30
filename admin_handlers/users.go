@@ -12,9 +12,9 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
-func GetAllUser(c echo.Context) error {
+func UserList(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_get_all_user")
+	err := validatePermission(c, "core_user_list")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -52,9 +52,9 @@ func GetAllUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func UserGetDetails(c echo.Context) error {
+func UserDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_user_get_details")
+	err := validatePermission(c, "core_user_details")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -70,9 +70,9 @@ func UserGetDetails(c echo.Context) error {
 	return c.JSON(http.StatusOK, userM)
 }
 
-func AddUser(c echo.Context) error {
+func UserNew(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_add_user")
+	err := validatePermission(c, "core_user_new")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -83,7 +83,7 @@ func AddUser(c echo.Context) error {
 		"username": []string{"required", "unique:users,username"},
 		"email":    []string{"required", "unique:users,email"},
 		"phone":    []string{"required", "unique:users,phone"},
-		"role_id":  []string{"required"},
+		"role_id":  []string{},
 		"status":   []string{},
 	}
 
@@ -111,9 +111,9 @@ func AddUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, userM)
 }
 
-func UpdateUser(c echo.Context) error {
+func UserPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_update_user")
+	err := validatePermission(c, "core_user_patch")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -130,7 +130,7 @@ func UpdateUser(c echo.Context) error {
 		"username": []string{"required", "unique:users,username,1"},
 		"email":    []string{"required", "unique:users,email,1"},
 		"phone":    []string{"required", "unique:users,phone,1"},
-		"role_id":  []string{"required"},
+		"role_id":  []string{},
 		"status":   []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &userM)

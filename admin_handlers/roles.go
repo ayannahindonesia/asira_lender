@@ -10,9 +10,9 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
-func GetAllRole(c echo.Context) error {
+func RoleList(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_get_all_role")
+	err := validatePermission(c, "core_role_list")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -47,9 +47,9 @@ func GetAllRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func RoleGetDetails(c echo.Context) error {
+func RoleDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_role_get_details")
+	err := validatePermission(c, "core_role_details")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -65,9 +65,9 @@ func RoleGetDetails(c echo.Context) error {
 	return c.JSON(http.StatusOK, Iroles)
 }
 
-func AddRole(c echo.Context) error {
+func RoleNew(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_add_role")
+	err := validatePermission(c, "core_role_new")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -94,9 +94,9 @@ func AddRole(c echo.Context) error {
 	return c.JSON(http.StatusCreated, Iroles)
 }
 
-func UpdateRole(c echo.Context) error {
+func RolePatch(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_update_role")
+	err := validatePermission(c, "core_role_patch")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -129,9 +129,9 @@ func UpdateRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, Iroles)
 }
 
-func GetAllData(c echo.Context) error {
+func RoleRange(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_get_all_data")
+	err := validatePermission(c, "core_role_range")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}

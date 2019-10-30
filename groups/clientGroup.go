@@ -15,6 +15,6 @@ func ClientGroup(e *echo.Echo) {
 	g.POST("/admin_login", admin_handlers.AdminLogin)
 
 	// loan purposes
-	g.GET("/loan_purposes", admin_handlers.LoanPurposeList)
-	g.GET("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDetail)
+	g.GET("/loan_purposes", handlers.LoanPurposeList)
+	g.GET("/loan_purposes/:loan_purpose_id", handlers.LoanPurposeDetail)
 }
