@@ -8,21 +8,24 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
+	"github.com/lib/pq"
 	"github.com/thedevsaddam/govalidator"
 )
 
 // type BankPayload struct {
-// 	Name          string   `json:"name"`
-// 	Type          uint64   `json:"type"`
-// 	Address       string   `json:"address"`
-// 	Province      string   `json:"province"`
-// 	City          string   `json:"city"`
-// 	Services      []uint64 `json:"services"`
-// 	Products      []uint64 `json:"products"`
-// 	PIC           string   `json:"pic"`
-// 	Phone         string   `json:"phone"`
-// 	AdminFeeSetup string   `json:"adminfee_setup"`
-// 	ConvFeeSetup  string   `json:"convfee_setup"`
+// 	Name                string        `json:"name"`
+// 	Type                uint64        `json:"type"`
+// 	Address             string        `json:"address"`
+// 	Province            string        `json:"province"`
+// 	City                string        `json:"city"`
+// 	Services            pq.Int64Array `json:"services"`
+// 	Products            pq.Int64Array `json:"products"`
+// 	PIC                 string        `json:"pic"`
+// 	Phone               string        `json:"phone"`
+// 	AdminFeeSetup       string        `json:"adminfee_setup"`
+// 	ConvenienceFeeSetup string        `json:"convfee_setup"`
+// 	Username            string        `json:"username"`
+// 	Password            string        `json:"password"`
 // }
 
 func BankList(c echo.Context) error {
@@ -91,6 +94,28 @@ func BankNew(c echo.Context) error {
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
+
+	// @ToDo remodel this flow
+	user := models.User{
+		Username: bank.Name,
+		Roles:    pq.Int64Array{3},
+		Phone:    bank.Phone,
+		Status:   "active",
+	}
+	err = user.Create()
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat user")
+	}
+
+	bankRep := models.BankRepresentatives{
+		UserID: user.ID,
+		BankID: bank.ID,
+	}
+	err = bankRep.Create()
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank representative")
+	}
+	// ------
 
 	return c.JSON(http.StatusCreated, bank)
 }

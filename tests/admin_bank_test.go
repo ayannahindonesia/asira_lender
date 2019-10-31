@@ -88,6 +88,11 @@ func TestNewBank(t *testing.T) {
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 	obj.ContainsKey("name").ValueEqual("name", "Test New Bank")
+	// @ToDo remove this after flow is fixed
+	obj = auth.GET("/admin/users/5").WithJSON(payload).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("username").ValueEqual("username", "Test New Bank")
 
 	// test invalid
 	payload = map[string]interface{}{
