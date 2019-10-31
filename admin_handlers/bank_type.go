@@ -13,6 +13,10 @@ import (
 
 func BankTypeList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_type_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -40,6 +44,10 @@ func BankTypeList(c echo.Context) error {
 
 func BankTypeNew(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_type_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank_type := models.BankType{}
 
@@ -52,7 +60,7 @@ func BankTypeNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := bank_type.Create()
+	err = bank_type.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
@@ -62,11 +70,15 @@ func BankTypeNew(c echo.Context) error {
 
 func BankTypeDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_type_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bankType := models.BankType{}
-	err := bankType.FindbyID(bank_id)
+	err = bankType.FindbyID(bank_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}
@@ -76,11 +88,15 @@ func BankTypeDetail(c echo.Context) error {
 
 func BankTypePatch(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_type_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bankType := models.BankType{}
-	err := bankType.FindbyID(bank_id)
+	err = bankType.FindbyID(bank_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}
@@ -105,11 +121,15 @@ func BankTypePatch(c echo.Context) error {
 
 func BankTypeDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_type_delete")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bankType := models.BankType{}
-	err := bankType.FindbyID(bank_id)
+	err = bankType.FindbyID(bank_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}

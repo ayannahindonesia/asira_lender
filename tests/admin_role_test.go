@@ -63,7 +63,7 @@ func TestGetRoleList(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/roles").WithQuery("name", "Manager").
+	obj := auth.GET("/admin/roles").WithQuery("name", "Administrator").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)

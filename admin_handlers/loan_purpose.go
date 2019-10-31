@@ -12,6 +12,10 @@ import (
 
 func LoanPurposeList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_purpose_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -42,6 +46,10 @@ func LoanPurposeList(c echo.Context) error {
 
 func LoanPurposeNew(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_purpose_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	purpose := models.LoanPurpose{}
 	payloadRules := govalidator.MapData{
@@ -54,7 +62,7 @@ func LoanPurposeNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := purpose.Create()
+	err = purpose.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
@@ -64,11 +72,15 @@ func LoanPurposeNew(c echo.Context) error {
 
 func LoanPurposeDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_purpose_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	loan_purpose_id, _ := strconv.Atoi(c.Param("loan_purpose_id"))
 
 	purpose := models.LoanPurpose{}
-	err := purpose.FindbyID(loan_purpose_id)
+	err = purpose.FindbyID(loan_purpose_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loan_purpose_id))
 	}
@@ -78,11 +90,15 @@ func LoanPurposeDetail(c echo.Context) error {
 
 func LoanPurposePatch(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_purpose_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	loan_purpose_id, _ := strconv.Atoi(c.Param("loan_purpose_id"))
 
 	purpose := models.LoanPurpose{}
-	err := purpose.FindbyID(loan_purpose_id)
+	err = purpose.FindbyID(loan_purpose_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loan_purpose_id))
 	}
@@ -107,11 +123,15 @@ func LoanPurposePatch(c echo.Context) error {
 
 func LoanPurposeDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_purpose_delete")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	loan_purpose_id, _ := strconv.Atoi(c.Param("loan_purpose_id"))
 
 	purpose := models.LoanPurpose{}
-	err := purpose.FindbyID(loan_purpose_id)
+	err = purpose.FindbyID(loan_purpose_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loan_purpose_id))
 	}

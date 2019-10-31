@@ -13,6 +13,10 @@ import (
 
 func ProductList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_product_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -76,6 +80,10 @@ func ProductList(c echo.Context) error {
 
 func ProductNew(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_product_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	product := models.Product{}
 
@@ -99,7 +107,7 @@ func ProductNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := product.Create()
+	err = product.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
 	}
@@ -109,11 +117,15 @@ func ProductNew(c echo.Context) error {
 
 func ProductDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_product_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	productId, _ := strconv.Atoi(c.Param("id"))
 
 	product := models.Product{}
-	err := product.FindbyID(productId)
+	err = product.FindbyID(productId)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productId))
 	}
@@ -123,11 +135,15 @@ func ProductDetail(c echo.Context) error {
 
 func ProductPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_product_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	productId, _ := strconv.Atoi(c.Param("id"))
 
 	product := models.Product{}
-	err := product.FindbyID(productId)
+	err = product.FindbyID(productId)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productId))
 	}
@@ -161,11 +177,15 @@ func ProductPatch(c echo.Context) error {
 
 func ProductDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_product_delete")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	productId, _ := strconv.Atoi(c.Param("id"))
 
 	product := models.Product{}
-	err := product.FindbyID(productId)
+	err = product.FindbyID(productId)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productId))
 	}

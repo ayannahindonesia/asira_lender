@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"asira_lender/asira"
-	"asira_lender/permission"
 	"fmt"
 	"net/http"
 
@@ -28,7 +27,6 @@ func SetClientJWTmiddlewares(g *echo.Group, role string) {
 		break
 	case "admin":
 		g.Use(validateJWTadmin)
-		g.Use(permission.ValidatePermissions)
 		break
 	}
 }
@@ -39,10 +37,10 @@ func validateJWTadmin(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["role"] == "admin" {
+			if claims["group"] == "admin" {
 				return next(c)
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid role"))
+				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
 		}
 
@@ -56,10 +54,10 @@ func validateJWTclient(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["role"] == "client" {
+			if claims["group"] == "client" {
 				return next(c)
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid role"))
+				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
 		}
 
@@ -73,10 +71,10 @@ func validateJWTlender(next echo.HandlerFunc) echo.HandlerFunc {
 		token := user.(*jwt.Token)
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			if claims["role"] == "lender" {
+			if claims["group"] == "users" {
 				return next(c)
 			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid role"))
+				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
 		}
 

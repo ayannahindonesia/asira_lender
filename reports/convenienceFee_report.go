@@ -2,6 +2,7 @@ package reports
 
 import (
 	"asira_lender/asira"
+	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -11,11 +12,16 @@ import (
 
 	"gitlab.com/asira-ayannah/basemodel"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
 
 func ConvenienceFeeReport(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "convenience_fee_report")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	db := asira.App.DB
 
@@ -94,7 +100,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 	if rows > 0 && offset > 0 {
 		db = db.Limit(rows).Offset(offset)
 	}
-	err := db.Find(&results).Count(&totalRows).Error
+	err = db.Find(&results).Count(&totalRows).Error
 	if err != nil {
 		log.Println(err)
 	}
@@ -112,4 +118,32 @@ func ConvenienceFeeReport(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func validatePermission(c echo.Context, permission string) error {
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if claimPermissions, ok := claims["permissions"]; ok {
+			s := strings.Split(strings.Trim(fmt.Sprintf("%v", claimPermissions), "[]"), " ")
+			for _, v := range s {
+				if strings.ToLower(v) == strings.ToLower(permission) || strings.ToLower(v) == "all" {
+					return nil
+				}
+			}
+		}
+		return fmt.Errorf("Permission Denied")
+	}
+
+	return fmt.Errorf("Permission Denied")
+}
+
+func returnInvalidResponse(httpcode int, details interface{}, message string) error {
+	responseBody := map[string]interface{}{
+		"message": message,
+		"details": details,
+	}
+
+	return echo.NewHTTPError(httpcode, responseBody)
 }

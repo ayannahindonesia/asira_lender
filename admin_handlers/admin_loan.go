@@ -2,6 +2,7 @@ package admin_handlers
 
 import (
 	"asira_lender/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,6 +11,10 @@ import (
 
 func LoanGetAll(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_get_all")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	loan := models.Loan{}
 	// pagination parameters
@@ -41,11 +46,15 @@ func LoanGetAll(c echo.Context) error {
 
 func LoanGetDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_loan_get_details")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	loanModel := models.Loan{}
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
-	err := loanModel.FindbyID(loanID)
+	err = loanModel.FindbyID(loanID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Loan ID tidak ditemukan")
 	}

@@ -9,25 +9,26 @@ import (
 	"github.com/labstack/echo"
 )
 
+// AdminGroup func
 func AdminGroup(e *echo.Echo) {
 	g := e.Group("/admin")
-	middlewares.SetClientJWTmiddlewares(g, "admin")
+	middlewares.SetClientJWTmiddlewares(g, "users")
 
 	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
 	g.GET("/profile", admin_handlers.AdminProfile)
 
-	// Internals Accounts Management
-	g.POST("/client_config", admin_handlers.CreateInternal)
+	// Client Management
+	g.POST("/client", admin_handlers.CreateClient)
 
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
 
-	//Borrowers
+	// Borrowers
 	g.GET("/borrower", admin_handlers.BorrowerGetAll)
 	g.GET("/borrower/:borrower_id", admin_handlers.BorrowerGetDetails)
 
-	//Loans
+	// Loans
 	g.GET("/loan", admin_handlers.LoanGetAll)
 	g.GET("/loan/:loan_id", admin_handlers.LoanGetDetails)
 
@@ -67,23 +68,20 @@ func AdminGroup(e *echo.Echo) {
 	g.DELETE("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDelete)
 
 	// Role
-	g.GET("/roles", admin_handlers.GetAllRole)
-	g.GET("/roles/:role_id", admin_handlers.RoleGetDetails)
-	g.POST("/roles", admin_handlers.AddRole)
-	g.PATCH("/roles/:role_id", admin_handlers.UpdateRole)
-	g.GET("/roles_all", admin_handlers.GetAllData)
+	g.GET("/roles", admin_handlers.RoleList)
+	g.GET("/roles/:role_id", admin_handlers.RoleDetails)
+	g.POST("/roles", admin_handlers.RoleNew)
+	g.PATCH("/roles/:role_id", admin_handlers.RolePatch)
+	g.GET("/roles_all", admin_handlers.RoleRange)
 
-	//Permission
-	g.GET("/permission", admin_handlers.GetAllPermission)
-	g.GET("/permission/:permission_id", admin_handlers.PermissionGetDetails)
-	g.POST("/permission", admin_handlers.AddPermission)
-	g.PATCH("/permission", admin_handlers.UpdatePermission)
+	// Permission
+	g.GET("/permission", admin_handlers.PermissionList)
 
 	// User
-	g.GET("/users", admin_handlers.GetAllUser)
-	g.GET("/users/:user_id", admin_handlers.UserGetDetails)
-	g.POST("/users", admin_handlers.AddUser)
-	g.PATCH("/users/:user_id", admin_handlers.UpdateUser)
+	g.GET("/users", admin_handlers.UserList)
+	g.GET("/users/:user_id", admin_handlers.UserDetails)
+	g.POST("/users", admin_handlers.UserNew)
+	g.PATCH("/users/:user_id", admin_handlers.UserPatch)
 
 	// Reports
 	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
