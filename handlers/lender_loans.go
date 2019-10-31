@@ -277,6 +277,8 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	loan_id, _ := strconv.Atoi(c.Param("loan_id"))
 
@@ -290,7 +292,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 	loan := models.Loan{}
 	err := loan.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		ID:             loan_id,
@@ -320,6 +322,8 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	loan_id, err := strconv.Atoi(c.Param("loan_id"))
 
@@ -332,7 +336,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	loan := models.Loan{}
 	err = loan.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		ID:             loan_id,
