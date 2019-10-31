@@ -27,6 +27,7 @@ type (
 		Product             uint64         `json:"product" gorm:"column:product;foreignkey"`                  // product and service is later to be discussed
 		LoanIntention       string         `json:"loan_intention" gorm:"column:loan_intention;type:varchar(255);not null"`
 		IntentionDetails    string         `json:"intention_details" gorm:"column:intention_details;type:text;not null"`
+		BorrowerInfo        postgres.Jsonb `json:"borrower_info" gorm:"column:borrower_info;type:jsonb"`
 		DisburseDate        time.Time      `json:"disburse_date" gorm:"column:disburse_date"`
 		DisburseDateChanged bool           `json:"disburse_date_changed" gorm:"column:disburse_date_changed"`
 		DisburseStatus      string         `json:"disburse_status" gorm:"column:disburse_status" sql:"DEFAULT:'processing'"`

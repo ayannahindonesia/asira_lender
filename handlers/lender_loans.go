@@ -64,10 +64,11 @@ func LenderLoanRequestList(c echo.Context) error {
 	owner := c.QueryParam("owner")
 	ownerName := c.QueryParam("owner_name")
 	id := c.QueryParam("id")
-	start_date := c.QueryParam("start_date")
-	end_date := c.QueryParam("end_date")
-	start_disburse_date := c.QueryParam("start_disburse_date")
-	end_disburse_date := c.QueryParam("end_disburse_date")
+	disburseStatus := c.QueryParam("disburse_status")
+	startDate := c.QueryParam("start_date")
+	endDate := c.QueryParam("end_date")
+	startDisburseDate := c.QueryParam("start_disburse_date")
+	endDisburseDate := c.QueryParam("end_disburse_date")
 
 	type Filter struct {
 		Bank                sql.NullInt64           `json:"bank"`
@@ -77,6 +78,7 @@ func LenderLoanRequestList(c echo.Context) error {
 		DateBetween         basemodel.CompareFilter `json:"created_time" condition:"BETWEEN"`
 		DisburseDateBetween basemodel.CompareFilter `json:"disburse_date" condition:"BETWEEN"`
 		ID                  string                  `json:"id"`
+		DisburseStatus      string                  `json:"disburse_status"`
 	}
 
 	loan := models.Loan{}
@@ -90,13 +92,14 @@ func LenderLoanRequestList(c echo.Context) error {
 		OwnerName: ownerName,
 		ID:        id,
 		DateBetween: basemodel.CompareFilter{
-			Value1: start_date,
-			Value2: end_date,
+			Value1: startDate,
+			Value2: endDate,
 		},
 		DisburseDateBetween: basemodel.CompareFilter{
-			Value1: start_disburse_date,
-			Value2: end_disburse_date,
+			Value1: startDisburseDate,
+			Value2: endDisburseDate,
 		},
+		DisburseStatus: disburseStatus,
 	})
 
 	if err != nil {
