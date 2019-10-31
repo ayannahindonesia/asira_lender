@@ -157,6 +157,7 @@ CREATE TABLE "loans" (
     "layaway_plan" FLOAT NOT NULL,
     "loan_intention" varchar(255) NOT NULL,
     "intention_details" text NOT NULL,
+    "borrower_info" jsonb DEFAULT '[]',
     "disburse_date" timestamptz,
     "disburse_date_changed" BOOLEAN,
     "disburse_status" varchar(255) DEFAULT ('processing'),
