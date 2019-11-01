@@ -74,7 +74,7 @@ func BankList(c echo.Context) error {
 	if rows > 0 && offset > 0 {
 		db = db.Limit(rows).Offset(offset)
 	}
-	err := db.Find(&banks).Count(&totalRows).Error
+	err = db.Find(&banks).Count(&totalRows).Error
 	if err != nil {
 		log.Println(err)
 	}
@@ -139,7 +139,7 @@ func BankDetail(c echo.Context) error {
 		Where("b.id = ?", bank_id)
 
 	bank := BankSelect{}
-	err := db.Find(&bank).Error
+	err = db.Find(&bank).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}
