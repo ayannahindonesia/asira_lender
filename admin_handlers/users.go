@@ -1,16 +1,27 @@
 package admin_handlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/email"
 	"asira_lender/models"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/lib/pq"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
+	"gitlab.com/asira-ayannah/basemodel"
 )
+
+type UserSelect struct {
+	models.User
+	RolesName pq.StringArray `json:"roles_name"`
+}
 
 func UserList(c echo.Context) error {
 	defer c.Request().Body.Close()
@@ -19,34 +30,76 @@ func UserList(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	userM := models.User{}
+	db := asira.App.DB
+
+	var results []UserSelect
+	var totalRows int
+	var offset int
+	var rows int
+	var page int
+
 	// pagination parameters
-	rows, err := strconv.Atoi(c.QueryParam("rows"))
-	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	if c.QueryParam("rows") != "all" {
+		rows, _ = strconv.Atoi(c.QueryParam("rows"))
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
+		}
+		if rows <= 0 {
+			rows = 25
+		}
+		offset = (page * rows) - rows
+	}
+	db = db.Table("users u").
+		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name").
+		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))")
 
-	name := c.QueryParam("name")
-	id := c.QueryParam("id")
-	email := c.QueryParam("email")
-	phone := c.QueryParam("phone")
-
-	type Filter struct {
-		ID       string `json:"id"`
-		Username string `json:"username" condition:"LIKE"`
-		Email    string `json:"email" condition:"LIKE"`
-		Phone    string `json:"phone" condition:"LIKE"`
+	if name := c.QueryParam("name"); len(name) > 0 {
+		db = db.Where("u.name LIKE ?", name)
+	}
+	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+		db = db.Where("u.id IN (?)", id)
+	}
+	if email := c.QueryParam("email"); len(email) > 0 {
+		db = db.Where("u.email LIKE ?", email)
+	}
+	if phone := c.QueryParam("phone"); len(phone) > 0 {
+		db = db.Where("u.phone LIKE ?", phone)
 	}
 
-	result, err := userM.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-		ID:       id,
-		Username: name,
-		Email:    email,
-		Phone:    phone,
-	})
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
+	}
 
+	if rows > 0 && offset > 0 {
+		db = db.Limit(rows).Offset(offset)
+	}
+	err = db.Find(&results).Count(&totalRows).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, "User tidak Ditemukan")
+		log.Println(err)
+	}
+
+	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
+
+	result := basemodel.PagedFindResult{
+		TotalData:   totalRows,
+		Rows:        rows,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		From:        offset + 1,
+		To:          offset + rows,
+		Data:        results,
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -59,15 +112,21 @@ func UserDetails(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	userM := models.User{}
+	db := asira.App.DB
+
+	user := UserSelect{}
 
 	userID, _ := strconv.Atoi(c.Param("user_id"))
-	err = userM.FindbyID(userID)
+
+	err = db.Table("users u").
+		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name").
+		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
+		Where("u.id = ?", userID).Find(&user).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
 	}
 
-	return c.JSON(http.StatusOK, userM)
+	return c.JSON(http.StatusOK, user)
 }
 
 func UserNew(c echo.Context) error {
