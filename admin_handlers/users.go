@@ -83,7 +83,7 @@ func UserNew(c echo.Context) error {
 		"username": []string{"required", "unique:users,username"},
 		"email":    []string{"required", "unique:users,email"},
 		"phone":    []string{"required", "unique:users,phone"},
-		"role_id":  []string{},
+		"roles":    []string{},
 		"status":   []string{},
 	}
 
@@ -130,7 +130,7 @@ func UserPatch(c echo.Context) error {
 		"username": []string{"required", "unique:users,username,1"},
 		"email":    []string{"required", "unique:users,email,1"},
 		"phone":    []string{"required", "unique:users,phone,1"},
-		"role_id":  []string{},
+		"roles":    []string{},
 		"status":   []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &userM)
