@@ -15,29 +15,15 @@ import (
 	"gitlab.com/asira-ayannah/basemodel"
 )
 
-// type BankPayload struct {
-// 	Name          string   `json:"name"`
-// 	Type          uint64   `json:"type"`
-// 	Address       string   `json:"address"`
-// 	Province      string   `json:"province"`
-// 	City          string   `json:"city"`
-// 	Services      []uint64 `json:"services"`
-// 	Products      []uint64 `json:"products"`
-// 	PIC           string   `json:"pic"`
-// 	Phone         string   `json:"phone"`
-// 	AdminFeeSetup string   `json:"adminfee_setup"`
-// 	ConvFeeSetup  string   `json:"convfee_setup"`
-// }
+type BankSelect struct {
+	models.Bank
+	BankTypeName string `json:"bank_type_name"`
+}
 
 func BankList(c echo.Context) error {
 	defer c.Request().Body.Close()
 
 	db := asira.App.DB
-
-	type BankSelect struct {
-		models.Bank
-		BankTypeName string `json:"bank_type_name"`
-	}
 	var (
 		totalRows int
 		offset    int
@@ -57,11 +43,6 @@ func BankList(c echo.Context) error {
 			rows = 25
 		}
 		offset = (page * rows) - rows
-	}
-
-	type Filter struct {
-		ID   []string `json:"id"`
-		Name string   `json:"name" condition:"LIKE"`
 	}
 
 	db = db.Table("banks b").
@@ -148,10 +129,17 @@ func BankNew(c echo.Context) error {
 func BankDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 
+	db := asira.App.DB
+
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
-	bank := models.Bank{}
-	err := bank.FindbyID(bank_id)
+	db = db.Table("banks b").
+		Select("b.*, bt.name as bank_type_name").
+		Joins("INNER JOIN bank_types bt ON b.type = bt.id").
+		Where("b.id = ?", bank_id)
+
+	bank := BankSelect{}
+	err := db.Find(&bank).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}
