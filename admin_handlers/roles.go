@@ -78,7 +78,8 @@ func RoleNew(c echo.Context) error {
 		"name":        []string{"required"},
 		"description": []string{},
 		"system":      []string{"required"},
-		"status":      []string{},
+		"status":      []string{"active_inactive"},
+		"permissions": []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &Iroles)
@@ -113,7 +114,8 @@ func RolePatch(c echo.Context) error {
 		"name":        []string{"required"},
 		"description": []string{},
 		"system":      []string{"required"},
-		"status":      []string{},
+		"status":      []string{"active_inactive"},
+		"permissions": []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &Iroles)

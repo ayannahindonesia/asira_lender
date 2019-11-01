@@ -99,7 +99,9 @@ func TestNewRole(t *testing.T) {
 	payload := map[string]interface{}{
 		"name":        "Manager",
 		"system":      "Bank Dashboard",
+		"status":      "active",
 		"description": "ini description",
+		"permissions": []string{"lender_profile", "lender_profile_edit"},
 	}
 
 	// normal scenario
@@ -175,6 +177,7 @@ func TestPatchRole(t *testing.T) {
 		"name":        "Finance1",
 		"system":      "Bank Dashboard",
 		"description": "ini deskripsi",
+		"permissions": []string{"edited"},
 	}
 
 	// valid response
