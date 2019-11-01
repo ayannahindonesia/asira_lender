@@ -80,6 +80,8 @@ func LenderBorrowerList(c echo.Context) error {
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -102,7 +104,7 @@ func LenderBorrowerList(c echo.Context) error {
 	borrower := models.Borrower{}
 	result, err := borrower.PagedFilterSearch(page, rows, orderby, sort, &Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		Fullname: fullname,
