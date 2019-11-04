@@ -54,8 +54,8 @@ func UserList(c echo.Context) error {
 		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name").
 		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))")
 
-	if name := c.QueryParam("name"); len(name) > 0 {
-		db = db.Where("u.name LIKE ?", name)
+	if name := c.QueryParam("username"); len(name) > 0 {
+		db = db.Where("u.username LIKE ?", name)
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("u.id IN (?)", id)
