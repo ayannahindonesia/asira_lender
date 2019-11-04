@@ -36,7 +36,7 @@ func TestGetUserList(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/users").WithQuery("username", "admin").
+	obj := auth.GET("/admin/users").WithQuery("username", "adminkey").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
