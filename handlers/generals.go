@@ -13,8 +13,9 @@ import (
 
 type (
 	JWTclaims struct {
-		Username string `json:"username"`
-		Role     string `json:"role"`
+		Username    string   `json:"username"`
+		Group       string   `json:"group"`
+		Permissions []string `json:"permissions"`
 		jwt.StandardClaims
 	}
 )
@@ -66,12 +67,34 @@ func returnInvalidResponse(httpcode int, details interface{}, message string) er
 }
 
 // self explanation
-func createJwtToken(id string, role string) (string, error) {
+func createJwtToken(id string, group string) (string, error) {
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
+
+	type PermModel struct {
+		Permission string `json:"permissions" gorm:"column:permissions"`
+	}
+	var permissions []string
+	var permModel []PermModel
+	var db = asira.App.DB
+	switch group {
+	case "users":
+		err := db.Table("roles r").
+			Select("TRIM(UNNEST(r.permissions)) as permissions").
+			Joins("INNER JOIN users u ON r.id IN (SELECT UNNEST(u.roles))").
+			Where("u.id = ?", id).Scan(&permModel).Error
+		if err != nil {
+			return "", err
+		}
+		for _, v := range permModel {
+			permissions = append(permissions, v.Permission)
+		}
+		break
+	}
 
 	claim := JWTclaims{
 		id,
-		role,
+		group,
+		permissions,
 		jwt.StandardClaims{
 			Id:        id,
 			ExpiresAt: time.Now().Add(time.Duration(jwtConf["duration"].(int)) * time.Minute).Unix(),
@@ -96,4 +119,23 @@ func customSplit(str string, separator string) []string {
 	}
 
 	return split
+}
+
+func validatePermission(c echo.Context, permission string) error {
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if claimPermissions, ok := claims["permissions"]; ok {
+			s := strings.Split(strings.Trim(fmt.Sprintf("%v", claimPermissions), "[]"), " ")
+			for _, v := range s {
+				if strings.ToLower(v) == strings.ToLower(permission) || strings.ToLower(v) == "all" {
+					return nil
+				}
+			}
+		}
+		return fmt.Errorf("Permission Denied")
+	}
+
+	return fmt.Errorf("Permission Denied")
 }

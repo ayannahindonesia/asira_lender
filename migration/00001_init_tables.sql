@@ -1,14 +1,13 @@
 -- +goose Up
 -- SQL in this section is executed when the migration is applied.
 
-CREATE TABLE "internals" (
+CREATE TABLE "clients" (
     "id" bigserial,
-    "name" varchar(255) NOT NULL,
-    "role" varchar(255) NOT NULL,
-    "secret" varchar(255) NOT NULL,
-    "key" varchar(255) NOT NULL,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "name" varchar(255) NOT NULL,
+    "key" varchar(255) NOT NULL,
+    "secret" varchar(255) NOT NULL,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -46,8 +45,6 @@ CREATE TABLE "banks" (
     "convfee_setup" varchar(255),
     "services" int ARRAY,
     "products" int ARRAY,
-    "username" varchar(255) NOT NULL UNIQUE,
-    "password" text NOT NULL,
     FOREIGN KEY ("type") REFERENCES bank_types(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
@@ -150,7 +147,7 @@ CREATE TABLE "loans" (
     "owner_name" varchar(255),
     "bank" bigserial,
     "product" bigserial,
-    "status" varchar(255) DEFAULT  ('processing'),
+    "status" varchar(255) DEFAULT ('processing'),
     "loan_amount" FLOAT NOT NULL,
     "installment" int NOT NULL,
     "fees" jsonb DEFAULT '[]',
@@ -160,7 +157,10 @@ CREATE TABLE "loans" (
     "layaway_plan" FLOAT NOT NULL,
     "loan_intention" varchar(255) NOT NULL,
     "intention_details" text NOT NULL,
+    "borrower_info" jsonb DEFAULT '[]',
     "disburse_date" timestamptz,
+    "disburse_date_changed" BOOLEAN,
+    "disburse_status" varchar(255) DEFAULT ('processing'),
     "reject_reason" text,
     FOREIGN KEY ("owner") REFERENCES borrowers(id),
     FOREIGN KEY ("bank") REFERENCES banks(id),
@@ -178,46 +178,35 @@ CREATE TABLE "loan_purposes" (
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
-
 CREATE TABLE "roles" (
     "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "name" varchar(255) NOT NULL,
     "description" text,
     "system" varchar(255),
-    "status" BOOLEAN,
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("id")
-) WITH (OIDS = FALSE);
-
-CREATE TABLE "permissions" (
-    "id" bigserial,
-    "role_id" bigint,
-    "permissions" varchar(255),
-    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY ("role_id") REFERENCES roles(id),
+    "status" varchar(255),
+    "permissions" varchar(255) ARRAY,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
 CREATE TABLE "users" (
     "id" bigserial,
-    "role_id" bigint,
-    "username" varchar(255) UNIQUE,
-    "email" varchar(255) UNIQUE,
-    "phone" varchar(255) UNIQUE,
-    "password" text NOT NULL,
-    "status" BOOLEAN,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY ("role_id") REFERENCES roles(id),
+    "roles" int ARRAY,
+    "username" varchar(255) NOT NULL UNIQUE,
+    "password" text NOT NULL,
+    "email" varchar(255),
+    "phone" varchar(255),
+    "status" varchar(255),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
-CREATE TABLE "user_relations" (
+CREATE TABLE "bank_representatives" (
     "id" bigserial,
-    "bank_id" bigint,
-    "user_id" bigint,
+    "bank_id" bigserial,
+    "user_id" bigserial,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("bank_id") REFERENCES banks(id),
@@ -236,8 +225,7 @@ DROP TABLE IF EXISTS "borrowers" CASCADE;
 DROP TABLE IF EXISTS "loan_purposes" CASCADE;
 DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
-DROP TABLE IF EXISTS "internals" CASCADE;
+DROP TABLE IF EXISTS "clients" CASCADE;
 DROP TABLE IF EXISTS "roles" CASCADE;
-DROP TABLE IF EXISTS "permissions" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
-DROP TABLE IF EXISTS "user_relations" CASCADE;
+DROP TABLE IF EXISTS "bank_representatives" CASCADE;

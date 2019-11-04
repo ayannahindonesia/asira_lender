@@ -26,7 +26,7 @@ func LenderLogin(c echo.Context) error {
 
 	var (
 		credentials LenderLoginCreds
-		lender      models.Bank
+		lender      models.User
 		validKey    bool
 		token       string
 		err         error
@@ -51,8 +51,7 @@ func LenderLogin(c echo.Context) error {
 			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
 		}
 
-		tokenrole := "lender"
-		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), tokenrole)
+		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "users")
 		if err != nil {
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}

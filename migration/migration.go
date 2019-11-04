@@ -16,25 +16,24 @@ import (
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
+// Seed func
 func Seed() {
 	if asira.App.ENV == "development" {
-		// seed internals
-		internals := []models.Internals{
-			models.Internals{
+		// seed clients
+		clients := []models.Client{
+			models.Client{
 				Name:   "admin",
 				Key:    "adminkey",
-				Role:   "admin",
 				Secret: "adminsecret",
 			},
-			models.Internals{
+			models.Client{
 				Name:   "bank dashboard",
 				Key:    "reactkey",
-				Role:   "client",
 				Secret: "reactsecret",
 			},
 		}
-		for _, internal := range internals {
-			internal.Create()
+		for _, client := range clients {
+			client.Create()
 		}
 
 		// seed images
@@ -199,6 +198,10 @@ func Seed() {
 
 		purposes := []models.LoanPurpose{
 			models.LoanPurpose{
+				Name:   "Lain-lain",
+				Status: "active",
+			},
+			models.LoanPurpose{
 				Name:   "Pendidikan",
 				Status: "active",
 			},
@@ -241,8 +244,6 @@ func Seed() {
 				Phone:               "081234567890",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoib",
-				Password:            "password",
 			},
 			models.Bank{
 				Name:                "Bank B",
@@ -256,8 +257,6 @@ func Seed() {
 				Phone:               "081234567891",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoic",
-				Password:            "password",
 			},
 		}
 		for _, lender := range lenders {
@@ -266,111 +265,99 @@ func Seed() {
 
 		roles := []models.Roles{
 			models.Roles{
-				Name:        "Core",
-				Status:      true,
-				Description: "ini Super Admin",
+				Name:        "Administrator",
+				Status:      "active",
+				Description: "Super Admin",
 				System:      "Core",
+				Permissions: pq.StringArray{"all"},
 			},
 			models.Roles{
-				Name:        "Manager",
-				Status:      true,
-				Description: "ini untuk Finance",
+				Name:        "Ops",
+				Status:      "active",
+				Description: "Ops",
 				System:      "Core",
+				Permissions: pq.StringArray{"core_create_client", "core_view_image", "core_borrower_get_all", "core_borrower_get_details", "core_loan_get_all", "core_loan_get_details", "core_bank_type_list", "core_bank_type_new", "core_bank_type_detail", "core_bank_type_patch", "core_bank_list", "core_bank_new", "core_bank_detail", "core_bank_patch", "core_service_list", "core_service_new", "core_service_detail", "core_service_patch", "core_product_list", "core_product_new", "core_product_detail", "core_product_patch", "core_loan_purpose_list", "core_loan_purpose_new", "core_loan_purpose_detail", "core_loan_purpose_patch", "core_role_list", "core_role_details", "core_role_new", "core_role_patch", "core_role_range", "core_permission_list", "core_user_list", "core_user_details", "core_user_new", "core_user_patch", "convenience_fee_report"},
+			},
+			models.Roles{
+				Name:        "Banker",
+				Status:      "active",
+				Description: "ini untuk Finance",
+				System:      "Dashboard",
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download"},
 			},
 		}
 		for _, role := range roles {
 			role.Create()
 		}
 
-		permis := []models.Permissions{
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Edit",
-			},
-			models.Permissions{
-				RoleID:      1,
-				Permissions: "All",
-			},
-		}
-		for _, per := range permis {
-			per.Create()
-		}
-
 		users := []models.User{
 			models.User{
-				RoleID:   1,
+				Roles:    pq.Int64Array{1},
 				Username: "adminkey",
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
 				Phone:    "081234567890",
-				Status:   true,
+				Status:   "active",
 			},
 			models.User{
-				RoleID:   2,
-				Username: "manager",
+				Roles:    pq.Int64Array{2},
+				Username: "viewer",
 				Password: "password",
 				Email:    "asira@ayannah.com",
 				Phone:    "081234567891",
-				Status:   true,
+				Status:   "active",
+			},
+			models.User{
+				Roles:    pq.Int64Array{3},
+				Username: "Banktoib",
+				Password: "password",
+				Status:   "active",
+			},
+			models.User{
+				Roles:    pq.Int64Array{3},
+				Username: "Banktoic",
+				Password: "password",
+				Status:   "active",
 			},
 		}
 		for _, user := range users {
 			user.Create()
 		}
+
+		bankReps := []models.BankRepresentatives{
+			models.BankRepresentatives{
+				UserID: 3,
+				BankID: 1,
+			},
+			models.BankRepresentatives{
+				UserID: 4,
+				BankID: 2,
+			},
+		}
+		for _, bankRep := range bankReps {
+			bankRep.Create()
+		}
 	}
 }
 
+// TestSeed func
 func TestSeed() {
 	if asira.App.ENV == "development" {
-		// seed internals
-		internals := []models.Internals{
-			models.Internals{
+		// seed clients
+		clients := []models.Client{
+			models.Client{
 				Name:   "admin",
 				Key:    "adminkey",
-				Role:   "admin",
 				Secret: "adminsecret",
 			},
-			models.Internals{
+			models.Client{
 				Name:   "bank dashboard",
 				Key:    "reactkey",
-				Role:   "client",
 				Secret: "reactsecret",
 			},
 		}
-		for _, internal := range internals {
-			internal.Create()
+		for _, client := range clients {
+			client.Create()
 		}
 
 		// seed images
@@ -547,8 +534,6 @@ func TestSeed() {
 				Phone:               "081234567890",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoib",
-				Password:            "password",
 			},
 			models.Bank{
 				Name:                "Bank B",
@@ -562,8 +547,6 @@ func TestSeed() {
 				Phone:               "081234567891",
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
-				Username:            "Banktoic",
-				Password:            "password",
 			},
 		}
 		for _, lender := range lenders {
@@ -665,6 +648,10 @@ func TestSeed() {
 		}
 
 		purposes := []models.LoanPurpose{
+			models.LoanPurpose{
+				Name:   "Lain-lain",
+				Status: "active",
+			},
 			models.LoanPurpose{
 				Name:   "Pendidikan",
 				Status: "active",
@@ -830,98 +817,87 @@ func TestSeed() {
 
 		roles := []models.Roles{
 			models.Roles{
-				Name:        "Core",
-				Status:      true,
-				Description: "ini Super Admin",
+				Name:        "Administrator",
+				Status:      "active",
+				Description: "Super Admin",
 				System:      "Core",
+				Permissions: pq.StringArray{"all"},
 			},
 			models.Roles{
-				Name:        "Manager",
-				Status:      true,
-				Description: "ini untuk Finance",
+				Name:        "Ops",
+				Status:      "active",
+				Description: "Ops",
 				System:      "Core",
+				Permissions: pq.StringArray{"core_create_client", "core_view_image", "core_borrower_get_all", "core_borrower_get_details", "core_loan_get_all", "core_loan_get_details", "core_bank_type_list", "core_bank_type_new", "core_bank_type_detail", "core_bank_type_patch", "core_bank_list", "core_bank_new", "core_bank_detail", "core_bank_patch", "core_service_list", "core_service_new", "core_service_detail", "core_service_patch", "core_product_list", "core_product_new", "core_product_detail", "core_product_patch", "core_loan_purpose_list", "core_loan_purpose_new", "core_loan_purpose_detail", "core_loan_purpose_patch", "core_role_list", "core_role_details", "core_role_new", "core_role_patch", "core_role_range", "core_permission_list", "core_user_list", "core_user_details", "core_user_new", "core_user_patch", "convenience_fee_report"},
+			},
+			models.Roles{
+				Name:        "Banker",
+				Status:      "active",
+				Description: "ini untuk Finance",
+				System:      "Dashboard",
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download"},
 			},
 		}
 		for _, role := range roles {
 			role.Create()
 		}
 
-		permis := []models.Permissions{
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Bank_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Role_Edit",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_List",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Add",
-			},
-			models.Permissions{
-				RoleID:      2,
-				Permissions: "Permission_Edit",
-			},
-			models.Permissions{
-				RoleID:      1,
-				Permissions: "All",
-			},
-		}
-		for _, per := range permis {
-			per.Create()
-		}
-
 		users := []models.User{
 			models.User{
-				RoleID:   1,
+				Roles:    pq.Int64Array{1},
 				Username: "adminkey",
 				Password: "adminsecret",
 				Email:    "admin@ayannah.com",
 				Phone:    "081234567890",
-				Status:   true,
+				Status:   "active",
 			},
 			models.User{
-				RoleID:   2,
-				Username: "manager",
+				Roles:    pq.Int64Array{2},
+				Username: "viewer",
 				Password: "password",
 				Email:    "asira@ayannah.com",
-				Phone:    "081234567890",
-				Status:   true,
+				Phone:    "081234567891",
+				Status:   "active",
+			},
+			models.User{
+				Roles:    pq.Int64Array{3},
+				Username: "Banktoib",
+				Password: "password",
+				Status:   "active",
+			},
+			models.User{
+				Roles:    pq.Int64Array{3},
+				Username: "Banktoic",
+				Password: "password",
+				Status:   "active",
 			},
 		}
 		for _, user := range users {
 			user.Create()
 		}
+
+		bankReps := []models.BankRepresentatives{
+			models.BankRepresentatives{
+				UserID: 3,
+				BankID: 1,
+			},
+			models.BankRepresentatives{
+				UserID: 4,
+				BankID: 2,
+			},
+		}
+		for _, bankRep := range bankReps {
+			bankRep.Create()
+		}
 	}
 }
 
-// truncate defined tables. []string{"all"} to truncate all tables.
+// Truncate defined tables. []string{"all"} to truncate all tables.
 func Truncate(tableList []string) (err error) {
 	if len(tableList) > 0 {
 		if tableList[0] == "all" {
 			tableList = []string{
-				"internals",
+				"clients",
 				"products",
 				"services",
 				"banks",
@@ -930,9 +906,8 @@ func Truncate(tableList []string) (err error) {
 				"loans",
 				"images",
 				"roles",
-				"permissions",
 				"users",
-				"user_relations",
+				"bank_representatives",
 				"loan_purposes",
 			}
 		}

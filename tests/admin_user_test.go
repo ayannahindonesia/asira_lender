@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestGetPermissionList(t *testing.T) {
+func TestGetUserList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -31,22 +31,24 @@ func TestGetPermissionList(t *testing.T) {
 	})
 
 	// valid response
-	auth.GET("/admin/permission").
+	auth.GET("/admin/users").
 		Expect().
-		Status(http.StatusOK).JSON().Array()
+		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	auth.GET("/admin/permission").WithQuery("name", "bank").
+	obj := auth.GET("/admin/users").WithQuery("username", "adminkey").
 		Expect().
-		Status(http.StatusOK).JSON().Array()
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
 	// test query invalid
-	auth.GET("/admin/permission").WithQuery("name", "should not found this").
+	obj = auth.GET("/admin/users").WithQuery("username", "should not found this").
 		Expect().
-		Status(http.StatusOK).JSON().Array()
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
-func TestNewPermission(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -68,24 +70,29 @@ func TestNewPermission(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"role_id":     2,
-		"permissions": []string{"All"},
+		"username": "test user",
+		"email":    "testuser@ayannah.id",
+		"phone":    "08111",
+		"status":   "active",
+		"role_id":  []int{1},
 	}
 
 	// normal scenario
-	obj := auth.POST("/admin/permission").WithJSON(payload).
+	obj := auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
-	obj.ContainsKey("role_id").ValueEqual("role_id", 2)
+	obj.ContainsKey("username").ValueEqual("username", "test user")
 
 	// test invalid
-	payload = map[string]interface{}{}
-	auth.POST("/admin/permission").WithJSON(payload).
+	payload = map[string]interface{}{
+		"username": "",
+	}
+	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
 
-func TestGetPermissionbyID(t *testing.T) {
+func TestGetUserbyID(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -107,18 +114,18 @@ func TestGetPermissionbyID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/permission/1").
+	obj := auth.GET("/admin/users/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/permission/9999").
+	auth.GET("/admin/users/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchPermission(t *testing.T) {
+func TestPatchUser(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -140,21 +147,20 @@ func TestPatchPermission(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"role_id":     1,
-		"description": []string{"All"},
+		"status": "inactive",
 	}
 
 	// valid response
-	obj := auth.PATCH("/admin/permission").WithJSON(payload).
+	obj := auth.PATCH("/admin/users/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("role_id").ValueEqual("role_id", 1)
+	obj.ContainsKey("status").ValueEqual("status", "inactive")
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer wrong token")
 	})
-	auth.PATCH("/admin/permission").WithJSON(payload).
+	auth.PATCH("/admin/users/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnauthorized).JSON().Object()
 }

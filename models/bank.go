@@ -5,9 +5,7 @@ import (
 
 	"github.com/lib/pq"
 
-	"github.com/google/uuid"
 	"gitlab.com/asira-ayannah/basemodel"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type (
@@ -25,27 +23,8 @@ type (
 		Products            pq.Int64Array `json:"products" gorm "column:products"`
 		AdminFeeSetup       string        `json:"adminfee_setup" gorm:"column:adminfee_setup;type:varchar(255)"`
 		ConvenienceFeeSetup string        `json:"convfee_setup" gorm:"column:convfee_setup;type:varchar(255)"`
-		Username            string        `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
-		Password            string        `json:"password" gorm:"column:password;type:text;not null"`
 	}
 )
-
-// gorm callback hook
-func (model *Bank) BeforeCreate() (err error) {
-	if len(model.Username) < 1 {
-		model.Username = uuid.New().String()
-	}
-	if len(model.Username) < 1 {
-		model.Password = uuid.New().String()
-	}
-	passwordByte, err := bcrypt.GenerateFromPassword([]byte(model.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
-	model.Password = string(passwordByte)
-	return nil
-}
 
 func (model *Bank) Create() error {
 	err := basemodel.Create(&model)
