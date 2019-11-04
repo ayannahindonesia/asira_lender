@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"asira_lender/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,6 +14,10 @@ import (
 
 func LenderProfile(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_profile")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -21,7 +26,10 @@ func LenderProfile(c echo.Context) error {
 	lenderModel := models.Bank{}
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
-	err := lenderModel.FindbyID(lenderID)
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err = lenderModel.FindbyID(int(bankRep.BankID))
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
@@ -31,6 +39,10 @@ func LenderProfile(c echo.Context) error {
 
 func LenderProfileEdit(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_profile_edit")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -39,7 +51,10 @@ func LenderProfileEdit(c echo.Context) error {
 	lenderModel := models.Bank{}
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
-	err := lenderModel.FindbyID(lenderID)
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err = lenderModel.FindbyID(int(bankRep.BankID))
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}

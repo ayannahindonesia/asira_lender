@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// ClientLogin func
 func ClientLogin(c echo.Context) error {
 	defer c.Request().Body.Close()
 
@@ -30,8 +31,8 @@ func ClientLogin(c echo.Context) error {
 		Secret string `json:"secret"`
 	}
 
-	internals := models.Internals{}
-	err = internals.FilterSearchSingle(&Login{
+	client := models.Client{}
+	err = client.FilterSearchSingle(&Login{
 		Key:    auth[0],
 		Secret: auth[1],
 	})
@@ -39,7 +40,7 @@ func ClientLogin(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnauthorized, "", "Invalid Credentials")
 	}
 
-	token, err := createJwtToken(strconv.FormatUint(internals.ID, 10), internals.Role)
+	token, err := createJwtToken(strconv.FormatUint(client.ID, 10), "client")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, "", fmt.Sprint(err))
 	}

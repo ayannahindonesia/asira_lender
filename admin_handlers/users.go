@@ -12,8 +12,12 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
-func GetAllUser(c echo.Context) error {
+func UserList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_user_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	userM := models.User{}
 	// pagination parameters
@@ -48,13 +52,17 @@ func GetAllUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-func UserGetDetails(c echo.Context) error {
+func UserDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_user_details")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	userM := models.User{}
 
 	userID, _ := strconv.Atoi(c.Param("user_id"))
-	err := userM.FindbyID(userID)
+	err = userM.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
 	}
@@ -62,8 +70,12 @@ func UserGetDetails(c echo.Context) error {
 	return c.JSON(http.StatusOK, userM)
 }
 
-func AddUser(c echo.Context) error {
+func UserNew(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_user_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	userM := models.User{}
 
@@ -71,7 +83,7 @@ func AddUser(c echo.Context) error {
 		"username": []string{"required", "unique:users,username"},
 		"email":    []string{"required", "unique:users,email"},
 		"phone":    []string{"required", "unique:users,phone"},
-		"role_id":  []string{"required", "role_id"},
+		"role_id":  []string{},
 		"status":   []string{},
 	}
 
@@ -82,7 +94,7 @@ func AddUser(c echo.Context) error {
 	tempPW := RandString(8)
 	userM.Password = tempPW
 
-	err := userM.Create()
+	err = userM.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat User")
 	}
@@ -99,12 +111,17 @@ func AddUser(c echo.Context) error {
 	return c.JSON(http.StatusCreated, userM)
 }
 
-func UpdateUser(c echo.Context) error {
+func UserPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_user_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
 	userID, _ := strconv.Atoi(c.Param("user_id"))
 
 	userM := models.User{}
-	err := userM.FindbyID(userID)
+	err = userM.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
@@ -113,7 +130,7 @@ func UpdateUser(c echo.Context) error {
 		"username": []string{"required", "unique:users,username,1"},
 		"email":    []string{"required", "unique:users,email,1"},
 		"phone":    []string{"required", "unique:users,phone,1"},
-		"role_id":  []string{"required", "role_id"},
+		"role_id":  []string{},
 		"status":   []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &userM)

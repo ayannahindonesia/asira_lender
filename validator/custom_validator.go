@@ -100,23 +100,6 @@ func (a *AsiraValidator) CustomValidatorRules() {
 		return nil
 	})
 
-	// bank type. must be a listed bank type id.
-	govalidator.AddCustomRule("role_id", func(field string, rule string, message string, value interface{}) error {
-		var (
-			queryRow *gorm.DB
-			total    int
-		)
-
-		query := `SELECT COUNT(*) as total FROM roles WHERE id = ?`
-		queryRow = a.DB.Raw(query, value)
-		queryRow.Row().Scan(&total)
-
-		if total < 1 {
-			return fmt.Errorf(fmt.Sprint("role %v is not found.", value), field)
-		}
-		return nil
-	})
-
 	// active / inactive string only.
 	govalidator.AddCustomRule("active_inactive", func(field string, rule string, message string, value interface{}) error {
 		val := value.(string)

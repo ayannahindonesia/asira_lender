@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
+	"github.com/lib/pq"
 	"github.com/thedevsaddam/govalidator"
 	"gitlab.com/asira-ayannah/basemodel"
 )
@@ -22,6 +23,10 @@ type BankSelect struct {
 
 func BankList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	db := asira.App.DB
 	var (
@@ -96,6 +101,10 @@ func BankList(c echo.Context) error {
 
 func BankNew(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank := models.Bank{}
 
@@ -118,16 +127,42 @@ func BankNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := bank.Create()
+	err = bank.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
+
+	// @ToDo remodel this flow
+	user := models.User{
+		Username: bank.Name,
+		Roles:    pq.Int64Array{3},
+		Phone:    bank.Phone,
+		Status:   "active",
+	}
+	err = user.Create()
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat user")
+	}
+
+	bankRep := models.BankRepresentatives{
+		UserID: user.ID,
+		BankID: bank.ID,
+	}
+	err = bankRep.Create()
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank representative")
+	}
+	// ------
 
 	return c.JSON(http.StatusCreated, bank)
 }
 
 func BankDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	db := asira.App.DB
 
@@ -149,8 +184,10 @@ func BankDetail(c echo.Context) error {
 
 func BankPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
-
-	var err error
+	err := validatePermission(c, "core_bank_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
@@ -159,10 +196,6 @@ func BankPatch(c echo.Context) error {
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank %v tidak ditemukan", bank_id))
 	}
-
-	// dont allow admin to change bank credentials
-	tempUsername := bank.Username
-	tempPassword := bank.Password
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
@@ -183,9 +216,6 @@ func BankPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	bank.Username = tempUsername
-	bank.Password = tempPassword
-
 	err = bank.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bank_id))
@@ -196,11 +226,15 @@ func BankPatch(c echo.Context) error {
 
 func BankDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_bank_delete")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bank := models.Bank{}
-	err := bank.FindbyID(bank_id)
+	err = bank.FindbyID(bank_id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
 	}

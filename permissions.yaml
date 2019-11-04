@@ -1,30 +1,52 @@
-GET:
-  Bank_List: /admin/banks
-  Bank_Type_List: /admin/bank_types
-  Bank_Service_List: /admin/bank_services
-  Service_Product_List: /admin/service_products
-  Borrower_List: /admin/borrower
-  Loan_List: /admin/loan
-POST:
-  Bank_Add: /admin/banks
-  Bank_Type_Add: /admin/bank_types
-  Bank_Service_Add: /admin/bank_services
-  Service_Product_Add: /admin/service_products
-  Role_Add: /admin/roles
-  Permission_Add: /admin/permission
-PATCH:
-  Bank_Edit: /admin/banks
-  Bank_Type_Edit: /admin/bank_types
-  Bank_Service_Edit: /admin/bank_services
-  Service_Product_Edit: /admin/service_products
-  Role_Edit: /admin/roles
-  Permission_Edit: /admin/permission
-DELETE:
-  Bank_Delete: /admin/banks
-  Bank_Type_Delete: /admin/bank_types
-  Bank_Service_Delete: /admin/bank_services
-  Service_Product_Delete: /admin/service_products
-  Role_Delete: /admin/roles
-  Permission_Delete: /admin/permission
-  
-
+permissions:
+  lender_profile: lender_profile
+  lender_profile_edit: lender_profile_edit
+  lender_loan_request_list: lender_loan_request_list
+  lender_loan_request_detail: lender_loan_request_detail
+  lender_loan_approve_reject: lender_loan_approve_reject
+  lender_loan_request_list_download: lender_loan_request_list_download
+  lender_borrower_list: lender_borrower_list
+  lender_borrower_list_detail: lender_borrower_list_detail
+  lender_borrower_list_download: lender_borrower_list_download
+  core_create_client: core_create_client
+  core_view_image: core_view_image
+  core_borrower_get_all: core_borrower_get_all
+  core_borrower_get_details: core_borrower_get_details
+  core_loan_get_all: core_loan_get_all
+  core_loan_get_details: core_loan_get_details
+  core_bank_type_list: core_bank_type_list
+  core_bank_type_new: core_bank_type_new
+  core_bank_type_detail: core_bank_type_detail
+  core_bank_type_patch: core_bank_type_patch
+  core_bank_type_delete: core_bank_type_delete
+  core_bank_list: core_bank_list
+  core_bank_new: core_bank_new
+  core_bank_detail: core_bank_detail
+  core_bank_patch: core_bank_patch
+  core_bank_delete: core_bank_delete
+  core_service_list: core_service_list
+  core_service_new: core_service_new
+  core_service_detail: core_service_detail
+  core_service_patch: core_service_patch
+  core_service_delete: core_service_delete
+  core_product_list: core_product_list
+  core_product_new: core_product_new
+  core_product_detail: core_product_detail
+  core_product_patch: core_product_patch
+  core_product_delete: core_product_delete
+  core_loan_purpose_list: core_loan_purpose_list
+  core_loan_purpose_new: core_loan_purpose_new
+  core_loan_purpose_detail: core_loan_purpose_detail
+  core_loan_purpose_patch: core_loan_purpose_patch
+  core_loan_purpose_delete: core_loan_purpose_delete
+  core_role_list: core_role_list
+  core_role_details: core_role_details
+  core_role_new: core_role_new
+  core_role_patch: core_role_patch
+  core_role_range: core_role_range
+  core_permission_list: core_permission_list
+  core_user_list: core_user_list
+  core_user_details: core_user_details
+  core_user_new: core_user_new
+  core_user_patch: core_user_patch
+  convenience_fee_report: convenience_fee_report

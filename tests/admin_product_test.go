@@ -24,7 +24,7 @@ func TestGetProductList(t *testing.T) {
 		req.WithHeader("Authorization", "Basic "+adminBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
@@ -68,7 +68,7 @@ func TestNewProduct(t *testing.T) {
 		req.WithHeader("Authorization", "Basic "+adminBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
@@ -128,7 +128,7 @@ func TestGetProductbyID(t *testing.T) {
 		req.WithHeader("Authorization", "Basic "+adminBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
@@ -161,7 +161,7 @@ func TestPatchProduct(t *testing.T) {
 		req.WithHeader("Authorization", "Basic "+adminBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)

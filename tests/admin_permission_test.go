@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestNewInternal(t *testing.T) {
+func TestGetPermissionList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -30,22 +30,8 @@ func TestNewInternal(t *testing.T) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
 
-	payload := map[string]interface{}{
-		"name": "new client",
-		"key":  "client key",
-	}
-
-	// normal scenario
-	obj := auth.POST("/admin/client").WithJSON(payload).
+	// valid response
+	auth.GET("/admin/permission").
 		Expect().
-		Status(http.StatusCreated).JSON().Object()
-	obj.ContainsKey("name").ValueEqual("name", "new client")
-
-	// test invalid
-	payload = map[string]interface{}{
-		"secret": "fawef",
-	}
-	auth.POST("/admin/client").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
+		Status(http.StatusOK).JSON().Object()
 }
