@@ -198,6 +198,10 @@ func Seed() {
 
 		purposes := []models.LoanPurpose{
 			models.LoanPurpose{
+				Name:   "Lain-lain",
+				Status: "active",
+			},
+			models.LoanPurpose{
 				Name:   "Pendidikan",
 				Status: "active",
 			},
@@ -644,6 +648,10 @@ func TestSeed() {
 		}
 
 		purposes := []models.LoanPurpose{
+			models.LoanPurpose{
+				Name:   "Lain-lain",
+				Status: "active",
+			},
 			models.LoanPurpose{
 				Name:   "Pendidikan",
 				Status: "active",
