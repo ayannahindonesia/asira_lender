@@ -36,13 +36,13 @@ func TestGetUserList(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/users").WithQuery("name", "admin").
+	obj := auth.GET("/admin/users").WithQuery("username", "admin").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
 	// test query invalid
-	obj = auth.GET("/admin/users").WithQuery("name", "should not found this").
+	obj = auth.GET("/admin/users").WithQuery("username", "should not found this").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
@@ -85,7 +85,7 @@ func TestNewUser(t *testing.T) {
 
 	// test invalid
 	payload = map[string]interface{}{
-		"name": "",
+		"username": "",
 	}
 	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
