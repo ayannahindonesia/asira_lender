@@ -18,11 +18,15 @@ import (
 	"gitlab.com/asira-ayannah/basemodel"
 )
 
+// UserSelect for query
 type UserSelect struct {
 	models.User
 	RolesName pq.StringArray `json:"roles_name"`
+	BankID    uint64         `json:"bank_id"`
+	BankName  string         `json:"bank_name"`
 }
 
+// UserList gets all users
 func UserList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_list")
@@ -51,8 +55,10 @@ func UserList(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 	db = db.Table("users u").
-		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name").
-		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))")
+		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
+		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
+		Joins("LEFT JOIN bank_representatives br ON br.user_id = u.id").
+		Joins("LEFT JOIN banks b ON br.bank_id = b.id")
 
 	if name := c.QueryParam("username"); len(name) > 0 {
 		db = db.Where("u.username LIKE ?", name)
@@ -65,6 +71,9 @@ func UserList(c echo.Context) error {
 	}
 	if phone := c.QueryParam("phone"); len(phone) > 0 {
 		db = db.Where("u.phone LIKE ?", phone)
+	}
+	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
+		db = db.Where("bank_name LIKE ?", bankName)
 	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
@@ -105,6 +114,7 @@ func UserList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// UserDetails get user detail by id
 func UserDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_details")
@@ -129,36 +139,83 @@ func UserDetails(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// UserNew create new user
 func UserNew(c echo.Context) error {
+	bankRepsFlag := false
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_new")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	userM := models.User{}
+	type NewUserFields struct {
+		Username string        `json:"username"`
+		Email    string        `json:"email"`
+		Phone    string        `json:"phone"`
+		Roles    pq.Int64Array `json:"roles"`
+		Status   string        `json:"status"`
+		Bank     uint64        `json:"bank"`
+	}
+
+	userF := NewUserFields{}
 
 	payloadRules := govalidator.MapData{
 		"username": []string{"required", "unique:users,username"},
 		"email":    []string{"required", "unique:users,email"},
 		"phone":    []string{"required", "unique:users,phone"},
+		"bank":     []string{"valid_id:banks"},
 		"roles":    []string{},
 		"status":   []string{},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &userM)
+	validate := validateRequestPayload(c, payloadRules, &userF)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
-	tempPW := RandString(8)
-	userM.Password = tempPW
 
-	err = userM.Create()
+	if userF.Bank > 0 {
+		bankerRole := models.Roles{}
+		type BankRoleFilter struct {
+			Name string `json:"name"`
+		}
+		err = bankerRole.FilterSearchSingle(&BankRoleFilter{
+			Name: "Banker",
+		})
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Tidak bisa memuat default role.")
+		}
+
+		userF.Roles = pq.Int64Array{int64(bankerRole.ID)}
+		bankRepsFlag = true
+	}
+
+	tempPW := RandString(8)
+	newUser := models.User{
+		Username: userF.Username,
+		Email:    userF.Email,
+		Phone:    userF.Phone,
+		Roles:    userF.Roles,
+		Status:   userF.Status,
+		Password: tempPW,
+	}
+
+	err = newUser.Create()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat User")
 	}
 
-	to := userM.Email
+	if bankRepsFlag {
+		bankRep := models.BankRepresentatives{
+			UserID: newUser.ID,
+			BankID: userF.Bank,
+		}
+		err = bankRep.Create()
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Bank User")
+		}
+	}
+
+	to := newUser.Email
 	subject := "[NO REPLY] - Password Aplikasi ASIRA"
 	message := "Selamat Pagi,\n\nIni adalah password anda untuk login " + tempPW + " \n\n\n Ayannah Solusi Nusantara Team"
 
@@ -167,9 +224,10 @@ func UserNew(c echo.Context) error {
 		log.Println(err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, userM)
+	return c.JSON(http.StatusCreated, newUser)
 }
 
+// UserPatch edit user
 func UserPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_patch")

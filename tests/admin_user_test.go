@@ -73,6 +73,7 @@ func TestNewUser(t *testing.T) {
 		"username": "test user",
 		"email":    "testuser@ayannah.id",
 		"phone":    "08111",
+		"bank":     1,
 		"status":   "active",
 		"role_id":  []int{1},
 	}
