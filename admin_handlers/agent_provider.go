@@ -33,7 +33,7 @@ func AgentProviderList(c echo.Context) error {
 	phone := c.QueryParam("phone")
 
 	type Filter struct {
-		Name  string   `json:"fullname" condition:"LIKE"`
+		Name  string   `json:"name" condition:"LIKE"`
 		ID    []string `json:"id"`
 		PIC   string   `json:"pic"`
 		Phone string   `json:"phone"`

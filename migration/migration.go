@@ -337,6 +337,33 @@ func Seed() {
 		for _, bankRep := range bankReps {
 			bankRep.Create()
 		}
+
+		agentProviders := []models.AgentProvider{
+			models.AgentProvider{
+				Name:    "Agent Provider A",
+				PIC:     "PIC A",
+				Phone:   "081234567890",
+				Address: "address of provider a",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider B",
+				PIC:     "PIC B",
+				Phone:   "081234567891",
+				Address: "address of provider b",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider C",
+				PIC:     "PIC C",
+				Phone:   "081234567892",
+				Address: "address of provider c",
+				Status:  "active",
+			},
+		}
+		for _, agentProvider := range agentProviders {
+			agentProvider.Create()
+		}
 	}
 }
 
@@ -889,6 +916,33 @@ func TestSeed() {
 		for _, bankRep := range bankReps {
 			bankRep.Create()
 		}
+
+		agentProviders := []models.AgentProvider{
+			models.AgentProvider{
+				Name:    "Agent Provider A",
+				PIC:     "PIC A",
+				Phone:   "081234567890",
+				Address: "address of provider a",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider B",
+				PIC:     "PIC B",
+				Phone:   "081234567891",
+				Address: "address of provider b",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider C",
+				PIC:     "PIC C",
+				Phone:   "081234567892",
+				Address: "address of provider c",
+				Status:  "active",
+			},
+		}
+		for _, agentProvider := range agentProviders {
+			agentProvider.Create()
+		}
 	}
 }
 
@@ -909,6 +963,7 @@ func Truncate(tableList []string) (err error) {
 				"users",
 				"bank_representatives",
 				"loan_purposes",
+				"agent_providers",
 			}
 		}
 

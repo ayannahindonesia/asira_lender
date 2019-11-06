@@ -216,6 +216,9 @@ CREATE TABLE "bank_representatives" (
 
 CREATE TABLE "agent_providers" (
     "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
     "name" varchar(255),
     "pic" varchar(255),
     "phone" varchar(255),
