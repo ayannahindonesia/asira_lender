@@ -39,7 +39,8 @@ func UserList(c echo.Context) error {
 	var page int
 
 	// pagination parameters
-	if rows, _ = strconv.Atoi(c.QueryParam("rows")); rows > 0 {
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		if page <= 0 {
 			page = 1
@@ -78,10 +79,13 @@ func UserList(c echo.Context) error {
 		}
 	}
 
-	if rows > 0 && offset > 0 {
+	tempDB := db
+	tempDB.Count(&totalRows)
+
+	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
 	}
-	err = db.Find(&results).Count(&totalRows).Error
+	err = db.Find(&results).Error
 	if err != nil {
 		log.Println(err)
 	}
