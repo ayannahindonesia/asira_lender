@@ -34,13 +34,13 @@ func TestBorrowerGetAll(t *testing.T) {
 	obj := auth.GET("/lender/borrower_list").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("to").ValueEqual("to", 25)
+	obj.ContainsKey("total_data").ValueEqual("total_data", 2)
 
 	// valid response of borrowers
 	obj = auth.GET("/lender/borrower_list").WithQuery("fullname", "ame").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("to").ValueEqual("to", 25)
+	obj.ContainsKey("total_data").ValueEqual("total_data", 2)
 }
 
 func TestBorrowerGetDetail(t *testing.T) {
