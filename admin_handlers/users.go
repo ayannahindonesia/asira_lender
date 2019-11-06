@@ -18,13 +18,24 @@ import (
 	"gitlab.com/asira-ayannah/basemodel"
 )
 
-// UserSelect for query
-type UserSelect struct {
-	models.User
-	RolesName pq.StringArray `json:"roles_name"`
-	BankID    uint64         `json:"bank_id"`
-	BankName  string         `json:"bank_name"`
-}
+type (
+	// UserSelect for query
+	UserSelect struct {
+		models.User
+		RolesName pq.StringArray `json:"roles_name"`
+		BankID    uint64         `json:"bank_id"`
+		BankName  string         `json:"bank_name"`
+	}
+	// UserFields for post and patch
+	UserFields struct {
+		Username string        `json:"username"`
+		Email    string        `json:"email"`
+		Phone    string        `json:"phone"`
+		Roles    pq.Int64Array `json:"roles"`
+		Status   string        `json:"status"`
+		Bank     uint64        `json:"bank"`
+	}
+)
 
 // UserList gets all users
 func UserList(c echo.Context) error {
@@ -148,16 +159,7 @@ func UserNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	type NewUserFields struct {
-		Username string        `json:"username"`
-		Email    string        `json:"email"`
-		Phone    string        `json:"phone"`
-		Roles    pq.Int64Array `json:"roles"`
-		Status   string        `json:"status"`
-		Bank     uint64        `json:"bank"`
-	}
-
-	userF := NewUserFields{}
+	userF := UserFields{}
 
 	payloadRules := govalidator.MapData{
 		"username": []string{"required", "unique:users,username"},
@@ -174,18 +176,16 @@ func UserNew(c echo.Context) error {
 	}
 
 	if userF.Bank > 0 {
-		bankerRole := models.Roles{}
-		type BankRoleFilter struct {
-			Name string `json:"name"`
-		}
-		err = bankerRole.FilterSearchSingle(&BankRoleFilter{
-			Name: "Banker",
-		})
-		if err != nil {
-			return returnInvalidResponse(http.StatusInternalServerError, err, "Tidak bisa memuat default role.")
+		db := asira.App.DB
+		var count int
+		db.Table("roles r").Select("*").
+			Where("r.id IN (?)", []int64(userF.Roles)).
+			Where("r.system = ?", "Dashboard").Count(&count)
+
+		if len(userF.Roles) != count {
+			return returnInvalidResponse(http.StatusInternalServerError, nil, "Roles tidak valid.")
 		}
 
-		userF.Roles = pq.Int64Array{int64(bankerRole.ID)}
 		bankRepsFlag = true
 	}
 
@@ -238,24 +238,59 @@ func UserPatch(c echo.Context) error {
 	userID, _ := strconv.Atoi(c.Param("user_id"))
 
 	userM := models.User{}
+	userF := UserFields{}
 	err = userM.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
-	tempPassword := userM.Password
+
 	payloadRules := govalidator.MapData{
-		"username": []string{"required", "unique:users,username,1"},
-		"email":    []string{"required", "unique:users,email,1"},
-		"phone":    []string{"required", "unique:users,phone,1"},
+		"username": []string{"unique:users,username,1"},
+		"email":    []string{"unique:users,email,1"},
+		"phone":    []string{"unique:users,phone,1"},
+		"bank":     []string{"valid_id:banks"},
 		"roles":    []string{},
 		"status":   []string{},
 	}
-	validate := validateRequestPayload(c, payloadRules, &userM)
+	validate := validateRequestPayload(c, payloadRules, &userF)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	userM.Password = tempPassword
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(int(userM.ID))
+	if len(userF.Roles) > 0 && bankRep.ID != 0 {
+		db := asira.App.DB
+		var count int
+		db.Table("roles r").Select("*").
+			Where("r.id IN (?)", []int64(userF.Roles)).
+			Where("r.system = ?", "Dashboard").Count(&count)
+
+		if len(userF.Roles) != count {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, nil, "Roles tidak valid.")
+		}
+	}
+
+	if len(userF.Username) > 0 {
+		userM.Username = userF.Username
+	}
+	if len(userF.Email) > 0 {
+		userM.Email = userF.Email
+	}
+	if len(userF.Phone) > 0 {
+		userM.Phone = userF.Phone
+	}
+	if len(userF.Status) > 0 {
+		userM.Status = userF.Status
+	}
+	if userF.Bank != 0 {
+		bankRep.BankID = userF.Bank
+		bankRep.Save()
+	}
+	if len(userF.Roles) > 0 {
+		userM.Roles = userF.Roles
+	}
+
 	err = userM.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update User %v", userID))
