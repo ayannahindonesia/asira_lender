@@ -140,8 +140,10 @@ func UserDetails(c echo.Context) error {
 	userID, _ := strconv.Atoi(c.Param("user_id"))
 
 	err = db.Table("users u").
-		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name").
+		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
 		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
+		Joins("LEFT JOIN bank_representatives br ON br.user_id = u.id").
+		Joins("LEFT JOIN banks b ON br.bank_id = b.id").
 		Where("u.id = ?", userID).Find(&user).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
