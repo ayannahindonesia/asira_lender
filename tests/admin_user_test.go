@@ -83,6 +83,18 @@ func TestNewUser(t *testing.T) {
 		Status(http.StatusCreated).JSON().Object()
 	obj.ContainsKey("username").ValueEqual("username", "test user")
 
+	// test same phone
+	payload = map[string]interface{}{
+		"username": "test user1",
+		"email":    "testuser1@ayannah.id",
+		"phone":    "08111",
+		"status":   "active",
+		"role_id":  []int{1},
+	}
+	auth.POST("/admin/users").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
+
 	// test invalid
 	payload = map[string]interface{}{
 		"username": "",
@@ -155,6 +167,14 @@ func TestPatchUser(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("status").ValueEqual("status", "inactive")
+
+	// test phone exists
+	payload = map[string]interface{}{
+		"phone": "081234567890",
+	}
+	auth.PATCH("/admin/users/3").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {

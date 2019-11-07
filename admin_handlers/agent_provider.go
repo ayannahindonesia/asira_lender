@@ -84,7 +84,7 @@ func AgentProviderNew(c echo.Context) error {
 	payloadRules := govalidator.MapData{
 		"name":    []string{"required"},
 		"pic":     []string{"required"},
-		"phone":   []string{"required"},
+		"phone":   []string{"required", "unique:agent_providers,phone"},
 		"address": []string{"required"},
 		"status":  []string{"active_inactive"},
 	}
@@ -121,7 +121,7 @@ func AgentProviderPatch(c echo.Context) error {
 	payloadRules := govalidator.MapData{
 		"name":    []string{},
 		"pic":     []string{},
-		"phone":   []string{},
+		"phone":   []string{"unique:agent_providers,phone,1"},
 		"address": []string{},
 		"status":  []string{"active_inactive"},
 	}
