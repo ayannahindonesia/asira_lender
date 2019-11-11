@@ -89,6 +89,13 @@ func AdminGroup(e *echo.Echo) {
 	g.POST("/agent_providers", admin_handlers.AgentProviderNew)
 	g.PATCH("/agent_providers/:id", admin_handlers.AgentProviderPatch)
 
+	// Agent Provider
+	g.GET("/agents", admin_handlers.AgentList)
+	g.GET("/agents/:id", admin_handlers.AgentDetails)
+	g.POST("/agents", admin_handlers.AgentNew)
+	g.PATCH("/agents/:id", admin_handlers.AgentPatch)
+	g.DELETE("/agents/:id", admin_handlers.AgentDelete)
+
 	// Reports
 	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
 }

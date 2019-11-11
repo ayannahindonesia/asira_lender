@@ -149,6 +149,15 @@ func (a *AsiraValidator) CustomValidatorRules() {
 		return nil
 	})
 
+	// validator agent category
+	govalidator.AddCustomRule("agent_categories", func(field string, rule string, message string, value interface{}) error {
+		val := value.(string)
+		if val != "agent" && val != "agent_executive" {
+			return fmt.Errorf("The %s field must be contain either: agent or agent_executive", field)
+		}
+		return nil
+	})
+
 	// must empty
 	govalidator.AddCustomRule("unrequired", func(field, rule, message string, value interface{}) error {
 		err := fmt.Errorf("The %s field is prohibited", field)
