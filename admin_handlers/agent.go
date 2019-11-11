@@ -108,7 +108,7 @@ func AgentNew(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
-		"username":       []string{"required"},
+		"username":       []string{"required", "unique:agents,username"},
 		"email":          []string{"required", "unique:agents,email"},
 		"phone":          []string{"required", "unique:agents,phone"},
 		"category":       []string{"required", "agent_categories"},
