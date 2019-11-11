@@ -111,6 +111,20 @@ func (l *Loan) Reject(reason string) error {
 	return err
 }
 
+// DisburseConfirmed confirm disburse
+func (model *Loan) DisburseConfirmed() error {
+	model.DisburseStatus = "confirmed"
+
+	err := model.Save()
+	if err != nil {
+		return err
+	}
+
+	err = KafkaSubmitModel(model, "loan")
+
+	return err
+}
+
 // ChangeDisburseDate func
 func (l *Loan) ChangeDisburseDate(disburseDate time.Time) (err error) {
 	if l.DisburseDateChanged != true {

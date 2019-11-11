@@ -310,8 +310,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, "", "not found")
 	}
 
-	loan.DisburseStatus = "confirmed"
-	loan.Save()
+	loan.DisburseConfirmed()
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loan_id, loan.DisburseStatus)})
 }
