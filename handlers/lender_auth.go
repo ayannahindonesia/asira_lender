@@ -45,7 +45,7 @@ func LenderLogin(c echo.Context) error {
 	// check if theres record
 	validKey = asira.App.DB.
 		Where("username = ?", credentials.Key).
-		Where("status = active").
+		Where("status = ?", "active").
 		Find(&lender).RecordNotFound()
 
 	if !validKey { // check the password
