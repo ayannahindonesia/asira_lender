@@ -43,7 +43,10 @@ func LenderLogin(c echo.Context) error {
 	}
 
 	// check if theres record
-	validKey = asira.App.DB.Where("username = ?", credentials.Key).Find(&lender).RecordNotFound()
+	validKey = asira.App.DB.
+		Where("username = ?", credentials.Key).
+		Where("status = active").
+		Find(&lender).RecordNotFound()
 
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(lender.Password), []byte(credentials.Password))
