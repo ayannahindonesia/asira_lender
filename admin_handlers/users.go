@@ -186,9 +186,9 @@ func UserPatch(c echo.Context) error {
 	}
 	tempPassword := userM.Password
 	payloadRules := govalidator.MapData{
-		"username": []string{"required", "unique:users,username,1"},
-		"email":    []string{"required", "unique:users,email,1"},
-		"phone":    []string{"required", "unique:users,phone,1"},
+		"username": []string{"required", "unique:users,username,2"},
+		"email":    []string{"required", "unique:users,email,2"},
+		"phone":    []string{"required", "unique:users,phone,2"},
 		"roles":    []string{},
 		"status":   []string{},
 	}
