@@ -134,6 +134,18 @@ func TestAgentPatch(t *testing.T) {
 	obj.ContainsKey("status").ValueEqual("status", "inactive")
 	obj.Value("agent_provider").Object().ValueEqual("Int64", 2)
 
+	// uniques
+	auth.PATCH("/admin/agents/3").WithJSON(map[string]interface{}{
+		"phone": "081234567890",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+	auth.PATCH("/admin/agents/3").WithJSON(map[string]interface{}{
+		"email": "agentk@mib.com",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+
 	// test invalid
 	auth.POST("/admin/agents").WithJSON(map[string]interface{}{
 		"banks": []int{99},

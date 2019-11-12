@@ -163,8 +163,8 @@ func AgentPatch(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
-		"email":          []string{"unique:agents,email"},
-		"phone":          []string{"unique:agents,phone"},
+		"email":          []string{},
+		"phone":          []string{},
 		"category":       []string{"agent_categories"},
 		"agent_provider": []string{"valid_id:agent_providers"},
 		"banks":          []string{"valid_id:banks"},
