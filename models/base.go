@@ -71,19 +71,21 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 		break
 	case "loan":
 		type LoanStatusUpdate struct {
-			ID             uint64    `json:"id"`
-			Status         string    `json:"status"`
-			DisburseDate   time.Time `json:"disburse_date"`
-			DisburseStatus string    `json:"disburse_status"`
-			RejectReason   string    `json:"reject_reason"`
+			ID                  uint64    `json:"id"`
+			Status              string    `json:"status"`
+			DisburseDate        time.Time `json:"disburse_date"`
+			DisburseStatus      string    `json:"disburse_status"`
+			DisburseDateChanged bool      `json:"disburse_date_changed"`
+			RejectReason        string    `json:"reject_reason"`
 		}
 		if e, ok := i.(*Loan); ok {
 			payload = LoanStatusUpdate{
-				ID:             e.ID,
-				Status:         e.Status,
-				DisburseDate:   e.DisburseDate,
-				DisburseStatus: e.DisburseStatus,
-				RejectReason:   e.RejectReason,
+				ID:                  e.ID,
+				Status:              e.Status,
+				DisburseDate:        e.DisburseDate,
+				DisburseStatus:      e.DisburseStatus,
+				DisburseDateChanged: e.DisburseDateChanged,
+				RejectReason:        e.RejectReason,
 			}
 		}
 		break
