@@ -197,8 +197,8 @@ CREATE TABLE "users" (
     "roles" int ARRAY,
     "username" varchar(255) NOT NULL UNIQUE,
     "password" text NOT NULL,
-    "email" varchar(255),
-    "phone" varchar(255),
+    "email" varchar(255) UNIQUE,
+    "phone" varchar(255) UNIQUE,
     "status" varchar(255),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
