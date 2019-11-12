@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/lib/pq"
+
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
@@ -153,6 +155,7 @@ func AgentPatch(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
 	agent := models.Agent{}
+	agentPayload := AgentPayload{}
 	err = agent.FindbyID(id)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
@@ -164,13 +167,38 @@ func AgentPatch(c echo.Context) error {
 		"phone":          []string{"unique:agents,phone,1"},
 		"category":       []string{"agent_categories"},
 		"agent_provider": []string{"valid_id:agent_providers"},
-		"banks":          []string{},
+		"banks":          []string{"valid_id:banks"},
 		"status":         []string{"active_inactive"},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &agent)
+	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+	}
+
+	if len(agentPayload.Name) > 0 {
+		agent.Name = agentPayload.Name
+	}
+	if len(agentPayload.Email) > 0 {
+		agent.Email = agentPayload.Email
+	}
+	if len(agentPayload.Phone) > 0 {
+		agent.Phone = agentPayload.Phone
+	}
+	if len(agentPayload.Category) > 0 {
+		agent.Category = agentPayload.Category
+	}
+	if agentPayload.AgentProvider > 0 {
+		agent.AgentProvider = sql.NullInt64{
+			Int64: agentPayload.AgentProvider,
+			Valid: true,
+		}
+	}
+	if len(agentPayload.Banks) > 0 {
+		agent.Banks = pq.Int64Array(agentPayload.Banks)
+	}
+	if len(agentPayload.Status) > 0 {
+		agent.Status = agentPayload.Status
 	}
 
 	err = agent.Save()

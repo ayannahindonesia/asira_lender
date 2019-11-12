@@ -151,9 +151,11 @@ func (a *AsiraValidator) CustomValidatorRules() {
 
 	// validator agent category
 	govalidator.AddCustomRule("agent_categories", func(field string, rule string, message string, value interface{}) error {
-		val := value.(string)
-		if val != "agent" && val != "agent_executive" {
-			return fmt.Errorf("The %s field must be contain either: agent or agent_executive", field)
+		if value != nil {
+			val := value.(string)
+			if val != "agent" && val != "agent_executive" {
+				return fmt.Errorf("The %s field must be contain either: agent or agent_executive", field)
+			}
 		}
 		return nil
 	})

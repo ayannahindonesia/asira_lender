@@ -123,7 +123,8 @@ func TestAgentPatch(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"status": "inactive",
+		"agent_provider": 2,
+		"status":         "inactive",
 	}
 
 	// normal scenario
@@ -131,6 +132,7 @@ func TestAgentPatch(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("status").ValueEqual("status", "inactive")
+	obj.Value("agent_provider").Object().ValueEqual("Int64", 2)
 
 	// test invalid
 	auth.POST("/admin/agents").WithJSON(map[string]interface{}{
