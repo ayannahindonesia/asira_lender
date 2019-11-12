@@ -47,7 +47,7 @@ func (a *AsiraValidator) CustomValidatorRules() {
 
 		queryRow.Row().Scan(&total)
 
-		if total > limit {
+		if total >= limit {
 			if message != "" {
 				return errors.New(message)
 			}
