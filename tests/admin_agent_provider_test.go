@@ -152,6 +152,13 @@ func TestAgentProviderPatch(t *testing.T) {
 	obj.ContainsKey("name").ValueEqual("name", "Test Agent Provider patch")
 	obj.ContainsKey("id").ValueEqual("id", 4)
 
+	// phone unique
+	auth.PATCH("/admin/agent_providers/4").WithJSON(map[string]interface{}{
+		"phone": "081234567890",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+
 	// test invalid
 	payload = map[string]interface{}{
 		"status": "invalid status",

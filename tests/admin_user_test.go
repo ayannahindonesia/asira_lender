@@ -85,8 +85,8 @@ func TestNewUser(t *testing.T) {
 
 	// test same phone
 	payload = map[string]interface{}{
-		"username": "test user1",
-		"email":    "testuser1@ayannah.id",
+		"username": "test same phone",
+		"email":    "samephone@ayannah.id",
 		"phone":    "08111",
 		"status":   "active",
 		"role_id":  []int{1},

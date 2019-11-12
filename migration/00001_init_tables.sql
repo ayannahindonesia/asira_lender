@@ -221,7 +221,7 @@ CREATE TABLE "agent_providers" (
     "deleted_time" timestamptz,
     "name" varchar(255),
     "pic" varchar(255),
-    "phone" varchar(255),
+    "phone" varchar(255) UNIQUE,
     "address" text,
     "status" varchar(255),
     PRIMARY KEY ("id")
