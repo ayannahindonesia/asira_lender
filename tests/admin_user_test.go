@@ -108,14 +108,14 @@ func TestNewUser(t *testing.T) {
 	payload = map[string]interface{}{
 		"username": "test user 2",
 		"email":    "testuser2@ayannah.id",
-		"phone":    "08111",
+		"phone":    "08113",
 		"bank":     1,
 		"status":   "active",
 		"roles":    []int{1},
 	}
 	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
+		Status(http.StatusInternalServerError).JSON().Object()
 }
 
 func TestGetUserbyID(t *testing.T) {
