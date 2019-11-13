@@ -124,6 +124,17 @@ func AgentNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
+	if agentPayload.Category == "account_executive" {
+		if agentPayload.AgentProvider > 0 || len(agentPayload.Banks) > 1 {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "account executive cannot have any agent_providers and only allowed 1 bank at a time.", "validation error")
+		}
+	}
+	if agentPayload.Category == "agent" {
+		if agentPayload.AgentProvider <= 0 {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "agent must choose an agent provider.", "validation error")
+		}
+	}
+
 	agent := models.Agent{}
 
 	marshal, _ := json.Marshal(agentPayload)
@@ -174,6 +185,17 @@ func AgentPatch(c echo.Context) error {
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+	}
+
+	if agentPayload.Category == "account_executive" {
+		if agentPayload.AgentProvider > 0 || len(agentPayload.Banks) > 1 {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "account executive cannot have any agent_providers and only allowed 1 bank at a time.", "validation error")
+		}
+	}
+	if agentPayload.Category == "agent" {
+		if agentPayload.AgentProvider <= 0 {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "agent must choose an agent provider.", "validation error")
+		}
 	}
 
 	if len(agentPayload.Name) > 0 {
