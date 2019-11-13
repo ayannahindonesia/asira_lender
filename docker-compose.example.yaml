@@ -12,6 +12,7 @@ services:
     environment:
       - APPNAME=asira_lender
       - ENV=dev
+      - APPPORT=8001
     container_name: asira_lender
     
   zookeeper:

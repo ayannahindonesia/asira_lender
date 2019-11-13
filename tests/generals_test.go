@@ -56,6 +56,33 @@ func getLenderLoginToken(e *httpexpect.Expect, auth *httpexpect.Expect, lender_i
 	return obj.Value("token").String().Raw()
 }
 
+func getAdminLoginToken(e *httpexpect.Expect, auth *httpexpect.Expect, admin_id string) string {
+	obj := auth.GET("/clientauth").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	admintoken := obj.Value("token").String().Raw()
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+admintoken)
+	})
+
+	var payload map[string]interface{}
+	switch admin_id {
+	case "1":
+		payload = map[string]interface{}{
+			"key":      "adminkey",
+			"password": "adminsecret",
+		}
+	}
+
+	obj = auth.POST("/client/admin_login").WithJSON(payload).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	return obj.Value("token").String().Raw()
+}
+
 func getLenderAdminToken(e *httpexpect.Expect, auth *httpexpect.Expect) string {
 	obj := auth.GET("/clientauth").
 		Expect().

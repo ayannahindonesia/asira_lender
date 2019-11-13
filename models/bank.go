@@ -1,98 +1,78 @@
 package models
 
 import (
-	"log"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jinzhu/gorm/dialects/postgres"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/lib/pq"
+
+	"gitlab.com/asira-ayannah/basemodel"
 )
 
 type (
 	Bank struct {
-		BaseModel
-		DeletedTime         time.Time      `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
-		Name                string         `json:"name" gorm:"column:name;type:varchar(255)"`
-		Type                int            `json:"type" gorm:"column:type;type:varchar(255)"`
-		Address             string         `json:"address" gorm:"column:address;type:text"`
-		Province            string         `json:"province" gorm:"column:province;type:varchar(255)"`
-		City                string         `json:"city" gorm:"column:city;type:varchar(255)"`
-		AdminFeeSetup       string         `json:"adminfee_setup" gorm:"column:adminfee_setup;type:varchar(255)"`
-		ConvinienceFeeSetup string         `json:"convfee_setup" gorm:"column:convfee_setup;type:varchar(255)"`
-		Services            postgres.Jsonb `json:"services" gorm:"column:services;type:jsonb"`
-		Products            postgres.Jsonb `json:"products" gorm:"column:products;type:jsonb"`
-		PIC                 string         `json:"pic" gorm:"column:pic;type:varchar(255)"`
-		Phone               string         `json:"phone" gorm:"column:phone;type:varchar(255)"`
-		Username            string         `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
-		Password            string         `json:"password" gorm:"column:password;type:text;not null"`
+		basemodel.BaseModel
+		DeletedTime         time.Time     `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
+		Name                string        `json:"name" gorm:"column:name;type:varchar(255)"`
+		Type                uint64        `json:"type" gorm:"column:type;type:bigserial"`
+		Address             string        `json:"address" gorm:"column:address;type:text"`
+		Province            string        `json:"province" gorm:"column:province;type:varchar(255)"`
+		City                string        `json:"city" gorm:"column:city;type:varchar(255)"`
+		PIC                 string        `json:"pic" gorm:"column:pic;type:varchar(255)"`
+		Phone               string        `json:"phone" gorm:"column:phone;type:varchar(255)"`
+		Services            pq.Int64Array `json:"services" gorm "column:services"`
+		Products            pq.Int64Array `json:"products" gorm "column:products"`
+		AdminFeeSetup       string        `json:"adminfee_setup" gorm:"column:adminfee_setup;type:varchar(255)"`
+		ConvenienceFeeSetup string        `json:"convfee_setup" gorm:"column:convfee_setup;type:varchar(255)"`
 	}
 )
 
-// gorm callback hook
-func (b *Bank) BeforeCreate() (err error) {
-	log.Printf("new bank : %v", b)
-	if len(b.Username) < 1 {
-		b.Username = uuid.New().String()
-	}
-	if len(b.Username) < 1 {
-		b.Password = uuid.New().String()
-	}
-	passwordByte, err := bcrypt.GenerateFromPassword([]byte(b.Password), bcrypt.DefaultCost)
+func (model *Bank) Create() error {
+	err := basemodel.Create(&model)
 	if err != nil {
 		return err
 	}
 
-	b.Password = string(passwordByte)
-	return nil
+	err = KafkaSubmitModel(model, "bank")
+
+	return err
 }
 
-func (b *Bank) Create() (*Bank, error) {
-	err := Create(&b)
+func (model *Bank) Save() error {
+	err := basemodel.Save(&model)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = KafkaSubmitModel(b, "bank")
+	err = KafkaSubmitModel(model, "bank")
 
-	return b, err
+	return err
 }
 
-// gorm callback hook
-func (b *Bank) BeforeSave() (err error) {
-	return nil
-}
-
-func (b *Bank) Save() (*Bank, error) {
-	err := Save(&b)
+func (model *Bank) Delete() error {
+	err := basemodel.Delete(&model)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = KafkaSubmitModel(b, "bank")
+	err = KafkaSubmitModel(model, "bank_delete")
 
-	return b, err
+	return err
 }
 
-func (b *Bank) Delete() (*Bank, error) {
-	err := Delete(&b)
-	if err != nil {
-		return nil, err
-	}
-
-	err = KafkaSubmitModel(b, "bank_delete")
-
-	return b, err
+func (model *Bank) FindbyID(id int) error {
+	err := basemodel.FindbyID(&model, id)
+	return err
 }
 
-func (b *Bank) FindbyID(id int) (*Bank, error) {
-	err := FindbyID(&b, id)
-	return b, err
+func (model *Bank) FindFilter(order []string, sort []string, limit int, offset int, filter interface{}) ([]Bank, error) {
+	banks := []Bank{}
+	_, err := basemodel.FindFilter(&banks, order, sort, limit, offset, filter)
+	return banks, err
 }
 
-func (b *Bank) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result PagedSearchResult, err error) {
+func (model *Bank) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
 	bank_type := []Bank{}
-	result, err = PagedFilterSearch(&bank_type, page, rows, orderby, sort, filter)
+	result, err = basemodel.PagedFindFilter(&bank_type, page, rows, order, sort, filter)
 
 	return result, err
 }

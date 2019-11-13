@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"asira_lender/models"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,6 +14,10 @@ import (
 
 func LenderProfile(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_profile")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -21,16 +26,23 @@ func LenderProfile(c echo.Context) error {
 	lenderModel := models.Bank{}
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
-	lender, err := lenderModel.FindbyID(lenderID)
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err = lenderModel.FindbyID(int(bankRep.BankID))
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
 
-	return c.JSON(http.StatusOK, lender)
+	return c.JSON(http.StatusOK, lenderModel)
 }
 
 func LenderProfileEdit(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_profile_edit")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
@@ -39,7 +51,10 @@ func LenderProfileEdit(c echo.Context) error {
 	lenderModel := models.Bank{}
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
-	lender, err := lenderModel.FindbyID(lenderID)
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err = lenderModel.FindbyID(int(bankRep.BankID))
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
@@ -56,15 +71,15 @@ func LenderProfileEdit(c echo.Context) error {
 		"phone":    []string{"id_phonenumber"},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &lender)
+	validate := validateRequestPayload(c, payloadRules, &lenderModel)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	_, err = lender.Save()
+	err = lenderModel.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error saving profile")
 	}
 
-	return c.JSON(http.StatusOK, lender)
+	return c.JSON(http.StatusOK, lenderModel)
 }

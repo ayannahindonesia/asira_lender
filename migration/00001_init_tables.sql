@@ -1,14 +1,13 @@
 -- +goose Up
 -- SQL in this section is executed when the migration is applied.
 
-CREATE TABLE "internals" (
+CREATE TABLE "clients" (
     "id" bigserial,
-    "name" varchar(255) NOT NULL,
-    "role" varchar(255) NOT NULL,
-    "secret" varchar(255) NOT NULL,
-    "key" varchar(255) NOT NULL,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "name" varchar(255) NOT NULL,
+    "key" varchar(255) NOT NULL,
+    "secret" varchar(255) NOT NULL,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -36,54 +35,50 @@ CREATE TABLE "banks" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
-    "type" bigint,
+    "type" bigserial,
     "address" text,
     "province" varchar(255),
     "city" varchar(255),
-    "services" jsonb DEFAULT '[]',
-    "products" jsonb DEFAULT '[]',
     "pic" varchar(255),
     "phone" varchar(255),
     "adminfee_setup" varchar(255),
     "convfee_setup" varchar(255),
-    "username" varchar(255) NOT NULL UNIQUE,
-    "password" text NOT NULL,
+    "services" int ARRAY,
+    "products" int ARRAY,
     FOREIGN KEY ("type") REFERENCES bank_types(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
-CREATE TABLE "bank_services" (
+CREATE TABLE "services" (
     "id" bigserial,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
-    "image_id" bigint,
+    "image_id" bigserial,
     "status" varchar(255),
-    FOREIGN KEY ("image_id") REFERENCES images(id),
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("id"),
+    FOREIGN KEY ("image_id") REFERENCES images(id)
 ) WITH (OIDS = FALSE);
-COMMENT ON COLUMN "bank_services"."status" IS '0 = inactive, 1 = active';
 
-CREATE TABLE "service_products" (
+CREATE TABLE "products" (
     "id" bigserial,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
+    "status" varchar(255),
+    "service_id" bigserial,
     "min_timespan" int,
     "max_timespan" int,
     "interest" int,
     "min_loan" int,
     "max_loan" int,
     "fees" jsonb DEFAULT '[]',
-    "asn_fee" varchar(255),
-    "service" bigint,
-    "collaterals" jsonb DEFAULT '[]',
-    "financing_sector" jsonb DEFAULT '[]',
+    "collaterals" varchar(255) ARRAY,
+    "financing_sector" varchar(255) ARRAY,
     "assurance" varchar(255),
-    "status" varchar(255),
-    FOREIGN KEY ("service") REFERENCES bank_services(id),
+    FOREIGN KEY ("service_id") REFERENCES services(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -137,7 +132,7 @@ CREATE TABLE "borrowers" (
     "related_phonenumber" varchar(255) NOT NULL,
     "related_homenumber" varchar(255),
     "related_address" text,
-    "bank" bigint,
+    "bank" bigserial,
     "bank_accountnumber" varchar(255),
     FOREIGN KEY ("bank") REFERENCES banks(id),
     PRIMARY KEY ("id")
@@ -148,12 +143,11 @@ CREATE TABLE "loans" (
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
-    "owner" bigint,
+    "owner" bigserial,
     "owner_name" varchar(255),
-    "bank" bigint,
-    "service" bigint,
-    "product" bigint,
-    "status" varchar(255) DEFAULT  ('processing'),
+    "bank" bigserial,
+    "product" bigserial,
+    "status" varchar(255) DEFAULT ('processing'),
     "loan_amount" FLOAT NOT NULL,
     "installment" int NOT NULL,
     "fees" jsonb DEFAULT '[]',
@@ -163,30 +157,75 @@ CREATE TABLE "loans" (
     "layaway_plan" FLOAT NOT NULL,
     "loan_intention" varchar(255) NOT NULL,
     "intention_details" text NOT NULL,
+    "borrower_info" jsonb DEFAULT '[]',
     "disburse_date" timestamptz,
+    "disburse_date_changed" BOOLEAN,
+    "disburse_status" varchar(255) DEFAULT ('processing'),
+    "reject_reason" text,
     FOREIGN KEY ("owner") REFERENCES borrowers(id),
     FOREIGN KEY ("bank") REFERENCES banks(id),
+    FOREIGN KEY ("product") REFERENCES products(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
-CREATE TABLE "internal_roles" (
+CREATE TABLE "loan_purposes" (
     "id" bigserial,
-    "name" varchar(255) NOT NULL,
-    "system" varchar(255) NOT NULL,
-    "description" text,
-    "status" BOOLEAN,
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "name" varchar(255),
+    "status" varchar(255),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
+
+CREATE TABLE "roles" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "name" varchar(255) NOT NULL,
+    "description" text,
+    "system" varchar(255),
+    "status" varchar(255),
+    "permissions" varchar(255) ARRAY,
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+CREATE TABLE "users" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "roles" int ARRAY,
+    "username" varchar(255) NOT NULL UNIQUE,
+    "password" text NOT NULL,
+    "email" varchar(255),
+    "phone" varchar(255),
+    "status" varchar(255),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+CREATE TABLE "bank_representatives" (
+    "id" bigserial,
+    "bank_id" bigserial,
+    "user_id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("bank_id") REFERENCES banks(id),
+    FOREIGN KEY ("user_id") REFERENCES users(id),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
-DROP TABLE IF EXISTS "service_products" CASCADE;
-DROP TABLE IF EXISTS "bank_services" CASCADE;
+
+DROP TABLE IF EXISTS "products" CASCADE;
+DROP TABLE IF EXISTS "services" CASCADE;
 DROP TABLE IF EXISTS "banks" CASCADE;
 DROP TABLE IF EXISTS "bank_types" CASCADE;
 DROP TABLE IF EXISTS "borrowers" CASCADE;
+DROP TABLE IF EXISTS "loan_purposes" CASCADE;
 DROP TABLE IF EXISTS "loans" CASCADE;
 DROP TABLE IF EXISTS "images" CASCADE;
-DROP TABLE IF EXISTS "internals" CASCADE;
-DROP TABLE IF EXISTS "internal_roles" CASCADE;
+DROP TABLE IF EXISTS "clients" CASCADE;
+DROP TABLE IF EXISTS "roles" CASCADE;
+DROP TABLE IF EXISTS "users" CASCADE;
+DROP TABLE IF EXISTS "bank_representatives" CASCADE;

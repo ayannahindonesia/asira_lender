@@ -13,6 +13,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/spf13/viper"
+	"gitlab.com/asira-ayannah/basemodel"
 )
 
 var (
@@ -22,11 +23,13 @@ var (
 type (
 	Application struct {
 		Name    string        `json:"name"`
+		Port    string        `json:"port"`
 		Version string        `json:"version"`
 		ENV     string        `json:"env"`
 		Config  viper.Viper   `json:"prog_config"`
 		DB      *gorm.DB      `json:"db"`
 		Kafka   KafkaInstance `json:"kafka"`
+		Permission viper.Viper   `json:"prog_permission"`
 	}
 
 	KafkaInstance struct {
@@ -39,7 +42,8 @@ type (
 func init() {
 	var err error
 	App = &Application{}
-	App.Name = os.Getenv("APPNAME")
+	App.Name = "asira_lender"
+	App.Port = os.Getenv("APPPORT")
 	App.Version = os.Getenv("APPVER")
 	App.loadENV()
 	if err = App.LoadConfigs(); err != nil {
@@ -47,6 +51,9 @@ func init() {
 	}
 	if err = App.DBinit(); err != nil {
 		log.Printf("DB init error : %v", err)
+	}
+	if err = App.LoadPermissions(); err != nil {
+		log.Printf("Load Permission error : %v", err)
 	}
 
 	App.KafkaInit()
@@ -107,28 +114,25 @@ func (x *Application) LoadConfigs() error {
 	return nil
 }
 
-// Loads DB postgres configs
+// Loads DBinit configs
 func (x *Application) DBinit() error {
 	dbconf := x.Config.GetStringMap(fmt.Sprintf("%s.database", x.ENV))
-	connectionString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s", dbconf["username"].(string), dbconf["password"].(string), dbconf["host"].(string), dbconf["port"].(string), dbconf["table"].(string), dbconf["sslmode"].(string))
-
-	db, err := gorm.Open("postgres", connectionString)
-	if err != nil {
-		return err
+	Cons := basemodel.DBConfig{
+		Adapter:        basemodel.PostgresAdapter,
+		Host:           dbconf["host"].(string),
+		Port:           dbconf["port"].(string),
+		Username:       dbconf["username"].(string),
+		Password:       dbconf["password"].(string),
+		Table:          dbconf["table"].(string),
+		Timezone:       dbconf["timezone"].(string),
+		Maxlifetime:    dbconf["maxlifetime"].(int),
+		IdleConnection: dbconf["idle_conns"].(int),
+		OpenConnection: dbconf["open_conns"].(int),
+		SSL:            dbconf["sslmode"].(string),
+		Logmode:        dbconf["logmode"].(bool),
 	}
-	if err = db.DB().Ping(); err != nil {
-		return err
-	}
-
-	db.LogMode(dbconf["logmode"].(bool))
-
-	db.Exec(fmt.Sprintf("SET TIMEZONE TO '%s'", dbconf["timezone"].(string)))
-	db.DB().SetConnMaxLifetime(time.Minute * time.Duration(dbconf["maxlifetime"].(int)))
-	db.DB().SetMaxIdleConns(dbconf["idle_conns"].(int))
-	db.DB().SetMaxOpenConns(dbconf["open_conns"].(int))
-
-	x.DB = db
-
+	basemodel.Start(Cons)
+	x.DB = basemodel.DB
 	return nil
 }
 
@@ -156,4 +160,27 @@ func (x *Application) KafkaInit() {
 	x.Kafka.Config.Consumer.Return.Errors = true
 
 	x.Kafka.Host = strings.Join([]string{kafkaConf["host"].(string), kafkaConf["port"].(string)}, ":")
+}
+
+// Loads general configs
+func (x *Application) LoadPermissions() error {
+	var conf *viper.Viper
+
+	conf = viper.New()
+	conf.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	conf.AutomaticEnv()
+	conf.SetConfigName("permissions")
+	conf.AddConfigPath("$GOPATH/src/" + x.Name)
+	conf.SetConfigType("yaml")
+	if err := conf.ReadInConfig(); err != nil {
+		return err
+	}
+	conf.WatchConfig()
+	conf.OnConfigChange(func(e fsnotify.Event) {
+		log.Println("App Config file changed %s:", e.Name)
+		x.LoadConfigs()
+	})
+	x.Permission = viper.Viper(*conf)
+
+	return nil
 }

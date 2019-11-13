@@ -3,11 +3,13 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"gitlab.com/asira-ayannah/basemodel"
 )
 
 type (
 	Borrower struct {
-		BaseModel
+		basemodel.BaseModel
 		DeletedTime          time.Time     `json:"deleted_time" gorm:"column:deleted_time"`
 		Status               string        `json:"status" gorm:"column:status"`
 		Fullname             string        `json:"fullname" gorm:"column:fullname;type:varchar(255);not_null" csv:"fullname"`
@@ -59,36 +61,39 @@ type (
 	}
 )
 
-func (b *Borrower) Create() (*Borrower, error) {
-	err := Create(&b)
-	return b, err
+func (b *Borrower) Create() error {
+	err := basemodel.Create(&b)
+	return err
 }
 
-func (b *Borrower) Save() (*Borrower, error) {
-	err := Save(&b)
-	return b, err
+func (b *Borrower) Save() error {
+	err := basemodel.Save(&b)
+	return err
 }
 
-func (b *Borrower) Delete() (*Borrower, error) {
+func (b *Borrower) Delete() error {
 	b.DeletedTime = time.Now()
-	err := Save(&b)
+	err := basemodel.Save(&b)
 
-	return b, err
+	return err
 }
 
-func (b *Borrower) FindbyID(id int) (*Borrower, error) {
-	err := FindbyID(&b, id)
-	return b, err
+func (b *Borrower) FindbyID(id int) error {
+	err := basemodel.FindbyID(&b, id)
+	return err
 }
 
-func (b *Borrower) FilterSearchSingle(filter interface{}) (*Borrower, error) {
-	err := FilterSearchSingle(&b, filter)
-	return b, err
+func (b *Borrower) FilterSearchSingle(filter interface{}) error {
+	err := basemodel.SingleFindFilter(&b, filter)
+	return err
 }
 
-func (b *Borrower) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result PagedSearchResult, err error) {
+func (b *Borrower) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
 	borrowers := []Borrower{}
-	result, err = PagedFilterSearch(&borrowers, page, rows, orderby, sort, filter)
+
+	order := []string{orderby}
+	sorts := []string{sort}
+	result, err = basemodel.PagedFindFilter(&borrowers, page, rows, order, sorts, filter)
 
 	return result, err
 }

@@ -4,6 +4,7 @@ import (
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,11 +12,12 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo"
+	"gitlab.com/asira-ayannah/basemodel"
 )
 
 type (
 	BorrowerCSV struct {
-		models.BaseModel
+		basemodel.BaseModel
 		DeletedTime          time.Time `json:"deleted_time"`
 		Status               string    `json:"status"`
 		Fullname             string    `json:"fullname"`
@@ -69,12 +71,17 @@ type (
 
 func LenderBorrowerList(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_borrower_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
-
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
@@ -97,7 +104,7 @@ func LenderBorrowerList(c echo.Context) error {
 	borrower := models.Borrower{}
 	result, err := borrower.PagedFilterSearch(page, rows, orderby, sort, &Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		Fullname: fullname,
@@ -114,12 +121,18 @@ func LenderBorrowerList(c echo.Context) error {
 
 func LenderBorrowerListDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_borrower_list_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
 
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
 
 	borrower_id, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
@@ -131,9 +144,9 @@ func LenderBorrowerListDetail(c echo.Context) error {
 	}
 
 	borrower := models.Borrower{}
-	result, err := borrower.FilterSearchSingle(&Filter{
+	err = borrower.FilterSearchSingle(&Filter{
 		Bank: sql.NullInt64{
-			Int64: int64(lenderID),
+			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
 		ID: borrower_id,
@@ -143,11 +156,15 @@ func LenderBorrowerListDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
 	}
 
-	return c.JSON(http.StatusOK, result)
+	return c.JSON(http.StatusOK, borrower)
 }
 
 func LenderBorrowerListDownload(c echo.Context) error {
 	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_borrower_list_download")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)

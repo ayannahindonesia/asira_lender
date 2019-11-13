@@ -4,22 +4,33 @@ import (
 	"asira_lender/admin_handlers"
 	"asira_lender/handlers"
 	"asira_lender/middlewares"
+	"asira_lender/reports"
 
 	"github.com/labstack/echo"
 )
 
+// AdminGroup func
 func AdminGroup(e *echo.Echo) {
 	g := e.Group("/admin")
-	middlewares.SetClientJWTmiddlewares(g, "admin")
+	middlewares.SetClientJWTmiddlewares(g, "users")
 
 	// config info
 	g.GET("/info", handlers.AsiraAppInfo)
+	g.GET("/profile", admin_handlers.AdminProfile)
 
-	// Internals Accounts Management
-	g.POST("/client_config", admin_handlers.CreateInternal)
+	// Client Management
+	g.POST("/client", admin_handlers.CreateClient)
 
 	// Images
 	g.GET("/image/:image_id", admin_handlers.GetImageB64String)
+
+	// Borrowers
+	g.GET("/borrower", admin_handlers.BorrowerGetAll)
+	g.GET("/borrower/:borrower_id", admin_handlers.BorrowerGetDetails)
+
+	// Loans
+	g.GET("/loan", admin_handlers.LoanGetAll)
+	g.GET("/loan/:loan_id", admin_handlers.LoanGetDetails)
 
 	// Bank Types
 	g.GET("/bank_types", admin_handlers.BankTypeList)
@@ -35,21 +46,43 @@ func AdminGroup(e *echo.Echo) {
 	g.PATCH("/banks/:bank_id", admin_handlers.BankPatch)
 	g.DELETE("/banks/:bank_id", admin_handlers.BankDelete)
 
-	// Bank Services
-	g.GET("/bank_services", admin_handlers.BankServiceList)
-	g.GET("/bank_services/:bank_service_id", admin_handlers.BankServiceDetail)
-	g.POST("/bank_services", admin_handlers.BankServiceNew)
-	g.PATCH("/bank_services/:bank_service_id", admin_handlers.BankServicePatch)
-	g.DELETE("/bank_services/:bank_service_id", admin_handlers.BankServiceDelete)
+	// Services
+	g.GET("/services", admin_handlers.ServiceList)
+	g.POST("/services", admin_handlers.ServiceNew)
+	g.GET("/services/:id", admin_handlers.ServiceDetail)
+	g.PATCH("/services/:id", admin_handlers.ServicePatch)
+	g.DELETE("/services/:id", admin_handlers.ServiceDelete)
 
-	// Service Products
-	g.GET("/service_products", admin_handlers.BankServiceProductList)
-	g.POST("/service_products", admin_handlers.BankServiceProductNew)
-	g.GET("/service_products/:product_id", admin_handlers.BankServiceProductDetail)
-	g.PATCH("/service_products/:product_id", admin_handlers.BankServiceProductPatch)
-	g.DELETE("/service_products/:product_id", admin_handlers.BankServiceProductDelete)
+	// Products
+	g.GET("/products", admin_handlers.ProductList)
+	g.POST("/products", admin_handlers.ProductNew)
+	g.GET("/products/:id", admin_handlers.ProductDetail)
+	g.PATCH("/products/:id", admin_handlers.ProductPatch)
+	g.DELETE("/products/:id", admin_handlers.ProductDelete)
+
+	// Loan Purpose
+	g.GET("/loan_purposes", admin_handlers.LoanPurposeList)
+	g.POST("/loan_purposes", admin_handlers.LoanPurposeNew)
+	g.GET("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDetail)
+	g.PATCH("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposePatch)
+	g.DELETE("/loan_purposes/:loan_purpose_id", admin_handlers.LoanPurposeDelete)
 
 	// Role
-	g.GET("/internal_role", admin_handlers.GetAllRole)
-	g.GET("/internal_role/:role_id", admin_handlers.RoleGetDetails)
+	g.GET("/roles", admin_handlers.RoleList)
+	g.GET("/roles/:role_id", admin_handlers.RoleDetails)
+	g.POST("/roles", admin_handlers.RoleNew)
+	g.PATCH("/roles/:role_id", admin_handlers.RolePatch)
+	g.GET("/roles_all", admin_handlers.RoleRange)
+
+	// Permission
+	g.GET("/permission", admin_handlers.PermissionList)
+
+	// User
+	g.GET("/users", admin_handlers.UserList)
+	g.GET("/users/:user_id", admin_handlers.UserDetails)
+	g.POST("/users", admin_handlers.UserNew)
+	g.PATCH("/users/:user_id", admin_handlers.UserPatch)
+
+	// Reports
+	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
 }

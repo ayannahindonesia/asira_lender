@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestLenderGetBankList(t *testing.T) {
+func TestServiceList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -21,39 +21,40 @@ func TestLenderGetBankList(t *testing.T) {
 	e := httpexpect.New(t, server.URL)
 
 	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+adminBasicToken)
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
 
 	// valid response
-	auth.GET("/admin/banks").
+	auth.GET("/admin/services").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/banks").WithQuery("name", "Bank A").
+	obj := auth.GET("/admin/services").WithQuery("name", "Pinjaman PNS").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
+
 	// test query found with part name
-	obj = auth.GET("/admin/banks").WithQuery("name", "bank").
+	obj = auth.GET("/admin/services").WithQuery("name", "pinjaman").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 2)
+	obj.ContainsKey("total_data").ValueEqual("total_data", 5)
 
 	// test query invalid
-	obj = auth.GET("/admin/banks").WithQuery("name", "should not found this").
+	obj = auth.GET("/admin/services").WithQuery("name", "should not found this").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
-func TestNewBank(t *testing.T) {
+func TestNewService(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -65,43 +66,46 @@ func TestNewBank(t *testing.T) {
 	e := httpexpect.New(t, server.URL)
 
 	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+adminBasicToken)
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
 
 	payload := map[string]interface{}{
-		"name":     "Test New Bank",
-		"type":     1,
-		"address":  "testing st.",
-		"province": "test province",
-		"city":     "test city",
-		"services": []string{"Service 1", "Service 2", "Service 3"},
-		"products": []string{"Products 1", "Products 2", "Products 3"},
-		"pic":      "test pic",
-		"phone":    "08123454321",
+		"name":   "Test New Bank Service",
+		"image":  "base64 super long image string",
+		"status": "active",
 	}
 
 	// normal scenario
-	obj := auth.POST("/admin/banks").WithJSON(payload).
+	obj := auth.POST("/admin/services").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
-	obj.ContainsKey("name").ValueEqual("name", "Test New Bank")
+	obj.ContainsKey("name").ValueEqual("name", "Test New Bank Service")
+
+	// invalid status
+	payload = map[string]interface{}{
+		"name":   "Test New Bank Service",
+		"status": "not valid",
+	}
+	auth.PATCH("/admin/services/1").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
 
 	// test invalid
 	payload = map[string]interface{}{
 		"name": "",
 	}
-	auth.POST("/admin/banks").WithJSON(payload).
+	auth.POST("/admin/services").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
 
-func TestGetBankbyID(t *testing.T) {
+func TestGetServicebyID(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -113,28 +117,28 @@ func TestGetBankbyID(t *testing.T) {
 	e := httpexpect.New(t, server.URL)
 
 	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+adminBasicToken)
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
 
 	// valid response
-	obj := auth.GET("/admin/banks/1").
+	obj := auth.GET("/admin/services/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/banks/9999").
+	auth.GET("/admin/services/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchBank(t *testing.T) {
+func TestPatchService(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -146,30 +150,38 @@ func TestPatchBank(t *testing.T) {
 	e := httpexpect.New(t, server.URL)
 
 	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+adminBasicToken)
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
 
-	adminToken := getLenderAdminToken(e, auth)
+	adminToken := getAdminLoginToken(e, auth, "1")
 
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer "+adminToken)
 	})
 
 	payload := map[string]interface{}{
-		"name": "Test Patch",
+		"name": "Test Service Patch",
 	}
 
 	// valid response
-	obj := auth.PATCH("/admin/banks/1").WithJSON(payload).
+	obj := auth.PATCH("/admin/services/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("name").ValueEqual("name", "Test Patch")
+	obj.ContainsKey("name").ValueEqual("name", "Test Service Patch")
+
+	// invalid status
+	payload = map[string]interface{}{
+		"status": "not valid",
+	}
+	auth.PATCH("/admin/services/1").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {
 		req.WithHeader("Authorization", "Bearer wrong token")
 	})
-	auth.PATCH("/admin/banks/1").WithJSON(payload).
+	auth.PATCH("/admin/services/1").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnauthorized).JSON().Object()
 }

@@ -13,7 +13,8 @@ func NewRouter() *echo.Echo {
 
 	// ignore /api-lender
 	e.Pre(middleware.Rewrite(map[string]string{
-		"/api-lender/*": "/$1",
+		"/api-lender/*":       "/$1",
+		"/api-lender-devel/*": "/$1",
 	}))
 
 	// e.GET("/test", handlers.Test)
