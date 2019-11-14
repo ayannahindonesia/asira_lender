@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// PermissionList get all defined permissions
 func PermissionList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_permission_list")
