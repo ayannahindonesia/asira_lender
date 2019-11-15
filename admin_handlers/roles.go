@@ -133,7 +133,7 @@ func RolePatch(c echo.Context) error {
 
 func RoleRange(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "core_role_range")
+	err := validatePermission(c, "core_role_list")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
