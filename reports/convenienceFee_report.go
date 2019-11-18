@@ -16,6 +16,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// ConvenienceFeeReport for conv fee
 func ConvenienceFeeReport(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "convenience_fee_report")
@@ -87,11 +88,11 @@ func ConvenienceFeeReport(c echo.Context) error {
 		}
 		db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
 	}
-	if start_disburse_date := c.QueryParam("start_disburse_date"); len(start_disburse_date) > 0 {
-		if end_disburse_date := c.QueryParam("end_disburse_date"); len(end_disburse_date) > 0 {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, end_disburse_date)
+	if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
+		if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
 		} else {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, start_disburse_date)
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
 		}
 	}
 

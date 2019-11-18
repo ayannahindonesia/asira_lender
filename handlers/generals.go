@@ -12,6 +12,7 @@ import (
 )
 
 type (
+	// JWTclaims jwtclaims
 	JWTclaims struct {
 		Username    string   `json:"username"`
 		Group       string   `json:"group"`

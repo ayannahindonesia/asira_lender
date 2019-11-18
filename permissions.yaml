@@ -43,10 +43,18 @@ permissions:
   core_role_details: core_role_details
   core_role_new: core_role_new
   core_role_patch: core_role_patch
-  core_role_range: core_role_range
   core_permission_list: core_permission_list
   core_user_list: core_user_list
   core_user_details: core_user_details
   core_user_new: core_user_new
   core_user_patch: core_user_patch
+  core_agent_provider_list: core_agent_provider_list
+  core_agent_provider_details: core_agent_provider_details
+  core_agent_provider_new: core_agent_provider_new
+  core_agent_provider_patch: core_agent_provider_patch
+  core_agent_list: core_agent_list
+  core_agent_details: core_agent_details
+  core_agent_new: core_agent_new
+  core_agent_patch: core_agent_patch
+  core_agent_delete: core_agent_delete
   convenience_fee_report: convenience_fee_report

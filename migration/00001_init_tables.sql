@@ -197,8 +197,8 @@ CREATE TABLE "users" (
     "roles" int ARRAY,
     "username" varchar(255) NOT NULL UNIQUE,
     "password" text NOT NULL,
-    "email" varchar(255),
-    "phone" varchar(255),
+    "email" varchar(255) UNIQUE,
+    "phone" varchar(255) UNIQUE,
     "status" varchar(255),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
@@ -211,6 +211,37 @@ CREATE TABLE "bank_representatives" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("bank_id") REFERENCES banks(id),
     FOREIGN KEY ("user_id") REFERENCES users(id),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+CREATE TABLE "agent_providers" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "name" varchar(255),
+    "pic" varchar(255),
+    "phone" varchar(255) UNIQUE,
+    "address" text,
+    "status" varchar(255),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
+CREATE TABLE "agents" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "name" varchar(255),
+    "username" varchar(255) UNIQUE,
+    "password" text,
+    "email" varchar(255) UNIQUE,
+    "phone" varchar(255) UNIQUE,
+    "category" varchar(255),
+    "agent_provider" bigint,
+    "banks" int ARRAY,
+    "status" varchar(255),
+    FOREIGN KEY ("agent_provider") REFERENCES agent_providers(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -229,3 +260,5 @@ DROP TABLE IF EXISTS "clients" CASCADE;
 DROP TABLE IF EXISTS "roles" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "bank_representatives" CASCADE;
+DROP TABLE IF EXISTS "agent_providers" CASCADE;
+DROP TABLE IF EXISTS "agents" CASCADE;

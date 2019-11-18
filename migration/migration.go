@@ -337,6 +337,63 @@ func Seed() {
 		for _, bankRep := range bankReps {
 			bankRep.Create()
 		}
+
+		agentProviders := []models.AgentProvider{
+			models.AgentProvider{
+				Name:    "Agent Provider A",
+				PIC:     "PIC A",
+				Phone:   "081234567890",
+				Address: "address of provider a",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider B",
+				PIC:     "PIC B",
+				Phone:   "081234567891",
+				Address: "address of provider b",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider C",
+				PIC:     "PIC C",
+				Phone:   "081234567892",
+				Address: "address of provider c",
+				Status:  "active",
+			},
+		}
+		for _, agentProvider := range agentProviders {
+			agentProvider.Create()
+		}
+
+		agents := []models.Agent{
+			models.Agent{
+				Name:     "Agent K",
+				Username: "agentK",
+				Password: "password",
+				Email:    "agentk@mib.com",
+				Phone:    "081234567890",
+				Category: "agent",
+				AgentProvider: sql.NullInt64{
+					Int64: 1,
+					Valid: true,
+				},
+				Banks:  pq.Int64Array{1, 2},
+				Status: "active",
+			},
+			models.Agent{
+				Name:     "Agent J",
+				Username: "agentJ",
+				Password: "password",
+				Email:    "agentj@mib.com",
+				Phone:    "081234567891",
+				Category: "agent_executive",
+				Banks:    pq.Int64Array{1},
+				Status:   "active",
+			},
+		}
+		for _, agent := range agents {
+			agent.Create()
+		}
 	}
 }
 
@@ -889,6 +946,63 @@ func TestSeed() {
 		for _, bankRep := range bankReps {
 			bankRep.Create()
 		}
+
+		agentProviders := []models.AgentProvider{
+			models.AgentProvider{
+				Name:    "Agent Provider A",
+				PIC:     "PIC A",
+				Phone:   "081234567890",
+				Address: "address of provider a",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider B",
+				PIC:     "PIC B",
+				Phone:   "081234567891",
+				Address: "address of provider b",
+				Status:  "active",
+			},
+			models.AgentProvider{
+				Name:    "Agent Provider C",
+				PIC:     "PIC C",
+				Phone:   "081234567892",
+				Address: "address of provider c",
+				Status:  "active",
+			},
+		}
+		for _, agentProvider := range agentProviders {
+			agentProvider.Create()
+		}
+
+		agents := []models.Agent{
+			models.Agent{
+				Name:     "Agent K",
+				Username: "agentK",
+				Password: "password",
+				Email:    "agentk@mib.com",
+				Phone:    "081234567890",
+				Category: "agent",
+				AgentProvider: sql.NullInt64{
+					Int64: 1,
+					Valid: true,
+				},
+				Banks:  pq.Int64Array{1, 2},
+				Status: "active",
+			},
+			models.Agent{
+				Name:     "Agent J",
+				Username: "agentJ",
+				Password: "password",
+				Email:    "agentj@mib.com",
+				Phone:    "081234567891",
+				Category: "agent_executive",
+				Banks:    pq.Int64Array{1},
+				Status:   "active",
+			},
+		}
+		for _, agent := range agents {
+			agent.Create()
+		}
 	}
 }
 
@@ -909,6 +1023,7 @@ func Truncate(tableList []string) (err error) {
 				"users",
 				"bank_representatives",
 				"loan_purposes",
+				"agent_providers",
 			}
 		}
 

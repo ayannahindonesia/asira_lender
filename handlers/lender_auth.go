@@ -14,13 +14,14 @@ import (
 )
 
 type (
+	// LenderLoginCreds type
 	LenderLoginCreds struct {
 		Key      string `json:"key"`
 		Password string `json:"password"`
 	}
 )
 
-// lender login, lender can choose either login with email / phone
+// LenderLogin lender can choose either login with email / phone
 func LenderLogin(c echo.Context) error {
 	defer c.Request().Body.Close()
 
@@ -43,7 +44,10 @@ func LenderLogin(c echo.Context) error {
 	}
 
 	// check if theres record
-	validKey = asira.App.DB.Where("username = ?", credentials.Key).Find(&lender).RecordNotFound()
+	validKey = asira.App.DB.
+		Where("username = ?", credentials.Key).
+		Where("status = ?", "active").
+		Find(&lender).RecordNotFound()
 
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(lender.Password), []byte(credentials.Password))

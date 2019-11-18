@@ -12,6 +12,7 @@ import (
 
 var err error
 
+// Ping check stacks
 func Ping(c echo.Context) error {
 	defer c.Request().Body.Close()
 

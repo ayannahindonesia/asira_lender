@@ -75,7 +75,8 @@ func TestNewBankType(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"name": "Test New Type",
+		"name":        "Test New Type",
+		"description": "test description",
 	}
 
 	// normal scenario
@@ -148,7 +149,8 @@ func TestPatchBankType(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"name": "Test Patch",
+		"name":        "Test Patch",
+		"description": "test description",
 	}
 
 	// valid response
@@ -156,6 +158,7 @@ func TestPatchBankType(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("name").ValueEqual("name", "Test Patch")
+	obj.ContainsKey("description").ValueEqual("description", "test description")
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {

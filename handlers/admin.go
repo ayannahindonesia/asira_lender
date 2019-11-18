@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// AsiraAppInfo show asira configs
 func AsiraAppInfo(c echo.Context) error {
 	defer c.Request().Body.Close()
 

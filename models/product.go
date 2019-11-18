@@ -13,7 +13,7 @@ type (
 		basemodel.BaseModel
 		DeletedTime     time.Time      `json:"deleted_time" gorm:"column:deleted_time"`
 		Name            string         `json:"name" gorm:"column:name;type:varchar(255)"`
-		ServiceID       uint64         `json:"service_id" gorm:"column:service_id`
+		ServiceID       uint64         `json:"service_id" gorm:"column:service_id"`
 		MinTimeSpan     int            `json:"min_timespan" gorm:"column:min_timespan"`
 		MaxTimeSpan     int            `json:"max_timespan" gorm:"column:max_timespan"`
 		Interest        float64        `json:"interest" gorm:"column:interest"`

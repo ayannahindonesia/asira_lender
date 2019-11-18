@@ -491,11 +491,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b7538a142bd590a436bd46a3095abc88de7ead968ba372dc01a6ba9c8f54cedb"
+  digest = "1:380bf6a53827a4062627aea3a148bbfccc520b752acb66a9b42525a949eaf770"
   name = "gitlab.com/asira-ayannah/basemodel"
   packages = ["."]
   pruneopts = ""
-  revision = "5c5a8bfdd5c5c8f1fbe9952dce9aab305aa1e988"
+  revision = "62db17c5c665a132eec05ea66e834e7d8b1b2231"
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@gitlab.com/asira-ayannah/basemodel.git"
 
 [[projects]]

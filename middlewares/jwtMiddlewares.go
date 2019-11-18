@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
+// SetClientJWTmiddlewares func
 func SetClientJWTmiddlewares(g *echo.Group, role string) {
 	jwtConfig := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 
@@ -39,9 +40,8 @@ func validateJWTadmin(next echo.HandlerFunc) echo.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			if claims["group"] == "admin" {
 				return next(c)
-			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
+			return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 		}
 
 		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
@@ -56,9 +56,8 @@ func validateJWTclient(next echo.HandlerFunc) echo.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			if claims["group"] == "client" {
 				return next(c)
-			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
+			return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 		}
 
 		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
@@ -73,9 +72,8 @@ func validateJWTlender(next echo.HandlerFunc) echo.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			if claims["group"] == "users" {
 				return next(c)
-			} else {
-				return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 			}
+			return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))
 		}
 
 		return echo.NewHTTPError(http.StatusForbidden, fmt.Sprintf("%s", "invalid token"))

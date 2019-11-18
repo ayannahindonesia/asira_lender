@@ -24,7 +24,7 @@ func (a *AsiraValidator) CustomValidatorRules() {
 			queryRow *gorm.DB
 			total    int
 		)
-		var limit = 0
+		var limit = 1
 
 		query := `SELECT COUNT(*) as total FROM %s WHERE %s = ?`
 		params := strings.Split(strings.TrimPrefix(rule, fmt.Sprintf("%s:", "unique")), ",")
@@ -47,7 +47,7 @@ func (a *AsiraValidator) CustomValidatorRules() {
 
 		queryRow.Row().Scan(&total)
 
-		if total > limit {
+		if total >= limit {
 			if message != "" {
 				return errors.New(message)
 			}
@@ -145,6 +145,17 @@ func (a *AsiraValidator) CustomValidatorRules() {
 		val := value.(string)
 		if !reg.MatchString(val) {
 			return fmt.Errorf("The %s field is not a valid indonesia phone number", field)
+		}
+		return nil
+	})
+
+	// validator agent category
+	govalidator.AddCustomRule("agent_categories", func(field string, rule string, message string, value interface{}) error {
+		if value != nil {
+			val := value.(string)
+			if val != "agent" && val != "account_executive" {
+				return fmt.Errorf("The %s field must be contain either: agent or account_executive", field)
+			}
 		}
 		return nil
 	})

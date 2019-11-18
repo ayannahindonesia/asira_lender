@@ -73,15 +73,33 @@ func TestNewUser(t *testing.T) {
 		"username": "test user",
 		"email":    "testuser@ayannah.id",
 		"phone":    "08111",
+		"bank":     1,
 		"status":   "active",
-		"role_id":  []int{1},
+		"roles":    []int{3},
 	}
 
-	// normal scenario
+	// normal scenario bank user
 	obj := auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusCreated).JSON().Object()
 	obj.ContainsKey("username").ValueEqual("username", "test user")
+	// normal scenario administrator
+	payload = map[string]interface{}{
+		"username": "test user1",
+		"email":    "testuser1@ayannah.id",
+		"phone":    "08112",
+		"status":   "active",
+		"roles":    []int{1},
+	}
+	obj = auth.POST("/admin/users").WithJSON(payload).
+		Expect().
+		Status(http.StatusCreated).JSON().Object()
+	obj.ContainsKey("username").ValueEqual("username", "test user1")
+
+	// unique test
+	auth.POST("/admin/users").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
 
 	// test invalid
 	payload = map[string]interface{}{
@@ -90,6 +108,19 @@ func TestNewUser(t *testing.T) {
 	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
+
+	// test bank cant select roles that not in dashboard system
+	payload = map[string]interface{}{
+		"username": "test user 2",
+		"email":    "testuser2@ayannah.id",
+		"phone":    "08113",
+		"bank":     1,
+		"status":   "active",
+		"roles":    []int{1},
+	}
+	auth.POST("/admin/users").WithJSON(payload).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
 }
 
 func TestGetUserbyID(t *testing.T) {
@@ -155,6 +186,31 @@ func TestPatchUser(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("status").ValueEqual("status", "inactive")
+
+	// test change roles of bankers to core system
+	payload = map[string]interface{}{
+		"roles": []int{1},
+	}
+	auth.PATCH("/admin/users/3").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
+
+	// uniques
+	auth.PATCH("/admin/users/2").WithJSON(map[string]interface{}{
+		"username": "adminkey",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+	auth.PATCH("/admin/users/2").WithJSON(map[string]interface{}{
+		"email": "admin@ayannah.com",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+	auth.PATCH("/admin/users/2").WithJSON(map[string]interface{}{
+		"phone": "081234567890",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
 
 	// test invalid token
 	auth = e.Builder(func(req *httpexpect.Request) {

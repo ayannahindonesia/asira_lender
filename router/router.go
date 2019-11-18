@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
+// NewRouter func
 func NewRouter() *echo.Echo {
 	e := echo.New()
 

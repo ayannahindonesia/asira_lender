@@ -16,14 +16,15 @@ import (
 )
 
 type (
+	// BorrowerCSV custom type for query
 	BorrowerCSV struct {
 		basemodel.BaseModel
 		DeletedTime          time.Time `json:"deleted_time"`
 		Status               string    `json:"status"`
 		Fullname             string    `json:"fullname"`
 		Gender               string    `json:"gender"`
-		IdCardNumber         string    `json:"idcard_number"`
-		IdCardImageID        string    `json:"idcard_imageid"`
+		IDCardNumber         string    `json:"idcard_number"`
+		IDCardImageID        string    `json:"idcard_imageid"`
 		TaxIDnumber          string    `json:"taxid_number"`
 		TaxIDImageID         string    `json:"taxid_imageid"`
 		Email                string    `json:"email"`
@@ -69,6 +70,7 @@ type (
 	}
 )
 
+// LenderBorrowerList load all borrowers
 func LenderBorrowerList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_borrower_list")
@@ -119,6 +121,7 @@ func LenderBorrowerList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// LenderBorrowerListDetail load borrower detail by id
 func LenderBorrowerListDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_borrower_list_detail")
@@ -134,7 +137,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	borrower_id, err := strconv.Atoi(c.Param("borrower_id"))
+	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error parsing borrower id")
 	}
@@ -149,7 +152,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
-		ID: borrower_id,
+		ID: borrowerID,
 	})
 
 	if err != nil {
@@ -159,6 +162,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 	return c.JSON(http.StatusOK, borrower)
 }
 
+// LenderBorrowerListDownload download borrower list csv
 func LenderBorrowerListDownload(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_borrower_list_download")
