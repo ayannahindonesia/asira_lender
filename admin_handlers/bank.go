@@ -3,6 +3,7 @@ package admin_handlers
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -16,11 +17,29 @@ import (
 	"gitlab.com/asira-ayannah/basemodel"
 )
 
-type BankSelect struct {
-	models.Bank
-	BankTypeName string `json:"bank_type_name"`
-}
+type (
+	// BankSelect for custom query
+	BankSelect struct {
+		models.Bank
+		BankTypeName string `json:"bank_type_name"`
+	}
+	// BankPayload request body container
+	BankPayload struct {
+		Name                string  `json:"name"`
+		Type                uint64  `json:"type"`
+		Address             string  `json:"address"`
+		Province            string  `json:"province"`
+		City                string  `json:"city"`
+		PIC                 string  `json:"pic"`
+		Phone               string  `json:"phone"`
+		Services            []int64 `json:"services"`
+		Products            []int64 `json:"products"`
+		AdminFeeSetup       string  `json:"adminfee_setup"`
+		ConvenienceFeeSetup string  `json:"convfee_setup"`
+	}
+)
 
+// BankList get all bank list
 func BankList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_bank_list")
@@ -99,6 +118,7 @@ func BankList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// BankNew create new bank
 func BankNew(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_bank_new")
@@ -107,6 +127,7 @@ func BankNew(c echo.Context) error {
 	}
 
 	bank := models.Bank{}
+	bankPayload := BankPayload{}
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
@@ -114,18 +135,21 @@ func BankNew(c echo.Context) error {
 		"address":        []string{"required"},
 		"province":       []string{"required"},
 		"city":           []string{"required"},
-		"services":       []string{"required"},
-		"products":       []string{"required"},
+		"services":       []string{"required", "valid_id:services"},
+		"products":       []string{"required", "valid_id:products"},
 		"pic":            []string{"required"},
 		"phone":          []string{"required"},
 		"adminfee_setup": []string{"required"},
 		"convfee_setup":  []string{"required"},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &bank)
+	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
+
+	marshal, _ := json.Marshal(bankPayload)
+	json.Unmarshal(marshal, &bank)
 
 	err = bank.Create()
 	if err != nil {
@@ -157,6 +181,7 @@ func BankNew(c echo.Context) error {
 	return c.JSON(http.StatusCreated, bank)
 }
 
+// BankDetail get bank detail by id
 func BankDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_bank_detail")
@@ -166,22 +191,23 @@ func BankDetail(c echo.Context) error {
 
 	db := asira.App.DB
 
-	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.Atoi(c.Param("bank_id"))
 
 	db = db.Table("banks b").
 		Select("b.*, bt.name as bank_type_name").
 		Joins("INNER JOIN bank_types bt ON b.type = bt.id").
-		Where("b.id = ?", bank_id)
+		Where("b.id = ?", bankID)
 
 	bank := BankSelect{}
 	err = db.Find(&bank).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
 	}
 
 	return c.JSON(http.StatusOK, bank)
 }
 
+// BankPatch edit bank by id
 func BankPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_bank_patch")
@@ -189,12 +215,13 @@ func BankPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bank := models.Bank{}
-	err = bank.FindbyID(bank_id)
+	bankPayload := BankPayload{}
+	err = bank.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank %v tidak ditemukan", bank_id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank %v tidak ditemukan", bankID))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -203,27 +230,62 @@ func BankPatch(c echo.Context) error {
 		"address":        []string{},
 		"province":       []string{},
 		"city":           []string{},
-		"services":       []string{},
-		"products":       []string{},
+		"services":       []string{"valid_id:services"},
+		"products":       []string{"valid_id:products"},
 		"pic":            []string{},
 		"phone":          []string{},
 		"adminfee_setup": []string{},
 		"convfee_setup":  []string{},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &bank)
+	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
+	if len(bankPayload.Name) > 0 {
+		bank.Name = bankPayload.Name
+	}
+	if bankPayload.Type > 0 {
+		bank.Type = bankPayload.Type
+	}
+	if len(bankPayload.Address) > 0 {
+		bank.Address = bankPayload.Address
+	}
+	if len(bankPayload.Province) > 0 {
+		bank.Province = bankPayload.Province
+	}
+	if len(bankPayload.City) > 0 {
+		bank.City = bankPayload.City
+	}
+	if len(bankPayload.Services) > 0 {
+		bank.Services = pq.Int64Array(bankPayload.Services)
+	}
+	if len(bankPayload.Products) > 0 {
+		bank.Products = pq.Int64Array(bankPayload.Products)
+	}
+	if len(bankPayload.PIC) > 0 {
+		bank.PIC = bankPayload.PIC
+	}
+	if len(bankPayload.Phone) > 0 {
+		bank.Phone = bankPayload.Phone
+	}
+	if len(bankPayload.AdminFeeSetup) > 0 {
+		bank.AdminFeeSetup = bankPayload.AdminFeeSetup
+	}
+	if len(bankPayload.ConvenienceFeeSetup) > 0 {
+		bank.ConvenienceFeeSetup = bankPayload.ConvenienceFeeSetup
+	}
+
 	err = bank.Save()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bank_id))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bankID))
 	}
 
 	return c.JSON(http.StatusOK, bank)
 }
 
+// BankDelete delete bank
 func BankDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_bank_delete")
@@ -231,17 +293,17 @@ func BankDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bank_id, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.Atoi(c.Param("bank_id"))
 
 	bank := models.Bank{}
-	err = bank.FindbyID(bank_id)
+	err = bank.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bank_id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
 	}
 
 	err = bank.Delete()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bank_id))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
 
 	return c.JSON(http.StatusOK, bank)

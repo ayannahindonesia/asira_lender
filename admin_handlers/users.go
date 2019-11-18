@@ -4,6 +4,7 @@ import (
 	"asira_lender/asira"
 	"asira_lender/email"
 	"asira_lender/models"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -18,11 +19,23 @@ import (
 	"gitlab.com/asira-ayannah/basemodel"
 )
 
-type UserSelect struct {
-	models.User
-	RolesName pq.StringArray `json:"roles_name"`
-}
+type (
+	// UserSelect custom query
+	UserSelect struct {
+		models.User
+		RolesName pq.StringArray `json:"roles_name"`
+	}
+	// UserPayload handle user request body
+	UserPayload struct {
+		Roles    []int64 `json:"roles"`
+		Username string  `json:"username"`
+		Email    string  `json:"email"`
+		Phone    string  `json:"phone"`
+		Status   string  `json:"status"`
+	}
+)
 
+// UserList get all user
 func UserList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_list")
@@ -105,6 +118,7 @@ func UserList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// UserDetails get user detail by id
 func UserDetails(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_details")
@@ -129,6 +143,7 @@ func UserDetails(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// UserNew create new user
 func UserNew(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_new")
@@ -137,19 +152,24 @@ func UserNew(c echo.Context) error {
 	}
 
 	userM := models.User{}
+	userPayload := UserPayload{}
 
 	payloadRules := govalidator.MapData{
 		"username": []string{"required", "unique:users,username"},
 		"email":    []string{"required", "unique:users,email"},
 		"phone":    []string{"required", "unique:users,phone"},
-		"roles":    []string{},
+		"roles":    []string{"valid_id:roles"},
 		"status":   []string{},
 	}
 
-	validate := validateRequestPayload(c, payloadRules, &userM)
+	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
+
+	marshal, _ := json.Marshal(userPayload)
+	json.Unmarshal(marshal, &userM)
+
 	tempPW := RandString(8)
 	userM.Password = tempPW
 
@@ -170,6 +190,7 @@ func UserNew(c echo.Context) error {
 	return c.JSON(http.StatusCreated, userM)
 }
 
+// UserPatch edit user by id
 func UserPatch(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_user_patch")
@@ -180,24 +201,40 @@ func UserPatch(c echo.Context) error {
 	userID, _ := strconv.Atoi(c.Param("user_id"))
 
 	userM := models.User{}
+	userPayload := UserPayload{}
 	err = userM.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
-	tempPassword := userM.Password
+
 	payloadRules := govalidator.MapData{
 		"username": []string{"required", "unique:users,username,1"},
 		"email":    []string{"required", "unique:users,email,1"},
 		"phone":    []string{"required", "unique:users,phone,1"},
-		"roles":    []string{},
+		"roles":    []string{"valid_id:roles"},
 		"status":   []string{},
 	}
-	validate := validateRequestPayload(c, payloadRules, &userM)
+	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	userM.Password = tempPassword
+	if len(userPayload.Username) > 0 {
+		userM.Username = userPayload.Username
+	}
+	if len(userPayload.Email) > 0 {
+		userM.Email = userPayload.Email
+	}
+	if len(userPayload.Phone) > 0 {
+		userM.Phone = userPayload.Phone
+	}
+	if len(userPayload.Status) > 0 {
+		userM.Status = userPayload.Status
+	}
+	if len(userPayload.Roles) > 0 {
+		userM.Roles = pq.Int64Array(userPayload.Roles)
+	}
+
 	err = userM.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update User %v", userID))
