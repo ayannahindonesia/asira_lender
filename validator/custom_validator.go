@@ -24,7 +24,7 @@ func (a *AsiraValidator) CustomValidatorRules() {
 			queryRow *gorm.DB
 			total    int
 		)
-		var limit = 0
+		var limit = 1
 
 		query := `SELECT COUNT(*) as total FROM %s WHERE %s = ?`
 		params := strings.Split(strings.TrimPrefix(rule, fmt.Sprintf("%s:", "unique")), ",")
@@ -47,7 +47,7 @@ func (a *AsiraValidator) CustomValidatorRules() {
 
 		queryRow.Row().Scan(&total)
 
-		if total > limit {
+		if total >= limit {
 			if message != "" {
 				return errors.New(message)
 			}

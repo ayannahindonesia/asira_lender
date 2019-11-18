@@ -96,14 +96,7 @@ func TestNewUser(t *testing.T) {
 		Status(http.StatusCreated).JSON().Object()
 	obj.ContainsKey("username").ValueEqual("username", "test user1")
 
-	// test same phone
-	payload = map[string]interface{}{
-		"username": "test same phone",
-		"email":    "samephone@ayannah.id",
-		"phone":    "08111",
-		"status":   "active",
-		"role_id":  []int{1},
-	}
+	// unique test
 	auth.POST("/admin/users").WithJSON(payload).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
@@ -202,11 +195,20 @@ func TestPatchUser(t *testing.T) {
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 
-	// test phone exists
-	payload = map[string]interface{}{
+	// uniques
+	auth.PATCH("/admin/users/2").WithJSON(map[string]interface{}{
+		"username": "adminkey",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+	auth.PATCH("/admin/users/2").WithJSON(map[string]interface{}{
+		"email": "admin@ayannah.com",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+	auth.PATCH("/admin/users/2").WithJSON(map[string]interface{}{
 		"phone": "081234567890",
-	}
-	auth.PATCH("/admin/users/3").WithJSON(payload).
+	}).
 		Expect().
 		Status(http.StatusInternalServerError).JSON().Object()
 
