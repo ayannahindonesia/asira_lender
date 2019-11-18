@@ -9,7 +9,7 @@ import (
 	"github.com/gavv/httpexpect"
 )
 
-func TestGetUserList(t *testing.T) {
+func TestAgentProviderList(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -31,80 +31,24 @@ func TestGetUserList(t *testing.T) {
 	})
 
 	// valid response
-	auth.GET("/admin/users").
+	auth.GET("/admin/agent_providers").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
 	// test query found
-	obj := auth.GET("/admin/users").WithQuery("username", "adminkey").
+	obj := auth.GET("/admin/agent_providers").WithQuery("name", "Agent Provider A").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 1)
 
 	// test query invalid
-	obj = auth.GET("/admin/users").WithQuery("username", "should not found this").
+	obj = auth.GET("/admin/agent_providers").WithQuery("name", "should not found this").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("total_data").ValueEqual("total_data", 0)
 }
 
-func TestNewUser(t *testing.T) {
-	RebuildData()
-
-	api := router.NewRouter()
-
-	server := httptest.NewServer(api)
-
-	defer server.Close()
-
-	e := httpexpect.New(t, server.URL)
-
-	auth := e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Basic "+clientBasicToken)
-	})
-
-	adminToken := getAdminLoginToken(e, auth, "1")
-
-	auth = e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Bearer "+adminToken)
-	})
-
-	payload := map[string]interface{}{
-		"username": "test user",
-		"email":    "testuser@ayannah.id",
-		"phone":    "08111",
-		"status":   "active",
-		"role_id":  []int{1},
-	}
-
-	// normal scenario
-	obj := auth.POST("/admin/users").WithJSON(payload).
-		Expect().
-		Status(http.StatusCreated).JSON().Object()
-	obj.ContainsKey("username").ValueEqual("username", "test user")
-
-	// test same phone
-	payload = map[string]interface{}{
-		"username": "test same phone",
-		"email":    "samephone@ayannah.id",
-		"phone":    "08111",
-		"status":   "active",
-		"role_id":  []int{1},
-	}
-	auth.POST("/admin/users").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
-
-	// test invalid
-	payload = map[string]interface{}{
-		"username": "",
-	}
-	auth.POST("/admin/users").WithJSON(payload).
-		Expect().
-		Status(http.StatusUnprocessableEntity).JSON().Object()
-}
-
-func TestGetUserbyID(t *testing.T) {
+func TestAgentProviderDetails(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -126,18 +70,18 @@ func TestGetUserbyID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/users/1").
+	obj := auth.GET("/admin/agent_providers/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("id").ValueEqual("id", 1)
+	obj.ContainsKey("name").ValueEqual("name", "Agent Provider A")
 
-	// not found
-	auth.GET("/admin/users/9999").
+	// test query found
+	auth.GET("/admin/agent_providers/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-func TestPatchUser(t *testing.T) {
+func TestAgentProviderNew(t *testing.T) {
 	RebuildData()
 
 	api := router.NewRouter()
@@ -159,28 +103,67 @@ func TestPatchUser(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"status": "inactive",
+		"name":    "Test Agent Provider",
+		"address": "testing st.",
+		"pic":     "test pic",
+		"phone":   "08123454321",
+		"status":  "active",
 	}
 
-	// valid response
-	obj := auth.PATCH("/admin/users/1").WithJSON(payload).
+	// normal scenario
+	obj := auth.POST("/admin/agent_providers").WithJSON(payload).
 		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("status").ValueEqual("status", "inactive")
+		Status(http.StatusCreated).JSON().Object()
+	obj.ContainsKey("name").ValueEqual("name", "Test Agent Provider")
 
-	// test phone exists
-	payload = map[string]interface{}{
-		"phone": "081234567890",
-	}
-	auth.PATCH("/admin/users/3").WithJSON(payload).
+	// test invalid
+	auth.POST("/admin/banks").WithJSON(map[string]interface{}{}).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
+}
 
-	// test invalid token
-	auth = e.Builder(func(req *httpexpect.Request) {
-		req.WithHeader("Authorization", "Bearer wrong token")
+func TestAgentProviderPatch(t *testing.T) {
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
 	})
-	auth.PATCH("/admin/users/1").WithJSON(payload).
+
+	adminToken := getAdminLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+adminToken)
+	})
+
+	payload := map[string]interface{}{
+		"name": "Test Agent Provider patch",
+	}
+
+	// normal scenario
+	obj := auth.PATCH("/admin/agent_providers/4").WithJSON(payload).
 		Expect().
-		Status(http.StatusUnauthorized).JSON().Object()
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("name").ValueEqual("name", "Test Agent Provider patch")
+	obj.ContainsKey("id").ValueEqual("id", 4)
+
+	// phone unique
+	auth.PATCH("/admin/agent_providers/4").WithJSON(map[string]interface{}{
+		"phone": "081234567890",
+	}).
+		Expect().
+		Status(http.StatusInternalServerError).JSON().Object()
+
+	// test invalid
+	payload = map[string]interface{}{
+		"status": "invalid status",
+	}
+	auth.PATCH("/admin/agent_providers/4").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnprocessableEntity).JSON().Object()
 }
