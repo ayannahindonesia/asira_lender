@@ -156,28 +156,6 @@ func BankNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
 
-	// @ToDo remodel this flow
-	user := models.User{
-		Username: bank.Name,
-		Roles:    pq.Int64Array{3},
-		Phone:    bank.Phone,
-		Status:   "active",
-	}
-	err = user.Create()
-	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat user")
-	}
-
-	bankRep := models.BankRepresentatives{
-		UserID: user.ID,
-		BankID: bank.ID,
-	}
-	err = bankRep.Create()
-	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank representative")
-	}
-	// ------
-
 	return c.JSON(http.StatusCreated, bank)
 }
 
