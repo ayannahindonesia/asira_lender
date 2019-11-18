@@ -57,14 +57,11 @@ func BankList(c echo.Context) error {
 	)
 
 	// pagination parameters
-	if c.QueryParam("rows") != "all" {
-		rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		if page <= 0 {
 			page = 1
-		}
-		if rows <= 0 {
-			rows = 25
 		}
 		offset = (page * rows) - rows
 	}
@@ -95,10 +92,13 @@ func BankList(c echo.Context) error {
 		}
 	}
 
-	if rows > 0 && offset > 0 {
+	tempDB := db
+	tempDB.Count(&totalRows)
+
+	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
 	}
-	err = db.Find(&banks).Count(&totalRows).Error
+	err = db.Find(&banks).Error
 	if err != nil {
 		log.Println(err)
 	}
