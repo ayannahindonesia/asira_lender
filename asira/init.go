@@ -11,27 +11,30 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/fsnotify/fsnotify"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/spf13/viper"
 	"gitlab.com/asira-ayannah/basemodel"
+
+	// import postgres misc
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var (
-	App *Application
-)
+// App main var
+var App *Application
 
 type (
+	// Application main variable of the app
 	Application struct {
-		Name    string        `json:"name"`
-		Port    string        `json:"port"`
-		Version string        `json:"version"`
-		ENV     string        `json:"env"`
-		Config  viper.Viper   `json:"prog_config"`
-		DB      *gorm.DB      `json:"db"`
-		Kafka   KafkaInstance `json:"kafka"`
+		Name       string        `json:"name"`
+		Port       string        `json:"port"`
+		Version    string        `json:"version"`
+		ENV        string        `json:"env"`
+		Config     viper.Viper   `json:"prog_config"`
+		DB         *gorm.DB      `json:"db"`
+		Kafka      KafkaInstance `json:"kafka"`
 		Permission viper.Viper   `json:"prog_permission"`
 	}
 
+	// KafkaInstance stores kafka configs
 	KafkaInstance struct {
 		Config *sarama.Config
 		Host   string
@@ -63,6 +66,7 @@ func init() {
 	v.CustomValidatorRules()
 }
 
+// Close apps
 func (x *Application) Close() (err error) {
 	if err = x.DB.Close(); err != nil {
 		return err
@@ -91,7 +95,7 @@ func (x *Application) loadENV() {
 	}
 }
 
-// Loads general configs
+// LoadConfigs loads general configs
 func (x *Application) LoadConfigs() error {
 	var conf *viper.Viper
 
@@ -106,7 +110,7 @@ func (x *Application) LoadConfigs() error {
 	}
 	conf.WatchConfig()
 	conf.OnConfigChange(func(e fsnotify.Event) {
-		log.Println("App Config file changed %s:", e.Name)
+		log.Printf("App Config file changed %s :", e.Name)
 		x.LoadConfigs()
 	})
 	x.Config = viper.Viper(*conf)
@@ -114,7 +118,7 @@ func (x *Application) LoadConfigs() error {
 	return nil
 }
 
-// Loads DBinit configs
+// DBinit loads DBinit configs
 func (x *Application) DBinit() error {
 	dbconf := x.Config.GetStringMap(fmt.Sprintf("%s.database", x.ENV))
 	Cons := basemodel.DBConfig{
@@ -136,6 +140,7 @@ func (x *Application) DBinit() error {
 	return nil
 }
 
+// KafkaInit init kafka instance
 func (x *Application) KafkaInit() {
 	kafkaConf := x.Config.GetStringMap(fmt.Sprintf("%s.kafka", x.ENV))
 
@@ -162,7 +167,7 @@ func (x *Application) KafkaInit() {
 	x.Kafka.Host = strings.Join([]string{kafkaConf["host"].(string), kafkaConf["port"].(string)}, ":")
 }
 
-// Loads general configs
+// LoadPermissions loads general configs
 func (x *Application) LoadPermissions() error {
 	var conf *viper.Viper
 
@@ -177,7 +182,7 @@ func (x *Application) LoadPermissions() error {
 	}
 	conf.WatchConfig()
 	conf.OnConfigChange(func(e fsnotify.Event) {
-		log.Println("App Config file changed %s:", e.Name)
+		log.Printf("App Config file changed %s:", e.Name)
 		x.LoadConfigs()
 	})
 	x.Permission = viper.Viper(*conf)

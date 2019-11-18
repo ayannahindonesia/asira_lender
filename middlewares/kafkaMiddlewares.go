@@ -13,10 +13,12 @@ import (
 )
 
 type (
+	// AsiraKafkaHandlers type
 	AsiraKafkaHandlers struct {
 		KafkaConsumer     sarama.Consumer
 		PartitionConsumer sarama.PartitionConsumer
 	}
+	// BorrowerInfo borrower info passed to lender
 	BorrowerInfo struct {
 		Info interface{} `json:"borrower_info"`
 	}
@@ -55,6 +57,7 @@ func init() {
 	}()
 }
 
+// SetPartitionConsumer func
 func (k *AsiraKafkaHandlers) SetPartitionConsumer(topic string) (err error) {
 	k.PartitionConsumer, err = k.KafkaConsumer.ConsumePartition(topic, 0, sarama.OffsetOldest)
 	if err != nil {
@@ -64,6 +67,7 @@ func (k *AsiraKafkaHandlers) SetPartitionConsumer(topic string) (err error) {
 	return nil
 }
 
+// Listen to kafka
 func (k *AsiraKafkaHandlers) Listen() ([]byte, error) {
 	select {
 	case err := <-k.PartitionConsumer.Errors():
@@ -71,8 +75,6 @@ func (k *AsiraKafkaHandlers) Listen() ([]byte, error) {
 	case msg := <-k.PartitionConsumer.Messages():
 		return msg.Value, nil
 	}
-
-	return nil, fmt.Errorf("unidentified error while listening")
 }
 
 func processMessage(kafkaMessage []byte) (err error) {

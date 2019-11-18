@@ -17,6 +17,7 @@ import (
 )
 
 type (
+	// LoanRequestListCSV type
 	LoanRequestListCSV struct {
 		ID                uint64  `json:"id"`
 		OwnerName         string  `json:"owner_name"`
@@ -38,6 +39,7 @@ type (
 	}
 )
 
+// LenderLoanRequestList load all loans
 func LenderLoanRequestList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_loan_request_list")
@@ -109,6 +111,7 @@ func LenderLoanRequestList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// LenderLoanRequestListDetail load loan by id
 func LenderLoanRequestListDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_loan_request_detail")
@@ -124,7 +127,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	loan_id, err := strconv.Atoi(c.Param("loan_id"))
+	loanID, err := strconv.Atoi(c.Param("loan_id"))
 
 	type Filter struct {
 		Bank sql.NullInt64 `json:"bank"`
@@ -137,7 +140,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
-		ID: loan_id,
+		ID: loanID,
 	})
 
 	if err != nil {
@@ -147,6 +150,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	return c.JSON(http.StatusOK, loan)
 }
 
+// LenderLoanApproveReject approve or reject a loan
 func LenderLoanApproveReject(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_loan_approve_reject")
@@ -162,7 +166,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	loan_id, _ := strconv.Atoi(c.Param("loan_id"))
+	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 
 	type Filter struct {
 		Bank   sql.NullInt64 `json:"bank"`
@@ -176,7 +180,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
-		ID:     loan_id,
+		ID:     loanID,
 		Status: "processing", // only search for processing loan.
 	})
 
@@ -205,9 +209,10 @@ func LenderLoanApproveReject(c echo.Context) error {
 		loan.Reject(reason)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loan_id, loan.Status)})
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loanID, loan.Status)})
 }
 
+// LenderLoanRequestListDownload download loans csv
 func LenderLoanRequestListDownload(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_loan_request_list_download")
@@ -242,18 +247,18 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("l.id IN (?)", id)
 	}
-	if start_date := c.QueryParam("start_date"); len(start_date) > 0 {
-		if end_date := c.QueryParam("end_date"); len(end_date) > 0 {
-			db = db.Where("l.created_time BETWEEN ? AND ?", start_date, end_date)
+	if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
+		if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
+			db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
 		} else {
-			db = db.Where("l.created_time BETWEEN ? AND ?", start_date, start_date)
+			db = db.Where("l.created_time BETWEEN ? AND ?", startDate, startDate)
 		}
 	}
-	if start_disburse_date := c.QueryParam("start_disburse_date"); len(start_disburse_date) > 0 {
-		if end_disburse_date := c.QueryParam("end_disburse_date"); len(end_disburse_date) > 0 {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, end_disburse_date)
+	if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
+		if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
 		} else {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", start_disburse_date, start_disburse_date)
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
 		}
 	}
 	orderby := c.QueryParam("orderby")
@@ -272,6 +277,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	return c.JSON(http.StatusOK, string(b))
 }
 
+// LenderLoanConfirmDisbursement confirm a loan disbursement
 func LenderLoanConfirmDisbursement(c echo.Context) error {
 	defer c.Request().Body.Close()
 
@@ -283,7 +289,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	loan_id, _ := strconv.Atoi(c.Param("loan_id"))
+	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 
 	type Filter struct {
 		Bank           sql.NullInt64 `json:"bank"`
@@ -298,7 +304,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
-		ID:             loan_id,
+		ID:             loanID,
 		Status:         "approved",
 		DisburseStatus: "processing", // only search for processing loan.
 	})
@@ -312,10 +318,10 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 
 	loan.DisburseConfirmed()
 
-	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loan_id, loan.DisburseStatus)})
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loanID, loan.DisburseStatus)})
 }
 
-// LenderLoanChangeDisburseDate func
+// LenderLoanChangeDisburseDate change disburse date
 func LenderLoanChangeDisburseDate(c echo.Context) error {
 	defer c.Request().Body.Close()
 
@@ -327,7 +333,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	loan_id, err := strconv.Atoi(c.Param("loan_id"))
+	loanID, err := strconv.Atoi(c.Param("loan_id"))
 
 	type Filter struct {
 		Bank           sql.NullInt64 `json:"bank"`
@@ -341,7 +347,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 			Int64: int64(bankRep.BankID),
 			Valid: true,
 		},
-		ID:             loan_id,
+		ID:             loanID,
 		DisburseStatus: false,
 	})
 

@@ -14,13 +14,14 @@ import (
 )
 
 type (
+	// LenderLoginCreds type
 	LenderLoginCreds struct {
 		Key      string `json:"key"`
 		Password string `json:"password"`
 	}
 )
 
-// lender login, lender can choose either login with email / phone
+// LenderLogin lender can choose either login with email / phone
 func LenderLogin(c echo.Context) error {
 	defer c.Request().Body.Close()
 

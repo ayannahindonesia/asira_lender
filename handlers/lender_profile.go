@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// LenderProfilePayload type
 type LenderProfilePayload struct {
 	Name                string  `json:"name"`
 	Type                uint64  `json:"type"`
@@ -27,6 +28,7 @@ type LenderProfilePayload struct {
 	ConvenienceFeeSetup string  `json:"convfee_setup"`
 }
 
+// LenderProfile show current lender info
 func LenderProfile(c echo.Context) error {
 	defer c.Request().Body.Close()
 	// err := validatePermission(c, "lender_profile")
@@ -52,6 +54,7 @@ func LenderProfile(c echo.Context) error {
 	return c.JSON(http.StatusOK, lenderModel)
 }
 
+// LenderProfileEdit edit current lender profile
 func LenderProfileEdit(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_profile_edit")
