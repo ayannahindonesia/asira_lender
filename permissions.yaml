@@ -43,7 +43,6 @@ permissions:
   core_role_details: core_role_details
   core_role_new: core_role_new
   core_role_patch: core_role_patch
-  core_role_range: core_role_range
   core_permission_list: core_permission_list
   core_user_list: core_user_list
   core_user_details: core_user_details

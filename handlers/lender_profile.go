@@ -29,10 +29,10 @@ type LenderProfilePayload struct {
 
 func LenderProfile(c echo.Context) error {
 	defer c.Request().Body.Close()
-	err := validatePermission(c, "lender_profile")
-	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
-	}
+	// err := validatePermission(c, "lender_profile")
+	// if err != nil {
+	// 	return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	// }
 
 	user := c.Get("user")
 	token := user.(*jwt.Token)
