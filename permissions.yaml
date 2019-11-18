@@ -53,4 +53,9 @@ permissions:
   core_agent_provider_details: core_agent_provider_details
   core_agent_provider_new: core_agent_provider_new
   core_agent_provider_patch: core_agent_provider_patch
+  core_agent_list: core_agent_list
+  core_agent_details: core_agent_details
+  core_agent_new: core_agent_new
+  core_agent_patch: core_agent_patch
+  core_agent_delete: core_agent_delete
   convenience_fee_report: convenience_fee_report

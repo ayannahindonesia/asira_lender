@@ -227,6 +227,24 @@ CREATE TABLE "agent_providers" (
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
+CREATE TABLE "agents" (
+    "id" bigserial,
+    "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
+    "deleted_time" timestamptz,
+    "name" varchar(255),
+    "username" varchar(255) UNIQUE,
+    "password" text,
+    "email" varchar(255) UNIQUE,
+    "phone" varchar(255) UNIQUE,
+    "category" varchar(255),
+    "agent_provider" bigint,
+    "banks" int ARRAY,
+    "status" varchar(255),
+    FOREIGN KEY ("agent_provider") REFERENCES agent_providers(id),
+    PRIMARY KEY ("id")
+) WITH (OIDS = FALSE);
+
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
 
@@ -243,3 +261,4 @@ DROP TABLE IF EXISTS "roles" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "bank_representatives" CASCADE;
 DROP TABLE IF EXISTS "agent_providers" CASCADE;
+DROP TABLE IF EXISTS "agents" CASCADE;
