@@ -28,6 +28,12 @@ development:
   jwt:
     duration: 120 # in minutes
     jwt_secret: sXQ8jUMpueOvN5P3cdCR
+  s3:
+    debug_mode: 1
+    access_key: fawef23fawf3f
+    secret_key: fa3wfaq3fadesefawe43f
+    host: https://s3.amazon.com:8080
+    bucket_name: bucks
 
 staging:
 
