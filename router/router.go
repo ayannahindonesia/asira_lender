@@ -22,6 +22,8 @@ func NewRouter() *echo.Echo {
 	e.GET("/clientauth", handlers.ClientLogin)
 	e.GET("/ping", handlers.Ping)
 
+	e.POST("/test", handlers.S3test2)
+
 	groups.AdminGroup(e)
 	groups.ClientGroup(e)
 	groups.LenderGroup(e)
