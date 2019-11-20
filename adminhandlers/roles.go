@@ -132,9 +132,9 @@ func RolePatch(c echo.Context) error {
 	}
 
 	payloadRules := govalidator.MapData{
-		"name":        []string{"required"},
+		"name":        []string{},
 		"description": []string{},
-		"system":      []string{"required"},
+		"system":      []string{},
 		"status":      []string{"active_inactive"},
 		"permissions": []string{},
 	}
