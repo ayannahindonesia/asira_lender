@@ -65,8 +65,8 @@ type (
 		RelatedPhoneNumber   string    `json:"related_phonenumber"`
 		RelatedHomePhone     string    `json:"related_homenumber"`
 		RelatedAddress       string    `json:"related_address"`
-		Bank                 int64
-		BankAccountNumber    string `json:"bank_accountnumber"`
+		Bank                 int64     `json:"bank"`
+		BankAccountNumber    string    `json:"bank_accountnumber"`
 	}
 )
 

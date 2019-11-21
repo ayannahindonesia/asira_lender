@@ -59,7 +59,7 @@ type (
 		RelatedAddress       string        `json:"related_address" gorm:"column:related_address;type:text" csv:"related_address"`
 		Bank                 sql.NullInt64 `json:"bank" gorm:"column:bank" sql:"DEFAULT:NULL" csv:"bank"`
 		BankAccountNumber    string        `json:"bank_accountnumber" gorm:"column:bank_accountnumber" csv:"bank_accountnumber"`
-		AgentID              int64         `json:"agent_id" gorm:"column:agent_id"`
+		AgentID              sql.NullInt64 `json:"agent_id" gorm:"column:agent_id"`
 	}
 )
 
