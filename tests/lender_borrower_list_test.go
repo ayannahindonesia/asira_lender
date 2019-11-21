@@ -73,6 +73,6 @@ func TestBorrowerGetDetail(t *testing.T) {
 	// invalid response of borrowers
 	obj = auth.GET("/lender/borrower_list/99/detail").
 		Expect().
-		Status(http.StatusInternalServerError).JSON().Object()
+		Status(http.StatusNotFound).JSON().Object()
 
 }
