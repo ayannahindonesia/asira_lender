@@ -128,19 +128,19 @@ func LenderBorrowerList(c echo.Context) error {
 		Where("ba.id = ?", bankRep.BankID)
 
 	if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-		db = db.Where("b.fullname LIKE ?", "%"+fullname+"%")
+		db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 	}
 	if category := c.QueryParam("category"); len(category) > 0 {
-		db = db.Where("a.category = ?", category)
+		db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
 	}
 	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
-		db = db.Where("ba.name LIKE ?", "%"+bankName+"%")
+		db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
 	}
 	if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
-		db = db.Where("a.name LIKE ?", "%"+agentName+"%")
+		db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
 	}
 	if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
-		db = db.Where("ap.name LIKE ?", "%"+agentProviderName+"%")
+		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("b.id IN (?)", id)
@@ -269,19 +269,19 @@ func LenderBorrowerListDownload(c echo.Context) error {
 		Where("ba.id = ?", bankRep.BankID)
 
 	if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-		db = db.Where("b.fullname LIKE ?", "%"+fullname+"%")
+		db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 	}
 	if category := c.QueryParam("category"); len(category) > 0 {
-		db = db.Where("a.category = ?", category)
+		db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
 	}
 	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
-		db = db.Where("ba.name LIKE ?", "%"+bankName+"%")
+		db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
 	}
 	if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
-		db = db.Where("a.name LIKE ?", "%"+agentName+"%")
+		db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
 	}
 	if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
-		db = db.Where("ap.name LIKE ?", "%"+agentProviderName+"%")
+		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("b.id IN (?)", id)
