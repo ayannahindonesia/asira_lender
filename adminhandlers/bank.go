@@ -71,7 +71,10 @@ func BankList(c echo.Context) error {
 		Joins("INNER JOIN bank_types bt ON b.type = bt.id")
 
 	if name := c.QueryParam("name"); len(name) > 0 {
-		db = db.Where("b.name LIKE ?", name)
+		db = db.Where("LOWER(b.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+	}
+	if bankType := c.QueryParam("bank_type"); len(bankType) > 0 {
+		db = db.Where("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(bankType)+"%")
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("b.id IN (?)", id)
