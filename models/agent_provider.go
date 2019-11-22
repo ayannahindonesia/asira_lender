@@ -1,6 +1,7 @@
 package models
 
 import (
+	"asira_lender/asira"
 	"time"
 
 	"gitlab.com/asira-ayannah/basemodel"
@@ -25,6 +26,14 @@ func (model *AgentProvider) Create() error {
 	}
 
 	return err
+}
+
+// BeforeSave gorm callback
+func (model *AgentProvider) BeforeSave() error {
+	if model.Status == "inactive" {
+		deactivateAgents(model.ID)
+	}
+	return nil
 }
 
 // Save update
@@ -59,4 +68,10 @@ func (model *AgentProvider) PagedFilterSearch(page int, rows int, order []string
 	result, err = basemodel.PagedFindFilter(&agentProviders, page, rows, order, sorts, filter)
 
 	return result, err
+}
+
+func deactivateAgents(providerID uint64) {
+	db := asira.App.DB
+
+	db.Model(&Agent{}).Where("agent_provider = ?", providerID).Update("status", "inactive")
 }

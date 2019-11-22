@@ -13,10 +13,12 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
+// AsiraValidator main var
 type AsiraValidator struct {
 	DB *gorm.DB `json:"db"`
 }
 
+// CustomValidatorRules adds custom validator to govalidator
 func (a *AsiraValidator) CustomValidatorRules() {
 	// unique value on each column. format : []string{"unique:[table],[column],[exclude_column],[excluded_value]"}
 	govalidator.AddCustomRule("unique", func(field string, rule string, message string, value interface{}) error {
@@ -71,7 +73,27 @@ func (a *AsiraValidator) CustomValidatorRules() {
 			Count(&total)
 
 		if total < 1 {
-			return fmt.Errorf(fmt.Sprint("value %v is not found.", value), field)
+			return fmt.Errorf(fmt.Sprintf("value %v is not found.", value), field)
+		}
+		return nil
+	})
+
+	// status. status of entity.
+	govalidator.AddCustomRule("status", func(field string, rule string, message string, value interface{}) error {
+		var (
+			db    *gorm.DB
+			total int
+		)
+
+		split := strings.Split(strings.TrimPrefix(rule, fmt.Sprintf("%s:", "status")), ",")
+		db = a.DB
+		db.Table(split[0]).
+			Where("id IN (?)", value).
+			Where("status = ?", split[1]).
+			Count(&total)
+
+		if total < 1 {
+			return fmt.Errorf(fmt.Sprintf("value %v is not found.", value), field)
 		}
 		return nil
 	})
@@ -93,7 +115,7 @@ func (a *AsiraValidator) CustomValidatorRules() {
 
 			limit, _ := strconv.Atoi(params[3])
 			if total > limit {
-				return fmt.Errorf(fmt.Sprint("value %v already used.", value), field)
+				return fmt.Errorf(fmt.Sprintf("value %v already used.", value), field)
 			}
 		}
 
