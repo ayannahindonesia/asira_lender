@@ -7,16 +7,20 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/asira-ayannah/basemodel"
+
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
 
+// ServicePayload handles request body
 type ServicePayload struct {
 	Name   string `json:"name"`
 	Image  string `json:"image"`
 	Status string `json:"status"`
 }
 
+// ServiceList gets all services
 func ServiceList(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_service_list")
@@ -30,23 +34,35 @@ func ServiceList(c echo.Context) error {
 	order := strings.Split(c.QueryParam("orderby"), ",")
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
-	// filters
-	id := customSplit(c.QueryParam("id"), ",")
-	name := c.QueryParam("name")
-	status := c.QueryParam("status")
+	var (
+		service models.Service
+		result  basemodel.PagedFindResult
+	)
 
-	type Filter struct {
-		ID     []string `json:"id"`
-		Name   string   `json:"name" condition:"LIKE"`
-		Status string   `json:"status"`
+	if search := c.QueryParam("search_all"); len(search) > 0 {
+		type Filter struct {
+			ID     string `json:"id" condition:"optional"`
+			Name   string `json:"name" condition:"LIKE,optional"`
+			Status string `json:"status" condition:"optional"`
+		}
+		result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
+			ID:     c.QueryParam("id"),
+			Name:   c.QueryParam("name"),
+			Status: c.QueryParam("status"),
+		})
+	} else {
+		type Filter struct {
+			ID     []string `json:"id"`
+			Name   string   `json:"name" condition:"LIKE"`
+			Status string   `json:"status"`
+		}
+		result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
+			ID:     customSplit(c.QueryParam("id"), ","),
+			Name:   c.QueryParam("name"),
+			Status: c.QueryParam("status"),
+		})
 	}
 
-	service := models.Service{}
-	result, err := service.PagedFindFilter(page, rows, order, sort, &Filter{
-		ID:     id,
-		Name:   name,
-		Status: status,
-	})
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
 	}
@@ -54,6 +70,7 @@ func ServiceList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+// ServiceNew add new service
 func ServiceNew(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_service_new")
@@ -92,6 +109,7 @@ func ServiceNew(c echo.Context) error {
 	return c.JSON(http.StatusCreated, service)
 }
 
+// ServiceDetail get service by id
 func ServiceDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_service_detail")
@@ -99,17 +117,18 @@ func ServiceDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceId, _ := strconv.Atoi(c.Param("id"))
+	serviceID, _ := strconv.Atoi(c.Param("id"))
 
 	service := models.Service{}
-	err = service.FindbyID(serviceId)
+	err = service.FindbyID(serviceID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceId))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceID))
 	}
 
 	return c.JSON(http.StatusOK, service)
 }
 
+// ServicePatch update service by id
 func ServicePatch(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_service_patch")
@@ -117,12 +136,12 @@ func ServicePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceId, _ := strconv.Atoi(c.Param("id"))
+	serviceID, _ := strconv.Atoi(c.Param("id"))
 
 	service := models.Service{}
-	err = service.FindbyID(serviceId)
+	err = service.FindbyID(serviceID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceId))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceID))
 	}
 
 	serviceImg := models.Image{}
@@ -151,16 +170,17 @@ func ServicePatch(c echo.Context) error {
 
 	err = service.Save()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceId))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}
 	err = serviceImg.Save()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceId))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}
 
 	return c.JSON(http.StatusOK, service)
 }
 
+// ServiceDelete delete service by id
 func ServiceDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_service_delete")
@@ -168,17 +188,17 @@ func ServiceDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceId, _ := strconv.Atoi(c.Param("id"))
+	serviceID, _ := strconv.Atoi(c.Param("id"))
 
 	service := models.Service{}
-	err = service.FindbyID(serviceId)
+	err = service.FindbyID(serviceID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", serviceId))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", serviceID))
 	}
 
 	err = service.Delete()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", serviceId))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", serviceID))
 	}
 
 	return c.JSON(http.StatusOK, service)
