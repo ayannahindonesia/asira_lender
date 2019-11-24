@@ -71,25 +71,7 @@ func ProductList(c echo.Context) error {
 			Assurance:       search,
 			Status:          search,
 		})
-		if err != nil {
-			return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
-		}
 	} else {
-		// filters
-		id := customSplit(c.QueryParam("id"), ",")
-		name := c.QueryParam("name")
-		serviceID := c.QueryParam("service_id")
-		minTimespan := c.QueryParam("min_timespan")
-		maxTimespan := c.QueryParam("max_timespan")
-		interest := c.QueryParam("interest")
-		minLoan := c.QueryParam("min_loan")
-		maxLoan := c.QueryParam("max_loan")
-		fee := c.QueryParam("fee")
-		collaterals := c.QueryParam("collaterals")
-		financingSector := c.QueryParam("financing_sector")
-		assurance := c.QueryParam("assurance")
-		status := c.QueryParam("status")
-
 		type Filter struct {
 			ID              []string `json:"id"`
 			Name            string   `json:"name" condition:"LIKE"`
@@ -106,23 +88,24 @@ func ProductList(c echo.Context) error {
 			Status          string   `json:"status" condition:"LIKE"`
 		}
 		result, err = product.PagedFindFilter(page, rows, order, sort, &Filter{
-			ID:              id,
-			Name:            name,
-			ServiceID:       serviceID,
-			MinTimeSpan:     minTimespan,
-			MaxTimeSpan:     maxTimespan,
-			Interest:        interest,
-			MinLoan:         minLoan,
-			MaxLoan:         maxLoan,
-			Fees:            fee,
-			Collaterals:     collaterals,
-			FinancingSector: financingSector,
-			Assurance:       assurance,
-			Status:          status,
+			ID:              customSplit(c.QueryParam("id"), ","),
+			Name:            c.QueryParam("name"),
+			ServiceID:       c.QueryParam("service_id"),
+			MinTimeSpan:     c.QueryParam("min_timespan"),
+			MaxTimeSpan:     c.QueryParam("max_timespan"),
+			Interest:        c.QueryParam("interest"),
+			MinLoan:         c.QueryParam("min_loan"),
+			MaxLoan:         c.QueryParam("max_loan"),
+			Fees:            c.QueryParam("fee"),
+			Collaterals:     c.QueryParam("collaterals"),
+			FinancingSector: c.QueryParam("financing_sector"),
+			Assurance:       c.QueryParam("assurance"),
+			Status:          c.QueryParam("status"),
 		})
-		if err != nil {
-			return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
-		}
+	}
+
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
