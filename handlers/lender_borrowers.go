@@ -147,6 +147,9 @@ func LenderBorrowerList(c echo.Context) error {
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("b.id IN (?)", id)
 	}
+	if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
+		db = db.Where("b.bank_accountnumber) LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
 		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {

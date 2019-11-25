@@ -5,6 +5,8 @@ import (
 	"asira_lender/models"
 	"database/sql"
 	"fmt"
+	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,6 +39,16 @@ type (
 		OtherIncomeSource string    `json:"other_incomesource"`
 		BankAccountNumber string    `json:"bank_accountnumber"`
 	}
+	// LoanSelect select custom type
+	LoanSelect struct {
+		models.Loan
+		BankName          string `json:"bank_name"`
+		Service           string `json:"service"`
+		Product           string `json:"product"`
+		Category          string `json:"category"`
+		AgentName         string `json:"agent_name"`
+		AgentProviderName string `json:"agent_provider_name"`
+	}
 )
 
 // LenderLoanRequestList load all loans
@@ -55,57 +67,110 @@ func LenderLoanRequestList(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
+	db := asira.App.DB
+	var (
+		totalRows int
+		offset    int
+		rows      int
+		page      int
+		loans     []LoanSelect
+	)
+
 	// pagination parameters
-	rows, err := strconv.Atoi(c.QueryParam("rows"))
-	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
-
-	// filters
-	status := c.QueryParam("status")
-	owner := c.QueryParam("owner")
-	ownerName := c.QueryParam("owner_name")
-	id := c.QueryParam("id")
-	disburseStatus := c.QueryParam("disburse_status")
-	startDate := c.QueryParam("start_date")
-	endDate := c.QueryParam("end_date")
-	startDisburseDate := c.QueryParam("start_disburse_date")
-	endDisburseDate := c.QueryParam("end_disburse_date")
-
-	type Filter struct {
-		Bank                sql.NullInt64           `json:"bank"`
-		Status              string                  `json:"status"`
-		Owner               string                  `json:"owner"`
-		OwnerName           string                  `json:"owner_name" condition:"LIKE"`
-		DateBetween         basemodel.CompareFilter `json:"created_time" condition:"BETWEEN"`
-		DisburseDateBetween basemodel.CompareFilter `json:"disburse_date" condition:"BETWEEN"`
-		ID                  string                  `json:"id"`
-		DisburseStatus      string                  `json:"disburse_status"`
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
+		}
+		offset = (page * rows) - rows
 	}
 
-	loan := models.Loan{}
-	result, err := loan.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		Owner:     owner,
-		Status:    status,
-		OwnerName: ownerName,
-		ID:        id,
-		DateBetween: basemodel.CompareFilter{
-			Value1: startDate,
-			Value2: endDate,
-		},
-		DisburseDateBetween: basemodel.CompareFilter{
-			Value1: startDisburseDate,
-			Value2: endDisburseDate,
-		},
-		DisburseStatus: disburseStatus,
-	})
+	db = db.Table("loans l").
+		Select("l.*, ba.name as bank_name, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Joins("LEFT JOIN products p ON l.product = p.id").
+		Joins("LEFT JOIN services s ON p.service_id = s.id").
+		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
+		Joins("LEFT JOIN borrowers b ON b.id = l.owner").
+		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("l.bank = ?", bankRep.BankID)
 
+	if status := c.QueryParam("status"); len(status) > 0 {
+		db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+	}
+	if owner := c.QueryParam("owner"); len(owner) > 0 {
+		db = db.Where("l.owner = ?", owner)
+	}
+	if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
+		db = db.Where("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
+	}
+	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+		db = db.Where("l.id IN (?)", id)
+	}
+	if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
+		db = db.Where("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
+	}
+	if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
+		if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
+			db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
+		} else {
+			db = db.Where("l.created_time BETWEEN ? AND ?", startDate, startDate)
+		}
+	}
+	if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
+		if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
+		} else {
+			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+		}
+	}
+	if category := c.QueryParam("category"); len(category) > 0 {
+		db = db.Where("LOWER(a.category) LIKE ?", "%"+strings.ToLower(category)+"%")
+	}
+	if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
+		db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
+	}
+	if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
+		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
+	}
+
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
+	}
+
+	tempDB := db
+	tempDB.Count(&totalRows)
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+	}
+	err = db.Find(&loans).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+		log.Println(err)
+	}
+
+	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
+
+	result := basemodel.PagedFindResult{
+		TotalData:   totalRows,
+		Rows:        rows,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		From:        offset + 1,
+		To:          offset + rows,
+		Data:        loans,
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -128,20 +193,20 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	bankRep.FindbyUserID(lenderID)
 
 	loanID, err := strconv.Atoi(c.Param("loan_id"))
-
-	type Filter struct {
-		Bank sql.NullInt64 `json:"bank"`
-		ID   int           `json:"id"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err = loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID: loanID,
-	})
+
+	err = db.Table("loans l").
+		Select("l.*, ba.name as bank_name, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Joins("LEFT JOIN products p ON l.product = p.id").
+		Joins("LEFT JOIN services s ON p.service_id = s.id").
+		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
+		Joins("LEFT JOIN borrowers b ON b.id = l.owner").
+		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("l.bank = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
