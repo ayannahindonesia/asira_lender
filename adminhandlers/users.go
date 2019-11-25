@@ -20,6 +20,7 @@ import (
 )
 
 type (
+	// UserSelect custom select container
 	UserSelect struct {
 		// UserSelect custom query
 		models.User
@@ -69,20 +70,24 @@ func UserList(c echo.Context) error {
 		Joins("LEFT JOIN bank_representatives br ON br.user_id = u.id").
 		Joins("LEFT JOIN banks b ON br.bank_id = b.id")
 
-	if name := c.QueryParam("username"); len(name) > 0 {
-		db = db.Where("u.username LIKE ?", name)
-	}
-	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("u.id IN (?)", id)
-	}
-	if email := c.QueryParam("email"); len(email) > 0 {
-		db = db.Where("u.email LIKE ?", email)
-	}
-	if phone := c.QueryParam("phone"); len(phone) > 0 {
-		db = db.Where("u.phone LIKE ?", phone)
-	}
-	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
-		db = db.Where("bank_name LIKE ?", bankName)
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		db = db.Or("u.username LIKE ?", "%"+searchAll+"%").Or("u.id = ?", searchAll).Or("u.email LIKE ?", "%"+searchAll+"%").Or("u.phone LIKE ?", "%"+searchAll+"%").Or("bank_name LIKE ?", "%"+searchAll+"%")
+	} else {
+		if name := c.QueryParam("username"); len(name) > 0 {
+			db = db.Where("u.username LIKE ?", "%"+name+"%")
+		}
+		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+			db = db.Where("u.id IN (?)", id)
+		}
+		if email := c.QueryParam("email"); len(email) > 0 {
+			db = db.Where("u.email LIKE ?", "%"+email+"%")
+		}
+		if phone := c.QueryParam("phone"); len(phone) > 0 {
+			db = db.Where("u.phone LIKE ?", "%"+phone+"%")
+		}
+		if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
+			db = db.Where("bank_name LIKE ?", "%"+bankName+"%")
+		}
 	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
@@ -138,7 +143,7 @@ func UserDetails(c echo.Context) error {
 
 	user := UserSelect{}
 
-	userID, _ := strconv.Atoi(c.Param("user_id"))
+	userID, _ := strconv.Atoi(c.Param("id"))
 
 	err = db.Table("users u").
 		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
@@ -242,7 +247,7 @@ func UserPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	userID, _ := strconv.Atoi(c.Param("user_id"))
+	userID, _ := strconv.Atoi(c.Param("id"))
 
 	userM := models.User{}
 	userPayload := UserPayload{}

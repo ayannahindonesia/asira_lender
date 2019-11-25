@@ -69,9 +69,9 @@ func AdminGroup(e *echo.Echo) {
 
 	// Role
 	g.GET("/roles", adminhandlers.RoleList)
-	g.GET("/roles/:role_id", adminhandlers.RoleDetails)
+	g.GET("/roles/:id", adminhandlers.RoleDetails)
 	g.POST("/roles", adminhandlers.RoleNew)
-	g.PATCH("/roles/:role_id", adminhandlers.RolePatch)
+	g.PATCH("/roles/:id", adminhandlers.RolePatch)
 	g.GET("/roles_all", adminhandlers.RoleRange)
 
 	// Permission
@@ -79,9 +79,9 @@ func AdminGroup(e *echo.Echo) {
 
 	// User
 	g.GET("/users", adminhandlers.UserList)
-	g.GET("/users/:user_id", adminhandlers.UserDetails)
+	g.GET("/users/:id", adminhandlers.UserDetails)
 	g.POST("/users", adminhandlers.UserNew)
-	g.PATCH("/users/:user_id", adminhandlers.UserPatch)
+	g.PATCH("/users/:id", adminhandlers.UserPatch)
 
 	// Agent Provider
 	g.GET("/agent_providers", adminhandlers.AgentProviderList)

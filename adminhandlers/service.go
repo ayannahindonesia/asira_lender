@@ -39,16 +39,16 @@ func ServiceList(c echo.Context) error {
 		result  basemodel.PagedFindResult
 	)
 
-	if search := c.QueryParam("search_all"); len(search) > 0 {
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		type Filter struct {
 			ID     string `json:"id" condition:"optional"`
 			Name   string `json:"name" condition:"LIKE,optional"`
 			Status string `json:"status" condition:"optional"`
 		}
 		result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
-			ID:     c.QueryParam("id"),
-			Name:   c.QueryParam("name"),
-			Status: c.QueryParam("status"),
+			ID:     searchAll,
+			Name:   searchAll,
+			Status: searchAll,
 		})
 	} else {
 		type Filter struct {

@@ -50,7 +50,7 @@ func ProductList(c echo.Context) error {
 		result  basemodel.PagedFindResult
 	)
 
-	if search := c.QueryParam("search_all"); len(search) > 0 {
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		type Filter struct {
 			ID              string `json:"id" condition:"optional"`
 			Name            string `json:"name" condition:"LIKE,optional"`
@@ -62,14 +62,14 @@ func ProductList(c echo.Context) error {
 			Status          string `json:"status" condition:"LIKE,optional"`
 		}
 		result, err = product.PagedFindFilter(page, rows, order, sort, &Filter{
-			ID:              search,
-			Name:            search,
-			Interest:        search,
-			Fees:            search,
-			Collaterals:     search,
-			FinancingSector: search,
-			Assurance:       search,
-			Status:          search,
+			ID:              searchAll,
+			Name:            searchAll,
+			Interest:        searchAll,
+			Fees:            searchAll,
+			Collaterals:     searchAll,
+			FinancingSector: searchAll,
+			Assurance:       searchAll,
+			Status:          searchAll,
 		})
 	} else {
 		type Filter struct {
