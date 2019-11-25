@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/asira-ayannah/basemodel"
+
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
@@ -19,31 +21,44 @@ func AgentProviderList(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	agentProvider := models.AgentProvider{}
-
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	order := strings.Split(c.QueryParam("orderby"), ",")
 	sort := strings.Split(c.QueryParam("sort"), ",")
-	// filters
-	name := c.QueryParam("name")
-	id := customSplit(c.QueryParam("id"), ",")
-	pic := c.QueryParam("pic")
-	phone := c.QueryParam("phone")
 
-	type Filter struct {
-		Name  string   `json:"name" condition:"LIKE"`
-		ID    []string `json:"id"`
-		PIC   string   `json:"pic"`
-		Phone string   `json:"phone"`
+	var (
+		agentProvider models.AgentProvider
+		result        basemodel.PagedFindResult
+	)
+
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		type Filter struct {
+			Name  string `json:"name" condition:"LIKE,optional"`
+			ID    string `json:"id" condition:"optional"`
+			PIC   string `json:"pic" condition:"LIKE,optional"`
+			Phone string `json:"phone" condition:"LIKE,optional"`
+		}
+		result, err = agentProvider.PagedFilterSearch(page, rows, order, sort, &Filter{
+			Name:  searchAll,
+			ID:    searchAll,
+			PIC:   searchAll,
+			Phone: searchAll,
+		})
+	} else {
+		type Filter struct {
+			Name  string   `json:"name" condition:"LIKE"`
+			ID    []string `json:"id"`
+			PIC   string   `json:"pic" condition:"LIKE"`
+			Phone string   `json:"phone" condition:"LIKE"`
+		}
+		result, err = agentProvider.PagedFilterSearch(page, rows, order, sort, &Filter{
+			Name:  c.QueryParam("name"),
+			ID:    customSplit(c.QueryParam("id"), ","),
+			PIC:   c.QueryParam("pic"),
+			Phone: c.QueryParam("phone"),
+		})
 	}
-	result, err := agentProvider.PagedFilterSearch(page, rows, order, sort, &Filter{
-		Name:  name,
-		ID:    id,
-		PIC:   pic,
-		Phone: phone,
-	})
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Agent provider tidak Ditemukan")
