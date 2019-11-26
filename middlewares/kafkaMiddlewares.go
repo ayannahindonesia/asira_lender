@@ -193,6 +193,10 @@ func processMessage(kafkaMessage []byte) (err error) {
 
 		loan.Bank = borrower.Bank
 		loan.OwnerName = borrower.Fullname
+		loan.Owner = sql.NullInt64{
+			Int64: int64(borrower.ID),
+			Valid: true,
+		}
 
 		err = loan.Save() // finish create loan
 		break
