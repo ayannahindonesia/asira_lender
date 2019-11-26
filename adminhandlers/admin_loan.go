@@ -42,6 +42,16 @@ func LoanGetAll(c echo.Context) error {
 		loans     []LoanSelect
 	)
 
+	// pagination parameters
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
+		}
+		offset = (page * rows) - rows
+	}
+
 	db = db.Table("loans l").
 		Select("l.*, ba.name as bank_name, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
