@@ -298,6 +298,8 @@ func LenderBorrowerListDownload(c echo.Context) error {
 	if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
 		if accountNumber == "null" {
 			db = db.Where("b.bank_accountnumber = ?", "")
+		} else if accountNumber == "not null" {
+			db = db.Where("b.bank_accountnumber != ?", "")
 		} else {
 			db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
 		}
