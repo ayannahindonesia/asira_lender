@@ -31,6 +31,7 @@ type (
 		DisburseDate        time.Time      `json:"disburse_date" gorm:"column:disburse_date"`
 		DisburseDateChanged bool           `json:"disburse_date_changed" gorm:"column:disburse_date_changed"`
 		DisburseStatus      string         `json:"disburse_status" gorm:"column:disburse_status" sql:"DEFAULT:'processing'"`
+		ApprovalDate        time.Time      `json:"approval_date" gorm:"column:approval_date"`
 		RejectReason        string         `json:"reject_reason" gorm:"column:reject_reason"`
 	}
 
@@ -86,6 +87,7 @@ func (l *Loan) PagedFilterSearch(page int, rows int, orderby string, sort string
 func (l *Loan) Approve(disburseDate time.Time) error {
 	l.Status = "approved"
 	l.DisburseDate = disburseDate
+	l.ApprovalDate = time.Now()
 
 	err := l.Save()
 	if err != nil {
@@ -100,6 +102,7 @@ func (l *Loan) Approve(disburseDate time.Time) error {
 func (l *Loan) Reject(reason string) error {
 	l.Status = "rejected"
 	l.RejectReason = reason
+	l.ApprovalDate = time.Now()
 
 	err := l.Save()
 	if err != nil {
