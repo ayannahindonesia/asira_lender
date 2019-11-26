@@ -97,3 +97,13 @@ func (b *Borrower) PagedFilterSearch(page int, rows int, orderby string, sort st
 
 	return result, err
 }
+
+func (b *Borrower) Approve() {
+	b.Status = "approved"
+	b.Save()
+}
+
+func (b *Borrower) Reject() {
+	b.Status = "rejected"
+	b.Save()
+}

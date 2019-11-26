@@ -74,5 +74,37 @@ func TestBorrowerGetDetail(t *testing.T) {
 	obj = auth.GET("/lender/borrower_list/99/detail").
 		Expect().
 		Status(http.StatusInternalServerError).JSON().Object()
+}
 
+func TestBorrowerApproveReject(t *testing.T) {
+	RebuildData()
+
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	lendertoken := getLenderLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+lendertoken)
+	})
+
+	// valid response of borrowers
+	obj := auth.GET("/lender/borrower_list/2/approve").WithQuery("account_number", "5123456789865").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("bank_accountnumber").ValueEqual("bank_accountnumber", "5123456789865")
+
+	// approve again
+	// auth.GET("/lender/borrower_list/2/approve").WithQuery("account_number", "5123456789865").
+	// 	Expect().
+	// 	Status(http.StatusNotFound).JSON().Object()
 }
