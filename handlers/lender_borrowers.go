@@ -255,17 +255,19 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, "borrower not found")
 	}
 
-	if accNumber := c.QueryParam("account_number"); len(accNumber) > 0 {
-		borrower.BankAccountNumber = accNumber
-		approval := c.Param("approval")
-		switch approval {
-		default:
+	approval := c.Param("approval")
+	switch approval {
+	default:
+		if accNumber := c.QueryParam("account_number"); len(accNumber) > 0 {
+			borrower.BankAccountNumber = accNumber
 			borrower.Approve()
-		case "reject":
-			borrower.Reject()
+		} else {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "invalid account number")
 		}
-	} else {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, "", "invalid account number")
+		break
+	case "reject":
+		borrower.Reject()
+		break
 	}
 
 	return c.JSON(http.StatusOK, borrower)
