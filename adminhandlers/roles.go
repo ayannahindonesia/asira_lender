@@ -44,12 +44,13 @@ func RoleList(c echo.Context) error {
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		type Filter struct {
-			ID     string `json:"id" condition:"optional"`
+			ID     int64  `json:"id" condition:"optional"`
 			Name   string `json:"name" condition:"LIKE,optional"`
 			Status string `json:"status" condition:"optional"`
 		}
+		id, _ := strconv.ParseInt(searchAll, 10, 64)
 		result, err = roles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-			ID:     searchAll,
+			ID:     id,
 			Name:   searchAll,
 			Status: searchAll,
 		})

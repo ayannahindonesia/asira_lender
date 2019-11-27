@@ -35,13 +35,14 @@ func AgentProviderList(c echo.Context) error {
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		type Filter struct {
 			Name  string `json:"name" condition:"LIKE,optional"`
-			ID    string `json:"id" condition:"optional"`
+			ID    int64  `json:"id" condition:"optional"`
 			PIC   string `json:"pic" condition:"LIKE,optional"`
 			Phone string `json:"phone" condition:"LIKE,optional"`
 		}
+		id, _ := strconv.ParseInt(searchAll, 10, 64)
 		result, err = agentProvider.PagedFilterSearch(page, rows, order, sort, &Filter{
 			Name:  searchAll,
-			ID:    searchAll,
+			ID:    id,
 			PIC:   searchAll,
 			Phone: searchAll,
 		})

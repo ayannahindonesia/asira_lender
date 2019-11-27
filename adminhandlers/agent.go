@@ -52,17 +52,18 @@ func AgentList(c echo.Context) error {
 		type Filter struct {
 			Name          string `json:"name" condition:"LIKE,optional"`
 			Username      string `json:"username" condition:"LIKE,optional"`
-			ID            string `json:"id" condition:"optional"`
+			ID            int64  `json:"id" condition:"optional"`
 			Email         string `json:"email" condition:"optional"`
 			Phone         string `json:"phone" condition:"optional"`
 			Category      string `json:"category" condition:"optional"`
 			AgentProvider string `json:"agent_provider" condition:"optional"`
 			Status        string `json:"status" condition:"optional"`
 		}
+		id, _ := strconv.ParseInt(searchAll, 10, 64)
 		result, err = agent.PagedFilterSearch(page, rows, order, sort, &Filter{
 			Name:          searchAll,
 			Username:      searchAll,
-			ID:            searchAll,
+			ID:            id,
 			Email:         searchAll,
 			Phone:         searchAll,
 			Category:      searchAll,
