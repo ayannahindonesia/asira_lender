@@ -129,6 +129,8 @@ func LenderBorrowerList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID)
 
+	accountNumber := c.QueryParam("account_number")
+
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
 		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
@@ -136,8 +138,19 @@ func LenderBorrowerList(c echo.Context) error {
 			fmt.Sprintf(" OR LOWER(ba.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = '%v'", searchAll)
+
+		if len(accountNumber) > 0 {
+			if accountNumber == "null" {
+				db = db.Where("b.bank_accountnumber = ?", "")
+			} else if accountNumber == "not null" {
+				db = db.Where("b.bank_accountnumber != ?", "")
+			} else {
+				extraquery = extraquery + fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			}
+		} else {
+			extraquery = extraquery + fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+		}
 
 		db = db.Where(extraquery)
 	} else {
@@ -159,7 +172,7 @@ func LenderBorrowerList(c echo.Context) error {
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("b.id IN (?)", id)
 		}
-		if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
+		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
 				db = db.Where("b.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {

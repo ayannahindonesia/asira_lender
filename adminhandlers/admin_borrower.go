@@ -60,14 +60,29 @@ func BorrowerGetAll(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
+	accountNumber := c.QueryParam("account_number")
+
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		db = db.Or("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("LOWER(a.category) = ?", strings.ToLower(searchAll)).
-			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("LOWER(a.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("CAST(b.id as varchar(255)) = ?", searchAll).
-			Or("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(a.category) = '%v'", strings.ToLower(searchAll)) +
+			fmt.Sprintf(" OR LOWER(ba.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = '%v'", searchAll)
+
+		if len(accountNumber) > 0 {
+			if accountNumber == "null" {
+				db = db.Where("b.bank_accountnumber = ?", "")
+			} else if accountNumber == "not null" {
+				db = db.Where("b.bank_accountnumber != ?", "")
+			} else {
+				extraquery = extraquery + fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			}
+		} else {
+			extraquery = extraquery + fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+		}
+
+		db = db.Where(extraquery)
 	} else {
 		if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
 			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
@@ -87,7 +102,7 @@ func BorrowerGetAll(c echo.Context) error {
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("b.id IN (?)", id)
 		}
-		if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
+		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
 				db = db.Where("b.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
