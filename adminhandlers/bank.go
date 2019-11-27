@@ -70,14 +70,20 @@ func BankList(c echo.Context) error {
 		Select("b.*, bt.name as bank_type_name").
 		Joins("INNER JOIN bank_types bt ON b.type = bt.id")
 
-	if name := c.QueryParam("name"); len(name) > 0 {
-		db = db.Where("LOWER(b.name) LIKE ?", "%"+strings.ToLower(name)+"%")
-	}
-	if bankType := c.QueryParam("bank_type"); len(bankType) > 0 {
-		db = db.Where("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(bankType)+"%")
-	}
-	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("b.id IN (?)", id)
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		db = db.Or("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(b.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("CAST(b.id as varchar(255)) = ?", searchAll)
+	} else {
+		if name := c.QueryParam("name"); len(name) > 0 {
+			db = db.Where("LOWER(b.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+		}
+		if bankType := c.QueryParam("bank_type"); len(bankType) > 0 {
+			db = db.Where("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(bankType)+"%")
+		}
+		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+			db = db.Where("b.id IN (?)", id)
+		}
 	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
