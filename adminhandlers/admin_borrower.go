@@ -60,29 +60,41 @@ func BorrowerGetAll(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
-	if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-		db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
-	}
-	if category := c.QueryParam("category"); len(category) > 0 {
-		db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
-	}
-	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
-		db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
-	}
-	if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
-		db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
-	}
-	if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
-		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
-	}
-	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("b.id IN (?)", id)
-	}
-	if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
-		if accountNumber == "null" {
-			db = db.Where("b.bank_accountnumber = ?", "")
-		} else {
-			db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		db = db.Or("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(a.category) = ?", strings.ToLower(searchAll)).
+			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(a.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("CAST(b.id as varchar(255)) = ?", searchAll).
+			Or("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+	} else {
+		if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
+			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
+		}
+		if category := c.QueryParam("category"); len(category) > 0 {
+			db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
+		}
+		if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
+			db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
+		}
+		if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
+			db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
+		}
+		if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
+			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
+		}
+		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+			db = db.Where("b.id IN (?)", id)
+		}
+		if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
+			if accountNumber == "null" {
+				db = db.Where("b.bank_accountnumber = ?", "")
+			} else if accountNumber == "not null" {
+				db = db.Where("b.bank_accountnumber != ?", "")
+			} else {
+				db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+			}
 		}
 	}
 
