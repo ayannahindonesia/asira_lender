@@ -73,6 +73,7 @@ func LenderLoanRequestList(c echo.Context) error {
 		offset    int
 		rows      int
 		page      int
+		lastPage  int
 		loans     []LoanSelect
 	)
 
@@ -96,43 +97,57 @@ func LenderLoanRequestList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("l.bank = ?", bankRep.BankID)
 
-	if status := c.QueryParam("status"); len(status) > 0 {
-		db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
-	}
-	if owner := c.QueryParam("owner"); len(owner) > 0 {
-		db = db.Where("l.owner = ?", owner)
-	}
-	if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
-		db = db.Where("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
-	}
-	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("l.id IN (?)", id)
-	}
-	if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
-		db = db.Where("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
-	}
-	if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
-		if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
-			db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
-		} else {
-			db = db.Where("l.created_time BETWEEN ? AND ?", startDate, startDate)
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		// gorm havent support nested subquery yet.
+		extraquery := fmt.Sprintf("LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR CAST(l.owner as varchar(255)) = '%v'", searchAll) +
+			fmt.Sprintf(" OR LOWER(l.owner_name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR CAST(l.id as varchar(255)) = '%v'", searchAll) +
+			fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+
+		db = db.Where(extraquery)
+	} else {
+		if status := c.QueryParam("status"); len(status) > 0 {
+			db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
 		}
-	}
-	if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
-		if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
-		} else {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+		if owner := c.QueryParam("owner"); len(owner) > 0 {
+			db = db.Where("l.owner = ?", owner)
 		}
-	}
-	if category := c.QueryParam("category"); len(category) > 0 {
-		db = db.Where("LOWER(a.category) LIKE ?", "%"+strings.ToLower(category)+"%")
-	}
-	if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
-		db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
-	}
-	if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
-		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
+		if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
+			db = db.Where("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
+		}
+		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+			db = db.Where("l.id IN (?)", id)
+		}
+		if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
+			db = db.Where("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
+		}
+		if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
+			if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
+				db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
+			} else {
+				db = db.Where("l.created_time BETWEEN ? AND ?", startDate, startDate)
+			}
+		}
+		if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
+			if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
+				db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
+			} else {
+				db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+			}
+		}
+		if category := c.QueryParam("category"); len(category) > 0 {
+			db = db.Where("LOWER(a.category) LIKE ?", "%"+strings.ToLower(category)+"%")
+		}
+		if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
+			db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
+		}
+		if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
+			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
+		}
 	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
@@ -155,13 +170,12 @@ func LenderLoanRequestList(c echo.Context) error {
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
 	}
 	err = db.Find(&loans).Error
 	if err != nil {
 		log.Println(err)
 	}
-
-	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
 
 	result := basemodel.PagedFindResult{
 		TotalData:   totalRows,

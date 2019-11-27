@@ -53,6 +53,7 @@ func BankList(c echo.Context) error {
 		offset    int
 		rows      int
 		page      int
+		lastPage  int
 		banks     []BankSelect
 	)
 
@@ -106,13 +107,12 @@ func BankList(c echo.Context) error {
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
 	}
 	err = db.Find(&banks).Error
 	if err != nil {
 		log.Println(err)
 	}
-
-	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
 
 	result := basemodel.PagedFindResult{
 		TotalData:   totalRows,

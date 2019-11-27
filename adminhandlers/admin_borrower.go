@@ -41,6 +41,7 @@ func BorrowerGetAll(c echo.Context) error {
 		offset    int
 		rows      int
 		page      int
+		lastPage  int
 		borrowers []BorrowerSelect
 	)
 
@@ -133,13 +134,12 @@ func BorrowerGetAll(c echo.Context) error {
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
 		log.Println(err)
 	}
-
-	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
 
 	result := basemodel.PagedFindResult{
 		TotalData:   totalRows,
