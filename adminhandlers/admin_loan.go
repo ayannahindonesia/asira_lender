@@ -62,9 +62,12 @@ func LoanGetAll(c echo.Context) error {
 		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
+	if status := c.QueryParam("status"); len(status) > 0 {
+		db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+	}
+
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		db = db.Or("LOWER(l.status) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("CAST(l.owner as varchar(255)) = ?", searchAll).
+		db = db.Or("CAST(l.owner as varchar(255)) = ?", searchAll).
 			Or("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("CAST(l.id as varchar(255)) = ?", searchAll).
 			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
@@ -73,9 +76,6 @@ func LoanGetAll(c echo.Context) error {
 			Or("LOWER(a.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%")
 	} else {
-		if status := c.QueryParam("status"); len(status) > 0 {
-			db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
-		}
 		if owner := c.QueryParam("owner"); len(owner) > 0 {
 			db = db.Where("l.owner = ?", owner)
 		}

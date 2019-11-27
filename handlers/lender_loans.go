@@ -97,10 +97,13 @@ func LenderLoanRequestList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("l.bank = ?", bankRep.BankID)
 
+	if status := c.QueryParam("status"); len(status) > 0 {
+		db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+	}
+
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
-		extraquery := fmt.Sprintf("LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR CAST(l.owner as varchar(255)) = '%v'", searchAll) +
+		extraquery := fmt.Sprintf("CAST(l.owner as varchar(255)) = '%v'", searchAll) +
 			fmt.Sprintf(" OR LOWER(l.owner_name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR CAST(l.id as varchar(255)) = '%v'", searchAll) +
 			fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
@@ -110,9 +113,6 @@ func LenderLoanRequestList(c echo.Context) error {
 
 		db = db.Where(extraquery)
 	} else {
-		if status := c.QueryParam("status"); len(status) > 0 {
-			db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
-		}
 		if owner := c.QueryParam("owner"); len(owner) > 0 {
 			db = db.Where("l.owner = ?", owner)
 		}
