@@ -3,55 +3,57 @@ package handlers
 import (
 	"asira_lender/asira"
 	"bytes"
+	"encoding/base64"
+	"image/jpeg"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/labstack/echo"
+	"github.com/thedevsaddam/govalidator"
 )
+
+type Payload struct {
+	Image string `json:"image"`
+}
 
 func S3test(c echo.Context) error {
 	defer c.Request().Body.Close()
 
-	// body := map[string]interface{}{}
-	// json.NewDecoder(c.Request().Body).Decode(&body)
+	payload := Payload{}
 
-	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-	b := make([]byte, 4)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	payloadRules := govalidator.MapData{
+		"image": []string{"required"},
 	}
-	imagename := string(b) + strconv.FormatInt(time.Now().Unix(), 10) + ".jpeg"
 
-	// unbased := base64.NewDecoder(base64.StdEncoding, strings.NewReader(body["image"].(string)))
-	// buff := bytes.Buffer{}
-	// buff.ReadFrom(unbased)
+	validate := validateRequestPayload(c, payloadRules, &payload)
+	if validate != nil {
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+	}
 
-	// reader := bytes.NewReader(unbased)
-	// img, _ := jpeg.Decode(reader)
+	unbased := base64.NewDecoder(base64.StdEncoding, payload.Image)
+	buff := bytes.Buffer{}
+	buff.ReadFrom(unbased)
 
-	// file, err := os.Create(string(b) + time.Now().String() + ".jpeg")
-	// if err != nil {
-	// 	return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
-	// }
-	// defer file.Close()
+	reader := bytes.NewReader(unbased)
+	img, _ := jpeg.Decode(reader)
 
-	// err = jpeg.Encode(file, img, nil)
-	// if err != nil {
-	// 	return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
-	// }
-
-	file, _ := os.OpenFile("img/download.jpeg", os.O_RDWR|os.O_CREATE, 0755)
+	file, err := os.Create(string(b) + time.Now().String() + ".jpeg")
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
+	}
 	defer file.Close()
-	log.Printf("jancoook : %s", imagename)
 
-	great, err := asira.App.S3.PutObjectJPEG(file, imagename)
+	err = jpeg.Encode(file, img, nil)
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
+	}
+
+	great, err := asira.App.S3.PutObjectJPEG(file)
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
 	}
@@ -60,6 +62,7 @@ func S3test(c echo.Context) error {
 }
 
 func S3test2(c echo.Context) error {
+
 	s, err := session.NewSession(&aws.Config{Region: aws.String("id-tbs")})
 	if err != nil {
 		log.Fatal(err)
