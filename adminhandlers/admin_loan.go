@@ -66,7 +66,7 @@ func LoanGetAll(c echo.Context) error {
 			Or("CAST(l.owner as varchar(255)) = ?", searchAll).
 			Or("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("CAST(l.id as varchar(255)) = ?", searchAll).
-			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%"
+			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(a.category) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(a.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
