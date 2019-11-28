@@ -105,8 +105,10 @@ func LenderLoanRequestList(c echo.Context) error {
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
-		extraquery := fmt.Sprintf("CAST(l.owner as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+		extraquery := fmt.Sprintf(" OR LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(s.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(p.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR CAST(l.id as varchar(255)) = '%v'", searchAll) +
 			fmt.Sprintf(" OR LOWER(b.bank_accountnumber) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +

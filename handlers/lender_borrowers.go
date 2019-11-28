@@ -135,22 +135,18 @@ func LenderBorrowerList(c echo.Context) error {
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
 		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.category) = '%v'", strings.ToLower(searchAll)) +
+			fmt.Sprintf(" OR LOWER(a.category) = '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(ba.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = '%v'", searchAll)
+			fmt.Sprintf(" OR LOWER(loan_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 
 		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
 				db = db.Where("b.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
 				db = db.Where("b.bank_accountnumber != ?", "")
-			} else {
-				extraquery = extraquery + fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 			}
-		} else {
-			extraquery = extraquery + fmt.Sprintf(" OR b.bank_accountnumber LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 		}
 
 		db = db.Where(extraquery)

@@ -69,8 +69,10 @@ func LoanGetAll(c echo.Context) error {
 	}
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		db = db.Or("CAST(l.owner as varchar(255)) = ?", searchAll).
-			Or("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+		db = db.Or("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(s.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(p.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(l.status) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("CAST(l.id as varchar(255)) = ?", searchAll).
 			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(searchAll)+"%").
