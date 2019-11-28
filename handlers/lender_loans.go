@@ -111,13 +111,8 @@ func LenderLoanRequestList(c echo.Context) error {
 		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(s.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(p.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR CAST(l.id as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR LOWER(b.bank_accountnumber) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 
 		db = db.Where(extraquery)
 	} else {
