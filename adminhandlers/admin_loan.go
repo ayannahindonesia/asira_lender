@@ -17,7 +17,9 @@ import (
 // LoanSelect select custom type
 type LoanSelect struct {
 	models.Loan
+	OwnerName         string `json:"owner_name"`
 	BankName          string `json:"bank_name"`
+	BankAccount       string `json:"bank_account"`
 	Service           string `json:"service"`
 	Product           string `json:"product"`
 	Category          string `json:"category"`
@@ -54,7 +56,7 @@ func LoanGetAll(c echo.Context) error {
 	}
 
 	db = db.Table("loans l").
-		Select("l.*, ba.name as bank_name, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Select("l.*, b.fullname as owner_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
@@ -68,9 +70,10 @@ func LoanGetAll(c echo.Context) error {
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		db = db.Or("CAST(l.owner as varchar(255)) = ?", searchAll).
-			Or("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("CAST(l.id as varchar(255)) = ?", searchAll).
 			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(a.category) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(a.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
@@ -80,7 +83,7 @@ func LoanGetAll(c echo.Context) error {
 			db = db.Where("l.owner = ?", owner)
 		}
 		if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
-			db = db.Where("LOWER(l.owner_name) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
+			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("l.id IN (?)", id)
@@ -90,6 +93,9 @@ func LoanGetAll(c echo.Context) error {
 		}
 		if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
 			db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
+		}
+		if bankAccount := c.QueryParam("bank_account"); len(bankAccount) > 0 {
+			db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(bankAccount)+"%")
 		}
 		if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
 			if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
@@ -169,7 +175,7 @@ func LoanGetDetails(c echo.Context) error {
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 	err = db.Table("loans l").
-		Select("l.*, ba.name as bank_name, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Select("l.*, b.fullname as owner_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN banks ba ON l.bank = ba.id").

@@ -178,7 +178,6 @@ CREATE TABLE "loans" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "owner" bigserial,
-    "owner_name" varchar(255),
     "bank" bigserial,
     "product" bigserial,
     "status" varchar(255) DEFAULT ('processing'),
