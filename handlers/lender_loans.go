@@ -102,6 +102,9 @@ func LenderLoanRequestList(c echo.Context) error {
 	if status := c.QueryParam("status"); len(status) > 0 {
 		db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
 	}
+	if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
+		db = db.Where("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
+	}
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
