@@ -88,7 +88,7 @@ func BorrowerGetAll(c echo.Context) error {
 			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 		}
 		if category := c.QueryParam("category"); len(category) > 0 {
-			db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
+			db = db.Where("LOWER(a.category) = ?", "%"+strings.ToLower(category)+"%")
 		}
 		if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
 			db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
