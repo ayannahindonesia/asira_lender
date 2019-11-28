@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+
 	"github.com/Shopify/sarama"
 	"github.com/fsnotify/fsnotify"
 	"github.com/jinzhu/gorm"
@@ -25,15 +27,15 @@ var App *Application
 type (
 	// Application main variable of the app
 	Application struct {
-		Name       string          `json:"name"`
-		Port       string          `json:"port"`
-		Version    string          `json:"version"`
-		ENV        string          `json:"env"`
-		Config     viper.Viper     `json:"prog_config"`
-		DB         *gorm.DB        `json:"db"`
-		Kafka      KafkaInstance   `json:"kafka"`
-		S3         custommodule.S3 `json:"s3"`
-		Permission viper.Viper     `json:"prog_permission"`
+		Name       string        `json:"name"`
+		Port       string        `json:"port"`
+		Version    string        `json:"version"`
+		ENV        string        `json:"env"`
+		Config     viper.Viper   `json:"prog_config"`
+		DB         *gorm.DB      `json:"db"`
+		Kafka      KafkaInstance `json:"kafka"`
+		S3config   *aws.Config   `json:"s3"`
+		Permission viper.Viper   `json:"prog_permission"`
 	}
 
 	// KafkaInstance stores kafka configs
@@ -196,7 +198,8 @@ func (x *Application) LoadPermissions() error {
 func (x *Application) S3init() (err error) {
 	s3conf := x.Config.GetStringMap(fmt.Sprintf("%s.s3", x.ENV))
 
-	x.S3, err = custommodule.NewS3(s3conf["access_key"].(string), s3conf["secret_key"].(string), s3conf["host"].(string), s3conf["bucket_name"].(string), s3conf["region"].(string))
+	creds := credentials.NewStaticCredentials(s3conf["access_key"].(string), s3conf["secret_key"].(string), "")
+	x.S3config := aws.NewConfig().WithEndpoint(s3conf["host"].(string)).WithRegion(s3conf["region"].(string)).WithCredentials(creds)
 
 	return err
 }

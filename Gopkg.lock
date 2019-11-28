@@ -56,6 +56,8 @@
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
     "service/s3",
+    "service/s3/s3iface",
+    "service/s3/s3manager",
     "service/sts",
     "service/sts/stsiface",
   ]
@@ -727,6 +729,7 @@
     "github.com/aws/aws-sdk-go/aws/credentials",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/s3",
+    "github.com/aws/aws-sdk-go/service/s3/s3manager",
     "github.com/dgrijalva/jwt-go",
     "github.com/fsnotify/fsnotify",
     "github.com/gavv/httpexpect",
