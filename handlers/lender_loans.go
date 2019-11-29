@@ -99,20 +99,34 @@ func LenderLoanRequestList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("l.bank = ?", bankRep.BankID)
 
-	if status := c.QueryParam("status"); len(status) > 0 {
-		db = db.Where("LOWER(l.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+	status := c.QueryParam("status")
+	disburseStatus := c.QueryParam("disburse_status")
+	if len(status) > 0 {
+		db = db.Where("l.status = ?", strings.ToLower(status))
 	}
-	if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
-		db = db.Where("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
+	if len(disburseStatus) > 0 {
+		db = db.Where("l.disburse_status) = ?", strings.ToLower(disburseStatus))
 	}
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
-		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+		extraquery := fmt.Sprintf("CAST(l.id as varchar(255)) = '%v'", searchAll) +
+			fmt.Sprintf(" OR LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(s.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(p.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR CAST(l.id as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			fmt.Sprintf(" OR LOWER(p.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+
+		if len(status) > 0 {
+			switch status {
+			case "approved":
+				extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			case "rejected":
+				extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+			}
+		} else {
+			extraquery = extraquery +
+				fmt.Sprintf(" OR LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+				fmt.Sprintf(" OR LOWER(l.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+		}
 
 		db = db.Where(extraquery)
 	} else {
