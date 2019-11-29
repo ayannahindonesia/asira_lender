@@ -120,12 +120,12 @@ func LenderLoanRequestList(c echo.Context) error {
 			case "approved":
 				extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 			case "rejected":
-				extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+				extraquery = extraquery + fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 			}
 		} else {
 			extraquery = extraquery +
 				fmt.Sprintf(" OR LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-				fmt.Sprintf(" OR LOWER(l.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+				fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 		}
 
 		db = db.Where(extraquery)
