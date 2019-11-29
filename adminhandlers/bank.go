@@ -74,6 +74,7 @@ func BankList(c echo.Context) error {
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		db = db.Or("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(b.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(b.pic) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("CAST(b.id as varchar(255)) = ?", searchAll)
 	} else {
 		if name := c.QueryParam("name"); len(name) > 0 {
@@ -81,6 +82,9 @@ func BankList(c echo.Context) error {
 		}
 		if bankType := c.QueryParam("bank_type"); len(bankType) > 0 {
 			db = db.Where("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(bankType)+"%")
+		}
+		if pic := c.QueryParam("pic"); len(pic) > 0 {
+			db = db.Where("LOWER(b.pic) LIKE ?", "%"+strings.ToLower(pic)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("b.id IN (?)", id)
