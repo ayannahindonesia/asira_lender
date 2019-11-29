@@ -56,7 +56,7 @@ func AgentList(c echo.Context) error {
 			Email         string `json:"email" condition:"optional"`
 			Phone         string `json:"phone" condition:"optional"`
 			Category      string `json:"category" condition:"optional"`
-			AgentProvider string `json:"agent_provider" condition:"optional"`
+			AgentProvider int64  `json:"agent_provider" condition:"optional"`
 			Status        string `json:"status" condition:"optional"`
 		}
 		id, _ := strconv.ParseInt(searchAll, 10, 64)
@@ -67,7 +67,7 @@ func AgentList(c echo.Context) error {
 			Email:         searchAll,
 			Phone:         searchAll,
 			Category:      searchAll,
-			AgentProvider: searchAll,
+			AgentProvider: id,
 			Status:        searchAll,
 		})
 	} else {
