@@ -118,7 +118,9 @@ func LenderLoanRequestList(c echo.Context) error {
 		if len(status) > 0 {
 			switch status {
 			case "approved":
-				extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+				if len(disburseStatus) < 1 {
+					extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+				}
 			case "rejected":
 				extraquery = extraquery + fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
 			}
