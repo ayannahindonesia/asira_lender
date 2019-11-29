@@ -90,7 +90,7 @@ CREATE TABLE "borrowers" (
     "status" varchar(255),
     "fullname" varchar(255) NOT NULL,
     "gender" varchar(1) NOT NULL,
-    "idcard_number" varchar(255) NOT NULL,
+    "idcard_number" varchar(255),
     "idcard_image" int NOT NULL,
     "taxid_number" varchar(255),
     "taxid_image" int,
