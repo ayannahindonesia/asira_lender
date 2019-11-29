@@ -105,7 +105,7 @@ func LenderLoanRequestList(c echo.Context) error {
 		db = db.Where("l.status = ?", strings.ToLower(status))
 	}
 	if len(disburseStatus) > 0 {
-		db = db.Where("l.disburse_status) = ?", strings.ToLower(disburseStatus))
+		db = db.Where("l.disburse_status = ?", strings.ToLower(disburseStatus))
 	}
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
