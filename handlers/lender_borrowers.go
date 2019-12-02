@@ -369,6 +369,63 @@ func LenderBorrowerListDownload(c echo.Context) error {
 	return c.JSON(http.StatusOK, string(b))
 }
 
+// LenderApproveRejectProspectiveBorrower approve or reject prospective borrower
+func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_prospective_borrower_approval")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
+	if err != nil {
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error parsing borrower id")
+	}
+	type Filter struct {
+		Bank              sql.NullInt64 `json:"bank"`
+		ID                int           `json:"id"`
+		BankAccountNumber string        `json:"bank_accountnumber"`
+	}
+
+	borrower := models.Borrower{}
+	err = borrower.FilterSearchSingle(&Filter{
+		Bank: sql.NullInt64{
+			Int64: int64(bankRep.BankID),
+			Valid: true,
+		},
+		ID:                borrowerID,
+		BankAccountNumber: "",
+	})
+	if err != nil {
+		return returnInvalidResponse(http.StatusNotFound, err, "borrower not found")
+	}
+
+	approval := c.Param("approval")
+	switch approval {
+	default:
+		if accNumber := c.QueryParam("account_number"); len(accNumber) > 0 {
+			borrower.BankAccountNumber = accNumber
+			borrower.Approve()
+		} else {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "invalid account number")
+		}
+		break
+	case "reject":
+		borrower.Reject()
+		break
+	}
+
+	return c.JSON(http.StatusOK, borrower)
+}
+
 func mapnewBorrowerStruct(m []BorrowerSelect) []BorrowerCSV {
 	var r []BorrowerCSV
 	for _, v := range m {
