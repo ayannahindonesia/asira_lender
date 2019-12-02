@@ -114,7 +114,7 @@ func AgentNew(c echo.Context) error {
 		"email":          []string{"required", "unique:agents,email"},
 		"phone":          []string{"required", "unique:agents,phone"},
 		"category":       []string{"required", "agent_categories"},
-		"agent_provider": []string{"valid_id:agent_providers"},
+		"agent_provider": []string{"valid_id:agent_providers", "status:agent_providers,active"},
 		"banks":          []string{"required", "valid_id:banks"},
 		"status":         []string{"active_inactive"},
 	}
@@ -177,7 +177,7 @@ func AgentPatch(c echo.Context) error {
 		"email":          []string{},
 		"phone":          []string{},
 		"category":       []string{"agent_categories"},
-		"agent_provider": []string{"valid_id:agent_providers"},
+		"agent_provider": []string{"valid_id:agent_providers", "status:agent_providers,active"},
 		"banks":          []string{"valid_id:banks"},
 		"status":         []string{"active_inactive"},
 	}
