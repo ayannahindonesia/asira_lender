@@ -24,9 +24,9 @@ type (
 		Fullname             string    `json:"fullname"`
 		Gender               string    `json:"gender"`
 		IDCardNumber         string    `json:"idcard_number"`
-		IDCardImageID        string    `json:"idcard_imageid"`
+		IDCardImage          string    `json:"idcard_image"`
 		TaxIDnumber          string    `json:"taxid_number"`
-		TaxIDImageID         string    `json:"taxid_imageid"`
+		TaxIDImage           string    `json:"taxid_image"`
 		Email                string    `json:"email"`
 		Birthday             time.Time `json:"birthday"`
 		Birthplace           string    `json:"birthplace"`
