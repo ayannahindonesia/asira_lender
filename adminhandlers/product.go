@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/lib/pq"
 	"github.com/thedevsaddam/govalidator"
+	"gitlab.com/asira-ayannah/basemodel"
 )
 
 // ProductPayload handles product request body
@@ -44,53 +45,66 @@ func ProductList(c echo.Context) error {
 	order := strings.Split(c.QueryParam("orderby"), ",")
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
-	// filters
-	id := customSplit(c.QueryParam("id"), ",")
-	name := c.QueryParam("name")
-	serviceID := c.QueryParam("service_id")
-	minTimespan := c.QueryParam("min_timespan")
-	maxTimespan := c.QueryParam("max_timespan")
-	interest := c.QueryParam("interest")
-	minLoan := c.QueryParam("min_loan")
-	maxLoan := c.QueryParam("max_loan")
-	fee := c.QueryParam("fee")
-	collaterals := c.QueryParam("collaterals")
-	financingSector := c.QueryParam("financing_sector")
-	assurance := c.QueryParam("assurance")
-	status := c.QueryParam("status")
+	var (
+		product models.Product
+		result  basemodel.PagedFindResult
+	)
 
-	type Filter struct {
-		ID              []string `json:"id"`
-		Name            string   `json:"name" condition:"LIKE"`
-		ServiceID       string   `json:"service_id"`
-		MinTimeSpan     string   `json:"min_timespan"`
-		MaxTimeSpan     string   `json:"max_timespan"`
-		Interest        string   `json:"interest" condition:"LIKE"`
-		MinLoan         string   `json:"min_loan"`
-		MaxLoan         string   `json:"max_loan"`
-		Fees            string   `json:"fees" condition:"LIKE"`
-		Collaterals     string   `json:"collaterals" condition:"LIKE"`
-		FinancingSector string   `json:"financing_sector" condition:"LIKE"`
-		Assurance       string   `json:"assurance" condition:"LIKE"`
-		Status          string   `json:"status" condition:"LIKE"`
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		type Filter struct {
+			ID              int64  `json:"id" condition:"optional"`
+			Name            string `json:"name" condition:"LIKE,optional"`
+			Interest        string `json:"interest" condition:"LIKE,optional"`
+			Fees            string `json:"fees" condition:"LIKE,optional"`
+			Collaterals     string `json:"collaterals" condition:"LIKE,optional"`
+			FinancingSector string `json:"financing_sector" condition:"LIKE,optional"`
+			Assurance       string `json:"assurance" condition:"LIKE,optional"`
+			Status          string `json:"status" condition:"LIKE,optional"`
+		}
+		id, _ := strconv.ParseInt(searchAll, 10, 64)
+		result, err = product.PagedFindFilter(page, rows, order, sort, &Filter{
+			ID:              id,
+			Name:            searchAll,
+			Interest:        searchAll,
+			Fees:            searchAll,
+			Collaterals:     searchAll,
+			FinancingSector: searchAll,
+			Assurance:       searchAll,
+			Status:          searchAll,
+		})
+	} else {
+		type Filter struct {
+			ID              []string `json:"id"`
+			Name            string   `json:"name" condition:"LIKE"`
+			ServiceID       string   `json:"service_id"`
+			MinTimeSpan     string   `json:"min_timespan"`
+			MaxTimeSpan     string   `json:"max_timespan"`
+			Interest        string   `json:"interest" condition:"LIKE"`
+			MinLoan         string   `json:"min_loan"`
+			MaxLoan         string   `json:"max_loan"`
+			Fees            string   `json:"fees" condition:"LIKE"`
+			Collaterals     string   `json:"collaterals" condition:"LIKE"`
+			FinancingSector string   `json:"financing_sector" condition:"LIKE"`
+			Assurance       string   `json:"assurance" condition:"LIKE"`
+			Status          string   `json:"status" condition:"LIKE"`
+		}
+		result, err = product.PagedFindFilter(page, rows, order, sort, &Filter{
+			ID:              customSplit(c.QueryParam("id"), ","),
+			Name:            c.QueryParam("name"),
+			ServiceID:       c.QueryParam("service_id"),
+			MinTimeSpan:     c.QueryParam("min_timespan"),
+			MaxTimeSpan:     c.QueryParam("max_timespan"),
+			Interest:        c.QueryParam("interest"),
+			MinLoan:         c.QueryParam("min_loan"),
+			MaxLoan:         c.QueryParam("max_loan"),
+			Fees:            c.QueryParam("fee"),
+			Collaterals:     c.QueryParam("collaterals"),
+			FinancingSector: c.QueryParam("financing_sector"),
+			Assurance:       c.QueryParam("assurance"),
+			Status:          c.QueryParam("status"),
+		})
 	}
 
-	product := models.Product{}
-	result, err := product.PagedFindFilter(page, rows, order, sort, &Filter{
-		ID:              id,
-		Name:            name,
-		ServiceID:       serviceID,
-		MinTimeSpan:     minTimespan,
-		MaxTimeSpan:     maxTimespan,
-		Interest:        interest,
-		MinLoan:         minLoan,
-		MaxLoan:         maxLoan,
-		Fees:            fee,
-		Collaterals:     collaterals,
-		FinancingSector: financingSector,
-		Assurance:       assurance,
-		Status:          status,
-	})
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
 	}

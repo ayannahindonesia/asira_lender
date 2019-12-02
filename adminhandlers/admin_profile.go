@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+// AdminProfile check admin profile
 func AdminProfile(c echo.Context) error {
 	defer c.Request().Body.Close()
 

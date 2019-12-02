@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/lib/pq"
+	"gitlab.com/asira-ayannah/basemodel"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -30,28 +31,41 @@ func RoleList(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	Iroles := models.Roles{}
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	orderby := c.QueryParam("orderby")
 	sort := c.QueryParam("sort")
 
-	name := c.QueryParam("name")
-	id := customSplit(c.QueryParam("id"), ",")
-	status := c.QueryParam("status")
+	var (
+		roles  models.Roles
+		result basemodel.PagedFindResult
+	)
 
-	type Filter struct {
-		ID     []string `json:"id"`
-		Name   string   `json:"name" condition:"LIKE"`
-		Status string   `json:"status"`
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		type Filter struct {
+			ID     int64  `json:"id" condition:"optional"`
+			Name   string `json:"name" condition:"LIKE,optional"`
+			Status string `json:"status" condition:"optional"`
+		}
+		id, _ := strconv.ParseInt(searchAll, 10, 64)
+		result, err = roles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+			ID:     id,
+			Name:   searchAll,
+			Status: searchAll,
+		})
+	} else {
+		type Filter struct {
+			ID     []string `json:"id"`
+			Name   string   `json:"name" condition:"LIKE"`
+			Status string   `json:"status"`
+		}
+		result, err = roles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+			ID:     customSplit(c.QueryParam("id"), ","),
+			Name:   c.QueryParam("name"),
+			Status: c.QueryParam("status"),
+		})
 	}
-
-	result, err := Iroles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-		ID:     id,
-		Name:   name,
-		Status: status,
-	})
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Role tidak Ditemukan")
@@ -70,7 +84,7 @@ func RoleDetails(c echo.Context) error {
 
 	Iroles := models.Roles{}
 
-	IrolesID, _ := strconv.Atoi(c.Param("role_id"))
+	IrolesID, _ := strconv.Atoi(c.Param("id"))
 	err = Iroles.FindbyID(IrolesID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Role ID tidak ditemukan")
@@ -122,7 +136,7 @@ func RolePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	IrolesID, _ := strconv.Atoi(c.Param("role_id"))
+	IrolesID, _ := strconv.Atoi(c.Param("id"))
 
 	Iroles := models.Roles{}
 	rolePayload := RolePayload{}
