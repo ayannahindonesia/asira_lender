@@ -6,42 +6,49 @@ import (
 )
 
 type (
+	// Roles main type
 	Roles struct {
 		basemodel.BaseModel
 		Name        string         `json:"name" gorm:"column:name"`
 		Description string         `json:"description" gorm:"column:description"`
 		System      string         `json:"system" gorm:"column:system"`
-		Status      string         `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
+		Status      string         `json:"status" gorm:"column:status" sql:"DEFAULT:active"`
 		Permissions pq.StringArray `json:"permissions" gorm:"column:permissions"`
 	}
 )
 
-func (b *Roles) Create() error {
-	err := basemodel.Create(&b)
+// Create new
+func (model *Roles) Create() error {
+	err := basemodel.Create(&model)
 	return err
 }
 
-func (b *Roles) Save() error {
-	err := basemodel.Save(&b)
+// Save role
+func (model *Roles) Save() error {
+	err := basemodel.Save(&model)
 	return err
 }
 
-func (b *Roles) Delete() error {
-	err := basemodel.Delete(&b)
+// Delete role
+func (model *Roles) Delete() error {
+	err := basemodel.Delete(&model)
 	return err
 }
 
-func (b *Roles) FindbyID(id int) error {
-	err := basemodel.FindbyID(&b, id)
+// FindbyID self explanatory
+func (model *Roles) FindbyID(id int) error {
+	err := basemodel.FindbyID(&model, id)
 	return err
 }
 
-func (b *Roles) FilterSearchSingle(filter interface{}) error {
-	err := basemodel.SingleFindFilter(&b, filter)
+// FilterSearchSingle use filter to find one role
+func (model *Roles) FilterSearchSingle(filter interface{}) error {
+	err := basemodel.SingleFindFilter(&model, filter)
 	return err
 }
 
-func (b *Roles) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+// PagedFilterSearch use filter to find all matching role, return using paging format
+func (model *Roles) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
 	role := []Roles{}
 	order := []string{orderby}
 	sorts := []string{sort}
@@ -50,7 +57,8 @@ func (b *Roles) PagedFilterSearch(page int, rows int, orderby string, sort strin
 	return result, err
 }
 
-func (b *Roles) FilterSearch(limit int, offset int, orderby string, sort string, filter interface{}) (result interface{}, err error) {
+// FilterSearch use filter to find all matching role
+func (model *Roles) FilterSearch(limit int, offset int, orderby string, sort string, filter interface{}) (result interface{}, err error) {
 	role := []Roles{}
 	order := []string{orderby}
 	sorts := []string{sort}

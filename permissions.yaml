@@ -8,6 +8,7 @@ permissions:
   lender_borrower_list: lender_borrower_list
   lender_borrower_list_detail: lender_borrower_list_detail
   lender_borrower_list_download: lender_borrower_list_download
+  lender_prospective_borrower_approval: lender_prospective_borrower_approval
   core_create_client: core_create_client
   core_view_image: core_view_image
   core_borrower_get_all: core_borrower_get_all

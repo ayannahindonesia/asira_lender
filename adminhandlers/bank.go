@@ -53,6 +53,7 @@ func BankList(c echo.Context) error {
 		offset    int
 		rows      int
 		page      int
+		lastPage  int
 		banks     []BankSelect
 	)
 
@@ -70,11 +71,24 @@ func BankList(c echo.Context) error {
 		Select("b.*, bt.name as bank_type_name").
 		Joins("INNER JOIN bank_types bt ON b.type = bt.id")
 
-	if name := c.QueryParam("name"); len(name) > 0 {
-		db = db.Where("b.name LIKE ?", name)
-	}
-	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("b.id IN (?)", id)
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		db = db.Or("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(b.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(b.pic) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("CAST(b.id as varchar(255)) = ?", searchAll)
+	} else {
+		if name := c.QueryParam("name"); len(name) > 0 {
+			db = db.Where("LOWER(b.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+		}
+		if bankType := c.QueryParam("bank_type"); len(bankType) > 0 {
+			db = db.Where("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(bankType)+"%")
+		}
+		if pic := c.QueryParam("pic"); len(pic) > 0 {
+			db = db.Where("LOWER(b.pic) LIKE ?", "%"+strings.ToLower(pic)+"%")
+		}
+		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+			db = db.Where("b.id IN (?)", id)
+		}
 	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
@@ -97,13 +111,12 @@ func BankList(c echo.Context) error {
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
 	}
 	err = db.Find(&banks).Error
 	if err != nil {
 		log.Println(err)
 	}
-
-	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
 
 	result := basemodel.PagedFindResult{
 		TotalData:   totalRows,

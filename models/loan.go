@@ -14,7 +14,6 @@ type (
 		basemodel.BaseModel
 		DeletedTime         time.Time      `json:"deleted_time" gorm:"column:deleted_time"`
 		Owner               sql.NullInt64  `json:"owner" gorm:"column:owner;foreignkey"`
-		OwnerName           string         `json:"owner_name" gorm:"column:owner_name"`
 		Bank                sql.NullInt64  `json:"bank" gorm:"column:bank;foreignkey"`
 		Status              string         `json:"status" gorm:"column:status;type:varchar(255)" sql:"DEFAULT:'processing'"`
 		LoanAmount          float64        `json:"loan_amount" gorm:"column:loan_amount;type:int;not null"`
@@ -31,6 +30,7 @@ type (
 		DisburseDate        time.Time      `json:"disburse_date" gorm:"column:disburse_date"`
 		DisburseDateChanged bool           `json:"disburse_date_changed" gorm:"column:disburse_date_changed"`
 		DisburseStatus      string         `json:"disburse_status" gorm:"column:disburse_status" sql:"DEFAULT:'processing'"`
+		ApprovalDate        time.Time      `json:"approval_date" gorm:"column:approval_date"`
 		RejectReason        string         `json:"reject_reason" gorm:"column:reject_reason"`
 	}
 
@@ -86,6 +86,7 @@ func (l *Loan) PagedFilterSearch(page int, rows int, orderby string, sort string
 func (l *Loan) Approve(disburseDate time.Time) error {
 	l.Status = "approved"
 	l.DisburseDate = disburseDate
+	l.ApprovalDate = time.Now()
 
 	err := l.Save()
 	if err != nil {
@@ -100,6 +101,7 @@ func (l *Loan) Approve(disburseDate time.Time) error {
 func (l *Loan) Reject(reason string) error {
 	l.Status = "rejected"
 	l.RejectReason = reason
+	l.ApprovalDate = time.Now()
 
 	err := l.Save()
 	if err != nil {
