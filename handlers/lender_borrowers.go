@@ -3,6 +3,7 @@ package handlers
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"

@@ -74,6 +74,7 @@ func TestBorrowerGetDetail(t *testing.T) {
 	obj = auth.GET("/lender/borrower_list/99/detail").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
+}
 
 func TestBorrowerApproveReject(t *testing.T) {
 	RebuildData()
