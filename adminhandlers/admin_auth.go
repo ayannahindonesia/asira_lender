@@ -14,13 +14,14 @@ import (
 )
 
 type (
+	// AdminLoginCreds admin credentials container
 	AdminLoginCreds struct {
 		Key      string `json:"key"`
 		Password string `json:"password"`
 	}
 )
 
-// admin login
+// AdminLogin func
 func AdminLogin(c echo.Context) error {
 	defer c.Request().Body.Close()
 

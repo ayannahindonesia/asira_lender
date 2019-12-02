@@ -9,6 +9,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
+	"gitlab.com/asira-ayannah/basemodel"
 )
 
 // LoanPurposePayload handles request body
@@ -31,20 +32,31 @@ func LoanPurposeList(c echo.Context) error {
 	orderby := c.QueryParam("orderby")
 	sort := c.QueryParam("sort")
 
-	// filters
-	name := c.QueryParam("name")
-	status := c.QueryParam("status")
+	var (
+		purpose models.LoanPurpose
+		result  basemodel.PagedFindResult
+	)
 
-	type Filter struct {
-		Name   string `json:"name" condition:"LIKE"`
-		Status string `json:"status"`
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		type Filter struct {
+			Name   string `json:"name" condition:"LIKE,optional"`
+			Status string `json:"status" condition:"optional"`
+		}
+		result, err = purpose.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+			Name:   searchAll,
+			Status: searchAll,
+		})
+	} else {
+		type Filter struct {
+			Name   string `json:"name" condition:"LIKE"`
+			Status string `json:"status"`
+		}
+		result, err = purpose.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+			Name:   c.QueryParam("name"),
+			Status: c.QueryParam("status"),
+		})
 	}
 
-	purposes := models.LoanPurpose{}
-	result, err := purposes.PagedFilterSearch(page, rows, orderby, sort, &Filter{
-		Name:   name,
-		Status: status,
-	})
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
 	}

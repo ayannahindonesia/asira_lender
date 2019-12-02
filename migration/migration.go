@@ -107,6 +107,21 @@ func Seed() {
 				Status:  "inactive",
 				ImageID: 5,
 			},
+			models.Service{
+				Name:    "Pinjaman Jeruk",
+				Status:  "active",
+				ImageID: 5,
+			},
+			models.Service{
+				Name:    "Pinjaman Pisang",
+				Status:  "active",
+				ImageID: 5,
+			},
+			models.Service{
+				Name:    "Pinjaman Mangga",
+				Status:  "active",
+				ImageID: 5,
+			},
 		}
 		for _, service := range services {
 			service.Create()
@@ -191,6 +206,62 @@ func Seed() {
 				Assurance:       "an Assurance",
 				Status:          "active",
 			},
+			models.Product{
+				Name:            "Product Jeruk Kecil",
+				ServiceID:       6,
+				MinTimeSpan:     6,
+				MaxTimeSpan:     12,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         8000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
+			},
+			models.Product{
+				Name:            "Product Jeruk Besar",
+				ServiceID:       6,
+				MinTimeSpan:     6,
+				MaxTimeSpan:     24,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         20000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
+			},
+			models.Product{
+				Name:            "Product Pisang Kecil",
+				ServiceID:       7,
+				MinTimeSpan:     6,
+				MaxTimeSpan:     24,
+				Interest:        5,
+				MinLoan:         5000000,
+				MaxLoan:         10000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
+			},
+			models.Product{
+				Name:            "Product Pisang Raja",
+				ServiceID:       7,
+				MinTimeSpan:     6,
+				MaxTimeSpan:     36,
+				Interest:        7,
+				MinLoan:         5000000,
+				MaxLoan:         30000000,
+				Fees:            postgres.Jsonb{feesMarshal},
+				Collaterals:     []string{"Surat Tanah", "BPKB"},
+				FinancingSector: []string{"Pendidikan"},
+				Assurance:       "an Assurance",
+				Status:          "active",
+			},
 		}
 		for _, product := range products {
 			product.Create()
@@ -258,6 +329,19 @@ func Seed() {
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
 			},
+			models.Bank{
+				Name:                "Bank Buah",
+				Type:                1,
+				Address:             "jalan kaki cape sekali",
+				Province:            "jambi",
+				City:                "kota mati",
+				AdminFeeSetup:       "potong_plafon",
+				ConvenienceFeeSetup: "potong_plafon",
+				PIC:                 "dindin",
+				Phone:               "081234567891234",
+				Services:            pq.Int64Array{6, 7, 8},
+				Products:            pq.Int64Array{6, 7, 8, 9},
+			},
 		}
 		for _, lender := range lenders {
 			lender.Create()
@@ -283,7 +367,7 @@ func Seed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval"},
 			},
 		}
 		for _, role := range roles {
@@ -310,12 +394,16 @@ func Seed() {
 			models.User{
 				Roles:    pq.Int64Array{3},
 				Username: "Banktoib",
+				Email:    "toib@ayannah.com",
+				Phone:    "081234567892",
 				Password: "password",
 				Status:   "active",
 			},
 			models.User{
 				Roles:    pq.Int64Array{3},
 				Username: "Banktoic",
+				Email:    "toic@ayannah.com",
+				Phone:    "081234567893",
 				Password: "password",
 				Status:   "active",
 			},
@@ -360,6 +448,13 @@ func Seed() {
 				Address: "address of provider c",
 				Status:  "active",
 			},
+			models.AgentProvider{
+				Name:    "Provider Buah",
+				PIC:     "Dinand Buah",
+				Phone:   "08123456789234",
+				Address: "jalan jalan ke surabaya",
+				Status:  "active",
+			},
 		}
 		for _, agentProvider := range agentProviders {
 			agentProvider.Create()
@@ -388,6 +483,30 @@ func Seed() {
 				Phone:    "081234567891",
 				Category: "agent_executive",
 				Banks:    pq.Int64Array{1},
+				Status:   "active",
+			},
+			models.Agent{
+				Name:     "Agent Buah Personal",
+				Username: "agenbuahpsn",
+				Password: "testing123",
+				Email:    "agentbpsn@buah.com",
+				Phone:    "08123456789112",
+				Category: "agent",
+				AgentProvider: sql.NullInt64{
+					Int64: 4,
+					Valid: true,
+				},
+				Banks:  pq.Int64Array{1, 3},
+				Status: "active",
+			},
+			models.Agent{
+				Name:     "Agent Buah Executive",
+				Username: "agenbuahexe",
+				Password: "testing123",
+				Email:    "agentbexe@buah.com",
+				Phone:    "08123456789122",
+				Category: "agent_executive",
+				Banks:    pq.Int64Array{3},
 				Status:   "active",
 			},
 		}
@@ -605,6 +724,19 @@ func TestSeed() {
 				Services:            pq.Int64Array{1, 2},
 				Products:            pq.Int64Array{1, 2},
 			},
+			models.Bank{
+				Name:                "Bank ",
+				Type:                2,
+				Address:             "Bank B Address",
+				Province:            "Province B",
+				City:                "City B",
+				AdminFeeSetup:       "potong_plafon",
+				ConvenienceFeeSetup: "potong_plafon",
+				PIC:                 "Bank B PIC",
+				Phone:               "081234567891",
+				Services:            pq.Int64Array{1, 2},
+				Products:            pq.Int64Array{1, 2},
+			},
 		}
 		for _, lender := range lenders {
 			lender.Create()
@@ -756,7 +888,6 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				OwnerName:        "Full Name A",
 				LoanAmount:       5000000,
 				Installment:      8,
 				LoanIntention:    "a loan 1 intention",
@@ -776,7 +907,6 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				OwnerName:        "Full Name B",
 				LoanAmount:       2000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -796,7 +926,6 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				OwnerName:        "Full Name C",
 				LoanAmount:       29000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -816,7 +945,6 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				OwnerName:        "Full Name D",
 				LoanAmount:       3000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -836,7 +964,6 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				OwnerName:        "Full Name E",
 				LoanAmount:       9123456,
 				Installment:      3,
 				LoanIntention:    "a loan 3 intention",
@@ -856,7 +983,6 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				OwnerName:        "Full Name F",
 				LoanAmount:       80123456,
 				Installment:      11,
 				LoanIntention:    "a loan 3 intention",
@@ -892,7 +1018,7 @@ func TestSeed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval"},
 			},
 		}
 		for _, role := range roles {

@@ -9,12 +9,15 @@ import (
 	"strconv"
 	"strings"
 
+	"gitlab.com/asira-ayannah/basemodel"
+
 	"github.com/lib/pq"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 )
 
+// AgentPayload request body container
 type AgentPayload struct {
 	Name          string  `json:"name"`
 	Username      string  `json:"username"`
@@ -34,43 +37,61 @@ func AgentList(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	agent := models.Agent{}
-
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	order := strings.Split(c.QueryParam("orderby"), ",")
 	sort := strings.Split(c.QueryParam("sort"), ",")
-	// filters
-	name := c.QueryParam("name")
-	username := c.QueryParam("username")
-	id := customSplit(c.QueryParam("id"), ",")
-	email := c.QueryParam("email")
-	phone := c.QueryParam("phone")
-	category := c.QueryParam("category")
-	agentProvider := customSplit(c.QueryParam("agent_provider"), ",")
-	status := c.QueryParam("status")
 
-	type Filter struct {
-		Name          string   `json:"name" condition:"LIKE"`
-		Username      string   `json:"username" condition:"LIKE"`
-		ID            []string `json:"id"`
-		Email         string   `json:"email"`
-		Phone         string   `json:"phone"`
-		Category      string   `json:"category"`
-		AgentProvider []string `json:"agent_provider"`
-		Status        string   `json:"status"`
+	var (
+		agent  models.Agent
+		result basemodel.PagedFindResult
+	)
+
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		type Filter struct {
+			Name          string `json:"name" condition:"LIKE,optional"`
+			Username      string `json:"username" condition:"LIKE,optional"`
+			ID            int64  `json:"id" condition:"optional"`
+			Email         string `json:"email" condition:"optional"`
+			Phone         string `json:"phone" condition:"optional"`
+			Category      string `json:"category" condition:"optional"`
+			AgentProvider int64  `json:"agent_provider" condition:"optional"`
+			Status        string `json:"status" condition:"optional"`
+		}
+		id, _ := strconv.ParseInt(searchAll, 10, 64)
+		result, err = agent.PagedFilterSearch(page, rows, order, sort, &Filter{
+			Name:          searchAll,
+			Username:      searchAll,
+			ID:            id,
+			Email:         searchAll,
+			Phone:         searchAll,
+			Category:      searchAll,
+			AgentProvider: id,
+			Status:        searchAll,
+		})
+	} else {
+		type Filter struct {
+			Name          string   `json:"name" condition:"LIKE"`
+			Username      string   `json:"username" condition:"LIKE"`
+			ID            []string `json:"id"`
+			Email         string   `json:"email"`
+			Phone         string   `json:"phone"`
+			Category      string   `json:"category"`
+			AgentProvider []string `json:"agent_provider"`
+			Status        string   `json:"status"`
+		}
+		result, err = agent.PagedFilterSearch(page, rows, order, sort, &Filter{
+			Name:          c.QueryParam("name"),
+			Username:      c.QueryParam("username"),
+			ID:            customSplit(c.QueryParam("id"), ","),
+			Email:         c.QueryParam("email"),
+			Phone:         c.QueryParam("phone"),
+			Category:      c.QueryParam("category"),
+			AgentProvider: customSplit(c.QueryParam("agent_provider"), ","),
+			Status:        c.QueryParam("status"),
+		})
 	}
-	result, err := agent.PagedFilterSearch(page, rows, order, sort, &Filter{
-		Name:          name,
-		Username:      username,
-		ID:            id,
-		Email:         email,
-		Phone:         phone,
-		Category:      category,
-		AgentProvider: agentProvider,
-		Status:        status,
-	})
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Agent provider tidak Ditemukan")
@@ -114,7 +135,7 @@ func AgentNew(c echo.Context) error {
 		"email":          []string{"required", "unique:agents,email"},
 		"phone":          []string{"required", "unique:agents,phone"},
 		"category":       []string{"required", "agent_categories"},
-		"agent_provider": []string{"valid_id:agent_providers"},
+		"agent_provider": []string{"valid_id:agent_providers", "status:agent_providers,active"},
 		"banks":          []string{"required", "valid_id:banks"},
 		"status":         []string{"active_inactive"},
 	}
@@ -177,7 +198,7 @@ func AgentPatch(c echo.Context) error {
 		"email":          []string{},
 		"phone":          []string{},
 		"category":       []string{"agent_categories"},
-		"agent_provider": []string{"valid_id:agent_providers"},
+		"agent_provider": []string{"valid_id:agent_providers", "status:agent_providers,active"},
 		"banks":          []string{"valid_id:banks"},
 		"status":         []string{"active_inactive"},
 	}
