@@ -1,73 +1,60 @@
 package custommodule
 
 import (
-	"asira_lender/asira"
 	"bytes"
-	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 // S3 main type
-// type S3 struct {
-// 	Service *s3.S3
-// 	Bucket  string
-// }
+type S3 struct {
+	S3Config   *aws.Config
+	S3Uploader *s3manager.Uploader
+	Bucket     string
+}
 
 // NewS3 create new S3 instance
-// func NewS3(accesskey string, secretkey string, host string, bucketname string, region string) (S3, error) {
-// 	creds := credentials.NewStaticCredentials(accesskey, secretkey, "")
-// 	_, err := creds.Get()
-// 	if err != nil {
-// 		return S3{}, err
-// 	}
+func NewS3(accesskey string, secretkey string, host string, bucketname string, region string) (S3, error) {
+	creds := credentials.NewStaticCredentials(accesskey, secretkey, "")
+	_, err := creds.Get()
+	if err != nil {
+		return S3{}, err
+	}
 
-// 	config := aws.NewConfig().WithEndpoint(host).WithRegion(region).WithCredentials(creds)
-// 	x := S3{
-// 		Service: s3.New(session.New(), config),
-// 		Bucket:  bucketname,
-// 	}
-// 	return x, nil
-// }
+	session, _ := session.NewSession(&aws.Config{
+		Region:      aws.String(region),
+		Endpoint:    aws.String(host),
+		Credentials: creds,
+	})
+
+	_, err = session.Config.Credentials.Get()
+
+	config := aws.NewConfig().WithEndpoint(host).WithRegion(region).WithCredentials(creds)
+	x := S3{
+		S3Config:   config,
+		S3Uploader: s3manager.NewUploader(session),
+		Bucket:     bucketname,
+	}
+	return x, err
+}
 
 // PutObjectJPEG uploads jpeg to s3
-func PutObjectJPEG(file *os.File) (string, error) {
-	s3Svs := s3.New(session.New(), asira.App.S3config)
+func (x *S3) PutObjectJPEG(file *os.File) (string, error) {
 	fileinfo, _ := file.Stat()
 	buffer := make([]byte, fileinfo.Size())
 	file.Read(buffer)
-	log.Printf("buffer : %s", string(buffer))
 
 	// Try new
 	// Create an uploader with the session and default options
-	uploader := s3manager.NewUploaderWithClient(asira.App.S3.Service)
-	response, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String("bucket-ayannah"),
-		Key:    aws.String("s0yHeS/eBvjmyshVckbNqVWnTKwhnaP6kYBpFBHk"),
+	response, err := x.S3Uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(x.Bucket),
+		Key:    aws.String(fileinfo.Name()),
 		Body:   bytes.NewReader(buffer),
 	})
-	// ====
 
-	// params := &s3.PutObjectInput{
-	// 	Bucket:               aws.String(x.Bucket),
-	// 	Key:                  aws.String(file.Name()),
-	// 	ACL:                  aws.String("public-read"),
-	// 	Body:                 bytes.NewReader(buffer),
-	// 	ContentLength:        aws.Int64(fileinfo.Size()),
-	// 	ContentType:          aws.String(http.DetectContentType(buffer)),
-	// 	ContentDisposition:   aws.String("attachment"),
-	// 	ServerSideEncryption: aws.String("AES256"),
-	// 	StorageClass:         aws.String("INTELLIGENT_TIERING"),
-	// }
-
-	// response, err := x.Service.PutObject(params)
-	if err != nil {
-		return "", err
-	}
-
-	return response.String(), nil
+	return response.UploadID, err
 }
