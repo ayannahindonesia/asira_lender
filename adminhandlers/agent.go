@@ -73,7 +73,7 @@ func AgentList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		extraquery := fmt.Sprintf("CAST(a.id as varchar(255)) = '%v'", "%"+strings.ToLower(searchAll)+"%") +
+		extraquery := fmt.Sprintf("CAST(a.id as varchar(255)) = '%v'", searchAll) +
 			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
 			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
