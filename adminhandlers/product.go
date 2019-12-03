@@ -76,7 +76,7 @@ func ProductList(c echo.Context) error {
 		type Filter struct {
 			ID              []string `json:"id"`
 			Name            string   `json:"name" condition:"LIKE"`
-			ServiceID       string   `json:"service_id"`
+			ServiceID       []string `json:"service_id"`
 			MinTimeSpan     string   `json:"min_timespan"`
 			MaxTimeSpan     string   `json:"max_timespan"`
 			Interest        string   `json:"interest" condition:"LIKE"`
@@ -91,7 +91,7 @@ func ProductList(c echo.Context) error {
 		result, err = product.PagedFindFilter(page, rows, order, sort, &Filter{
 			ID:              customSplit(c.QueryParam("id"), ","),
 			Name:            c.QueryParam("name"),
-			ServiceID:       c.QueryParam("service_id"),
+			ServiceID:       customSplit(c.QueryParam("service_id"), ","),
 			MinTimeSpan:     c.QueryParam("min_timespan"),
 			MaxTimeSpan:     c.QueryParam("max_timespan"),
 			Interest:        c.QueryParam("interest"),
