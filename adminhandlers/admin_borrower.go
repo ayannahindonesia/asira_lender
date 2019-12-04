@@ -96,6 +96,9 @@ func BorrowerGetAll(c echo.Context) error {
 		if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
 			db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
 		}
+		if status := c.QueryParam("status"); len(status) > 0 {
+			db = db.Where("b.status = ?", strings.ToLower(status))
+		}
 		if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
 			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 		}
