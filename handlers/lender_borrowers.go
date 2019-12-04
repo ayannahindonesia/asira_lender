@@ -131,9 +131,8 @@ func LenderBorrowerList(c echo.Context) error {
 		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Where("ba.id = ?", bankRep.BankID)
-
-	accountNumber := c.QueryParam("account_number")
+		Where("ba.id = ?", bankRep.BankID).
+		Where("b.status != ?", "rejected")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
@@ -258,6 +257,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID).
 		Where("b.id = ?", borrowerID).
+		Where("b.status != ?", "rejected").
 		Find(&borrower).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
