@@ -134,6 +134,8 @@ func LenderBorrowerList(c echo.Context) error {
 		Where("ba.id = ?", bankRep.BankID).
 		Where("b.status != ?", "rejected")
 
+	accountNumber := c.QueryParam("account_number")
+
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
 		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
