@@ -64,6 +64,11 @@ func BorrowerGetAll(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
 	accountNumber := c.QueryParam("account_number")
+	if status := c.QueryParam("status"); len(status) > 0 {
+		db = db.Where("b.status = ?", strings.ToLower(status))
+	} else {
+		db = db.Where("b.status != ?", "rejected")
+	}
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
@@ -95,9 +100,6 @@ func BorrowerGetAll(c echo.Context) error {
 		}
 		if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
 			db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
-		}
-		if status := c.QueryParam("status"); len(status) > 0 {
-			db = db.Where("b.status = ?", strings.ToLower(status))
 		}
 		if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
 			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
