@@ -472,6 +472,10 @@ func Seed() {
 					Int64: 1,
 					Valid: true,
 				},
+				ImageID: sql.NullInt64{
+					Int64: 1,
+					Valid: true,
+				},
 				Banks:  pq.Int64Array{1, 2},
 				Status: "active",
 			},
@@ -481,9 +485,13 @@ func Seed() {
 				Password: "password",
 				Email:    "agentj@mib.com",
 				Phone:    "081234567891",
-				Category: "agent_executive",
-				Banks:    pq.Int64Array{1},
-				Status:   "active",
+				Category: "account_executive",
+				ImageID: sql.NullInt64{
+					Int64: 2,
+					Valid: true,
+				},
+				Banks:  pq.Int64Array{1},
+				Status: "active",
 			},
 			models.Agent{
 				Name:     "Agent Buah Personal",
@@ -505,7 +513,7 @@ func Seed() {
 				Password: "testing123",
 				Email:    "agentbexe@buah.com",
 				Phone:    "08123456789122",
-				Category: "agent_executive",
+				Category: "account_executive",
 				Banks:    pq.Int64Array{3},
 				Status:   "active",
 			},
@@ -1112,6 +1120,10 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
+				ImageID: sql.NullInt64{
+					Int64: 1,
+					Valid: true,
+				},
 				Banks:  pq.Int64Array{1, 2},
 				Status: "active",
 			},
@@ -1121,9 +1133,13 @@ func TestSeed() {
 				Password: "password",
 				Email:    "agentj@mib.com",
 				Phone:    "081234567891",
-				Category: "agent_executive",
+				Category: "account_executive",
 				Banks:    pq.Int64Array{1},
-				Status:   "active",
+				ImageID: sql.NullInt64{
+					Int64: 2,
+					Valid: true,
+				},
+				Status: "active",
 			},
 		}
 		for _, agent := range agents {

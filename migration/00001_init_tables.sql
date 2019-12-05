@@ -103,6 +103,7 @@ CREATE TABLE "agents" (
     "name" varchar(255),
     "username" varchar(255) UNIQUE,
     "password" text,
+    "image_id" bigserial,
     "email" varchar(255) UNIQUE,
     "phone" varchar(255) UNIQUE,
     "category" varchar(255),

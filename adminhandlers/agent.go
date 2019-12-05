@@ -21,6 +21,7 @@ import (
 type AgentPayload struct {
 	Name          string  `json:"name"`
 	Username      string  `json:"username"`
+	Image         string  `json:"image"`
 	Email         string  `json:"email"`
 	Phone         string  `json:"phone"`
 	Category      string  `json:"category"`
@@ -132,6 +133,7 @@ func AgentNew(c echo.Context) error {
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
 		"username":       []string{"required", "unique:agents,username"},
+		"image":          []string{},
 		"email":          []string{"required", "unique:agents,email"},
 		"phone":          []string{"required", "unique:agents,phone"},
 		"category":       []string{"required", "agent_categories"},
@@ -158,8 +160,17 @@ func AgentNew(c echo.Context) error {
 
 	agent := models.Agent{}
 
+	image := models.Image{
+		Image_string: agentPayload.Image,
+	}
+	image.Create()
+
 	marshal, _ := json.Marshal(agentPayload)
 	json.Unmarshal(marshal, &agent)
+	agent.ImageID = sql.NullInt64{
+		Int64: int64(image.ID),
+		Valid: true,
+	}
 
 	if agentPayload.AgentProvider != 0 {
 		agent.AgentProvider = sql.NullInt64{
