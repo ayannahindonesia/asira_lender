@@ -55,10 +55,10 @@ func BorrowerGetAll(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.owner = 1 AND status = '%s' AND (due_date = '0001-01-01 00:00:00+00' OR (due_date != '0001-01-01 00:00:00+00' AND NOW() < l.due_date + make_interval(months => l.installment)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = 1 AND status = '%s' AND (due_date = '0001-01-01 00:00:00+00' OR (due_date != '0001-01-01 00:00:00+00' AND NOW() < l.due_date + make_interval(months => l.installment)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
 
 	db = db.Table("borrowers b").
-		Select("b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.owner = b.id) as loan_count, " + loanStatusQuery + " as loan_status").
+		Select("b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id) as loan_count, " + loanStatusQuery + " as loan_status").
 		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
@@ -166,10 +166,10 @@ func BorrowerGetDetails(c echo.Context) error {
 
 	borrower := BorrowerSelect{}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.owner = 1 AND status = '%s' AND (due_date = '0001-01-01 00:00:00+00' OR (due_date != '0001-01-01 00:00:00+00' AND NOW() < l.due_date + make_interval(months => l.installment)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = 1 AND status = '%s' AND (due_date = '0001-01-01 00:00:00+00' OR (due_date != '0001-01-01 00:00:00+00' AND NOW() < l.due_date + make_interval(months => l.installment)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
 
 	err = db.Table("borrowers b").
-		Select("b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.owner = b.id) as loan_count, "+loanStatusQuery+" as loan_status").
+		Select("b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id) as loan_count, "+loanStatusQuery+" as loan_status").
 		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").

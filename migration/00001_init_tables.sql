@@ -177,8 +177,7 @@ CREATE TABLE "loans" (
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
-    "owner" bigserial,
-    "bank" bigserial,
+    "borrower" bigserial,
     "product" bigserial,
     "status" varchar(255) DEFAULT ('processing'),
     "loan_amount" FLOAT NOT NULL,
@@ -196,8 +195,7 @@ CREATE TABLE "loans" (
     "disburse_status" varchar(255) DEFAULT ('processing'),
     "approval_date" timestamptz,
     "reject_reason" text,
-    FOREIGN KEY ("owner") REFERENCES borrowers(id),
-    FOREIGN KEY ("bank") REFERENCES banks(id),
+    FOREIGN KEY ("borrower") REFERENCES borrowers(id),
     FOREIGN KEY ("product") REFERENCES products(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);

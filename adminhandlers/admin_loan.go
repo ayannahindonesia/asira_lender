@@ -17,7 +17,7 @@ import (
 // LoanSelect select custom type
 type LoanSelect struct {
 	models.Loan
-	OwnerName         string `json:"owner_name"`
+	BorrowerName      string `json:"borrower_name"`
 	BankName          string `json:"bank_name"`
 	BankAccount       string `json:"bank_account"`
 	Service           string `json:"service"`
@@ -56,11 +56,11 @@ func LoanGetAll(c echo.Context) error {
 	}
 
 	db = db.Table("loans l").
-		Select("l.*, b.fullname as owner_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Select("l.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
-		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
-		Joins("LEFT JOIN borrowers b ON b.id = l.owner").
+		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
@@ -73,11 +73,11 @@ func LoanGetAll(c echo.Context) error {
 			Or("LOWER(p.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(l.status) LIKE ?", "%"+strings.ToLower(searchAll)+"%")
 	} else {
-		if owner := c.QueryParam("owner"); len(owner) > 0 {
-			db = db.Where("l.owner = ?", owner)
+		if borrower := c.QueryParam("borrower"); len(borrower) > 0 {
+			db = db.Where("l.borrower = ?", borrower)
 		}
-		if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
-			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
+		if borrowerName := c.QueryParam("borrower_name"); len(borrowerName) > 0 {
+			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(borrowerName)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("l.id IN (?)", id)
@@ -172,11 +172,11 @@ func LoanGetDetails(c echo.Context) error {
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 	err = db.Table("loans l").
-		Select("l.*, b.fullname as owner_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Select("l.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
-		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
-		Joins("LEFT JOIN borrowers b ON b.id = l.owner").
+		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("l.id = ?", loanID).

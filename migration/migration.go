@@ -880,14 +880,7 @@ func TestSeed() {
 		}})
 		loans := []models.Loan{
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       5000000,
 				Installment:      8,
 				LoanIntention:    "a loan 1 intention",
@@ -899,14 +892,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       2000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -918,14 +904,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       29000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -937,14 +916,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       3000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -956,14 +928,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       9123456,
 				Installment:      3,
 				LoanIntention:    "a loan 3 intention",
@@ -975,14 +940,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       80123456,
 				Installment:      11,
 				LoanIntention:    "a loan 3 intention",

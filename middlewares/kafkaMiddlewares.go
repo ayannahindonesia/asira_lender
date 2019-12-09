@@ -141,87 +141,22 @@ func processMessage(kafkaMessage []byte) (err error) {
 	default:
 		return nil
 	case "loan":
-		// create borrower first
-		var (
-			borrowerInfo      BorrowerInfo
-			borrowerContainer BorrowerContainer
-			borrower          models.Borrower
-		)
-		err = json.Unmarshal([]byte(data[1]), &borrowerInfo)
-		if err != nil {
-			return err
-		}
-
-		marshal, err := json.Marshal(borrowerInfo.Info)
-		if err != nil {
-			return err
-		}
-
-		err = json.Unmarshal(marshal, &borrowerContainer)
-		if err != nil {
-			return err
-		}
-
-		marshal, err = json.Marshal(borrowerContainer)
-		if err != nil {
-			return err
-		}
-
-		// find same borrower profile
-		err = borrower.FilterSearchSingle(&Filter{
-			IDCardNumber: borrowerContainer.IDCardNumber,
-		})
-		json.Unmarshal(marshal, &borrower)
-		if err != nil {
-			borrower = models.Borrower{}
-			json.Unmarshal(marshal, &borrower)
-			err = borrower.Create()
-		} else {
-			err = borrower.Save()
-		}
-
-		if err != nil {
-			return err
-		}
-
-		// create loan
 		var loan models.Loan
+
 		err = json.Unmarshal([]byte(data[1]), &loan)
 		if err != nil {
 			return err
 		}
-
-		loan.Bank = borrower.Bank
-		loan.Owner = sql.NullInt64{
-			Int64: int64(borrower.ID),
-			Valid: true,
-		}
-
-		err = loan.Save() // finish create loan
+		err = loan.Save()
 		break
-	case "agent_borrower":
-		var (
-			borrowerContainer BorrowerContainer
-			borrower          models.Borrower
-		)
+	case "borrower":
+		var borrower models.Borrower
 
-		err = json.Unmarshal([]byte(data[1]), &borrowerContainer)
+		err = json.Unmarshal([]byte(data[1]), &borrower)
 		if err != nil {
 			return err
 		}
-		marshal, _ := json.Marshal(borrowerContainer)
-
-		err := borrower.FilterSearchSingle(&Filter{
-			IDCardNumber: borrowerContainer.IDCardNumber,
-		})
-		json.Unmarshal(marshal, &borrower)
-		if err != nil {
-			borrower = models.Borrower{}
-			json.Unmarshal(marshal, &borrower)
-			err = borrower.Create()
-		} else {
-			err = borrower.Save()
-		}
+		err = borrower.Save()
 		break
 	}
 	return err
