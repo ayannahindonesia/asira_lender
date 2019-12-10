@@ -41,7 +41,7 @@ func S3test(c echo.Context) error {
 	file.Write(unbased)
 	file.Sync()
 
-	great, err := asira.App.S3.PutObjectJPEG(file)
+	great, err := asira.App.S3.UploadJPEG(file)
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
 	}
