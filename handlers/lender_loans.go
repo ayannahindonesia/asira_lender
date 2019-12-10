@@ -3,7 +3,6 @@ package handlers
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
-	"database/sql"
 	"fmt"
 	"log"
 	"math"
@@ -269,21 +268,17 @@ func LenderLoanApproveReject(c echo.Context) error {
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 
-	type Filter struct {
-		Bank   sql.NullInt64 `json:"bank"`
-		ID     int           `json:"id"`
-		Status string        `json:"status"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err = loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID:     loanID,
-		Status: "processing", // only search for processing loan.
-	})
+
+	err = db.Table("loans l").
+		Select("*").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("ba.id = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Limit(1).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
@@ -392,23 +387,19 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 
-	type Filter struct {
-		Bank           sql.NullInt64 `json:"bank"`
-		ID             int           `json:"id"`
-		Status         string        `json:"status"`
-		DisburseStatus string        `json:"disburse_status"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err := loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID:             loanID,
-		Status:         "approved",
-		DisburseStatus: "processing", // only search for processing loan.
-	})
+
+	err = db.Table("loans l").
+		Select("*").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("ba.id = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Where("l.status = ?", "approved").
+		Where("l.disburse_status = ?", "processing").
+		Limit(1).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
@@ -436,21 +427,18 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 
 	loanID, err := strconv.Atoi(c.Param("loan_id"))
 
-	type Filter struct {
-		Bank           sql.NullInt64 `json:"bank"`
-		ID             int           `json:"id"`
-		DisburseStatus bool          `json:"disburse_status"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err = loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID:             loanID,
-		DisburseStatus: false,
-	})
+
+	err = db.Table("loans l").
+		Select("*").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("ba.id = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Where("l.disburse_status = ?", "processing").
+		Limit(1).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
