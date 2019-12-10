@@ -166,9 +166,8 @@ CREATE TABLE "borrowers" (
     "related_address" text,
     "bank" bigserial,
     "bank_accountnumber" varchar(255),
-    "agent_id" int,
+    "agent_referral" bigint,
     FOREIGN KEY ("bank") REFERENCES banks(id),
-    FOREIGN KEY ("agent_id") REFERENCES agents(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
