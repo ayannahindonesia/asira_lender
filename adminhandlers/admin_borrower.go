@@ -59,7 +59,7 @@ func BorrowerGetAll(c echo.Context) error {
 
 	db = db.Table("borrowers b").
 		Select("b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id) as loan_count, " + loanStatusQuery + " as loan_status").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
@@ -170,7 +170,7 @@ func BorrowerGetDetails(c echo.Context) error {
 
 	err = db.Table("borrowers b").
 		Select("b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id) as loan_count, "+loanStatusQuery+" as loan_status").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("b.id = ?", borrowerID).

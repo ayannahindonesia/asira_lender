@@ -94,7 +94,7 @@ func LenderLoanRequestList(c echo.Context) error {
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("b.bank = ?", bankRep.BankID)
 
@@ -237,14 +237,14 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("b.bank = ?", bankRep.BankID).
 		Where("l.id = ?", loanID).
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+		return returnInvalidResponse(http.StatusNotFound, err, "result not found")
 	}
 
 	return c.JSON(http.StatusOK, loan)

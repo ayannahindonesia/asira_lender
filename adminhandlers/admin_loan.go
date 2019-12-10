@@ -61,7 +61,7 @@ func LoanGetAll(c echo.Context) error {
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
@@ -177,7 +177,7 @@ func LoanGetDetails(c echo.Context) error {
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("l.id = ?", loanID).
 		Find(&loan).Error
