@@ -434,7 +434,7 @@ func mapnewBorrowerStruct(m []BorrowerSelect) []BorrowerCSV {
 		b, _ := json.Marshal(v)
 		json.Unmarshal(b, &unmarsh)
 		unmarsh.Bank = v.Bank.Int64
-		unmarsh.AgentID = v.AgentID.Int64
+		unmarsh.AgentID = v.AgentReferral.Int64
 		r = append(r, unmarsh)
 	}
 	return r
