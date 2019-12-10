@@ -2,19 +2,20 @@ package custommodule
 
 import (
 	"bytes"
+	"crypto/tls"
+	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-// S3 main type
 type S3 struct {
-	S3Config   *aws.Config
-	S3Uploader *s3manager.Uploader
-	Bucket     string
+	S3Client *s3.S3
+	Bucket   string
 }
 
 // NewS3 create new S3 instance
@@ -25,36 +26,43 @@ func NewS3(accesskey string, secretkey string, host string, bucketname string, r
 		return S3{}, err
 	}
 
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
 	session, _ := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Endpoint:    aws.String(host),
-		Credentials: creds,
+		Region:           aws.String(region),
+		Endpoint:         aws.String(host),
+		Credentials:      creds,
+		S3ForcePathStyle: aws.Bool(true),
+		HTTPClient:       client,
 	})
 
-	_, err = session.Config.Credentials.Get()
-
-	config := aws.NewConfig().WithEndpoint(host).WithRegion(region).WithCredentials(creds)
-	x := S3{
-		S3Config:   config,
-		S3Uploader: s3manager.NewUploader(session),
-		Bucket:     bucketname,
+	s3Client := s3.New(session)
+	_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
+		Bucket: aws.String(bucketname),
+	})
+	if err != nil {
+		return S3{}, err
 	}
-	return x, err
+
+	return S3{S3Client: s3Client, Bucket: bucketname}, err
 }
 
-// PutObjectJPEG uploads jpeg to s3
-func (x *S3) PutObjectJPEG(file *os.File) (string, error) {
+// UploadJPEG uploads jpeg to s3
+func (x *S3) UploadJPEG(file *os.File) (string, error) {
 	fileinfo, _ := file.Stat()
 	buffer := make([]byte, fileinfo.Size())
 	file.Read(buffer)
 
 	// Try new
 	// Create an uploader with the session and default options
-	response, err := x.S3Uploader.Upload(&s3manager.UploadInput{
+	response, err := x.S3Client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(x.Bucket),
 		Key:    aws.String(fileinfo.Name()),
 		Body:   bytes.NewReader(buffer),
 	})
 
-	return response.UploadID, err
+	return fmt.Sprintf("%v", response), err
 }
