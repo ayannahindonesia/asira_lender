@@ -83,44 +83,44 @@ func Seed() {
 		// seed services
 		services := []models.Service{
 			models.Service{
-				Name:    "Pinjaman PNS",
-				Status:  "active",
-				ImageID: 1,
+				Name:   "Pinjaman PNS",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Pensiun",
-				Status:  "active",
-				ImageID: 2,
+				Name:   "Pinjaman Pensiun",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman UMKN",
-				Status:  "active",
-				ImageID: 3,
+				Name:   "Pinjaman UMKN",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Mikro",
-				Status:  "inactive",
-				ImageID: 4,
+				Name:   "Pinjaman Mikro",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Lainnya",
-				Status:  "inactive",
-				ImageID: 5,
+				Name:   "Pinjaman Lainnya",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Jeruk",
-				Status:  "active",
-				ImageID: 5,
+				Name:   "Pinjaman Jeruk",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Pisang",
-				Status:  "active",
-				ImageID: 5,
+				Name:   "Pinjaman Pisang",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Mangga",
-				Status:  "active",
-				ImageID: 5,
+				Name:   "Pinjaman Mangga",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 		}
 		for _, service := range services {
@@ -583,29 +583,29 @@ func TestSeed() {
 		// seed services
 		services := []models.Service{
 			models.Service{
-				Name:    "Pinjaman PNS",
-				Status:  "active",
-				ImageID: 1,
+				Name:   "Pinjaman PNS",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Pensiun",
-				Status:  "active",
-				ImageID: 2,
+				Name:   "Pinjaman Pensiun",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman UMKN",
-				Status:  "active",
-				ImageID: 3,
+				Name:   "Pinjaman UMKN",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Mikro",
-				Status:  "inactive",
-				ImageID: 4,
+				Name:   "Pinjaman Mikro",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Lainnya",
-				Status:  "inactive",
-				ImageID: 5,
+				Name:   "Pinjaman Lainnya",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 		}
 		for _, service := range services {

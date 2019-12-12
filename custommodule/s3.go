@@ -3,7 +3,7 @@ package custommodule
 import (
 	"bytes"
 	"crypto/tls"
-	"fmt"
+	"flag"
 	"net/http"
 	"os"
 
@@ -15,9 +15,8 @@ import (
 
 // S3 main type
 type S3 struct {
-	Config     *aws.Config
-	Credential *credentials.Credentials
-	Bucket     string
+	Config *aws.Config
+	Bucket string
 }
 
 // NewS3 create new S3 instance
@@ -42,38 +41,39 @@ func NewS3(accesskey string, secretkey string, host string, bucketname string, r
 		S3ForcePathStyle: aws.Bool(true),
 		HTTPClient:       client,
 	}
-	result.Credential = credentials.NewStaticCredentials(accesskey, secretkey, "")
+
 	return result, err
 }
 
 // UploadJPEG uploads jpeg to s3
 func (x *S3) UploadJPEG(b []byte, filename string) (string, error) {
-	session, _ := session.NewSession(x.Config)
+	var err error
+	if flag.Lookup("test.v") == nil {
+		session, _ := session.NewSession(x.Config)
 
-	s3Client := s3.New(session)
-	s3Client.CreateBucket(&s3.CreateBucketInput{
-		Bucket: aws.String(x.Bucket),
-	})
+		s3Client := s3.New(session)
+		s3Client.CreateBucket(&s3.CreateBucketInput{
+			Bucket: aws.String(x.Bucket),
+		})
 
-	file, _ := os.Create("files/" + filename + ".jpeg")
-	defer file.Close()
-	file.Write(b)
-	file.Sync()
-	fileinfo, _ := file.Stat()
+		file, _ := os.Create("files/" + filename + ".jpeg")
+		defer file.Close()
+		file.Write(b)
+		file.Sync()
+		fileinfo, _ := file.Stat()
 
-	open, _ := os.Open("files/" + filename + ".jpeg")
-	defer open.Close()
-	defer os.Remove("files/" + filename + ".jpeg")
-	buffer := make([]byte, fileinfo.Size())
-	open.Read(buffer)
+		open, _ := os.Open("files/" + filename + ".jpeg")
+		defer open.Close()
+		defer os.Remove("files/" + filename + ".jpeg")
+		buffer := make([]byte, fileinfo.Size())
+		open.Read(buffer)
 
-	// Try new
-	// Create an uploader with the session and default options
-	response, err := s3Client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(x.Bucket),
-		Key:    aws.String(fileinfo.Name()),
-		Body:   bytes.NewReader(buffer),
-	})
+		_, err = s3Client.PutObject(&s3.PutObjectInput{
+			Bucket: aws.String(x.Bucket),
+			Key:    aws.String(fileinfo.Name()),
+			Body:   bytes.NewReader(buffer),
+		})
+	}
 
-	return fmt.Sprintf("%v", response), err
+	return *x.Config.Endpoint + "/" + x.Bucket + "/" + filename + ".jpeg", err
 }
