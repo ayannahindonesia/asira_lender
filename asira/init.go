@@ -62,6 +62,7 @@ func init() {
 	}
 
 	App.KafkaInit()
+	App.S3init()
 
 	// apply custom validator
 	v := validator.AsiraValidator{DB: App.DB}

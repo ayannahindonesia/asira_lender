@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"math/rand"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -34,19 +33,14 @@ func S3test(c echo.Context) error {
 	}
 
 	unbased, _ := base64.StdEncoding.DecodeString(payload.Image)
-
 	filename := randString(4) + strconv.FormatInt(time.Now().Unix(), 10)
-	file, _ := os.Create(filename + ".jpeg")
-	defer file.Close()
-	file.Write(unbased)
-	file.Sync()
 
-	great, err := asira.App.S3.UploadJPEG(file)
+	_, err := asira.App.S3.UploadJPEG(unbased, filename)
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "noooo")
 	}
 
-	return c.JSON(http.StatusOK, great)
+	return c.JSON(http.StatusOK, filename)
 }
 
 func randString(n int) string {
