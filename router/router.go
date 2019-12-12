@@ -18,11 +18,8 @@ func NewRouter() *echo.Echo {
 		"/api-lender-devel/*": "/$1",
 	}))
 
-	// e.GET("/test", handlers.Test)
 	e.GET("/clientauth", handlers.ClientLogin)
 	e.GET("/ping", handlers.Ping)
-
-	e.POST("/test", handlers.S3test)
 
 	groups.AdminGroup(e)
 	groups.ClientGroup(e)
