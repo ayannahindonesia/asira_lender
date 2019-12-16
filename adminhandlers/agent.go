@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/asira-ayannah/basemodel"
+	"github.com/ayannahindonesia/basemodel"
 
 	"github.com/lib/pq"
 
@@ -25,7 +25,7 @@ type (
 	AgentPayload struct {
 		Name          string  `json:"name"`
 		Username      string  `json:"username"`
-	Image         string  `json:"image"`
+		Image         string  `json:"image"`
 		Email         string  `json:"email"`
 		Phone         string  `json:"phone"`
 		Category      string  `json:"category"`

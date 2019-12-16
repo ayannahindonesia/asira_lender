@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/lib/pq"
-	"gitlab.com/asira-ayannah/basemodel"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"

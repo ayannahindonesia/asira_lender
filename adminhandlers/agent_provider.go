@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gitlab.com/asira-ayannah/basemodel"
+	"github.com/ayannahindonesia/basemodel"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"

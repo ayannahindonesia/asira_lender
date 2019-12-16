@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"gitlab.com/asira-ayannah/basemodel"
+	"github.com/ayannahindonesia/basemodel"
 )
 
 type (

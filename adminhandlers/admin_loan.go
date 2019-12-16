@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/labstack/echo"
-	"gitlab.com/asira-ayannah/basemodel"
 )
 
 // LoanSelect select custom type

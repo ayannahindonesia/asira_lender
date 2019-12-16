@@ -1,8 +1,8 @@
 package models
 
 import (
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/lib/pq"
-	"gitlab.com/asira-ayannah/basemodel"
 )
 
 type (

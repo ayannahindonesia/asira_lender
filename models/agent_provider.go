@@ -4,7 +4,7 @@ import (
 	"asira_lender/asira"
 	"time"
 
-	"gitlab.com/asira-ayannah/basemodel"
+	"github.com/ayannahindonesia/basemodel"
 )
 
 // AgentProvider model

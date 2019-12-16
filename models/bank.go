@@ -5,7 +5,7 @@ import (
 
 	"github.com/lib/pq"
 
-	"gitlab.com/asira-ayannah/basemodel"
+	"github.com/ayannahindonesia/basemodel"
 )
 
 type (
