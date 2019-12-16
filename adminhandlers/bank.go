@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/labstack/echo"
 	"github.com/lib/pq"
 	"github.com/thedevsaddam/govalidator"
-	"gitlab.com/asira-ayannah/basemodel"
 )
 
 type (

@@ -1,8 +1,8 @@
 package models
 
 import (
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/google/uuid"
-	"gitlab.com/asira-ayannah/basemodel"
 )
 
 // Client struct

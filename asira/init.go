@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/fsnotify/fsnotify"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
-	"gitlab.com/asira-ayannah/basemodel"
 
 	// import postgres misc
 	_ "github.com/jinzhu/gorm/dialects/postgres"

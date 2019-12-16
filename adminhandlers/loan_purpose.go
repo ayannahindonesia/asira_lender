@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ayannahindonesia/basemodel"
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
-	"gitlab.com/asira-ayannah/basemodel"
 )
 
 // LoanPurposePayload handles request body

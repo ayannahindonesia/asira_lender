@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ayannahindonesia/basemodel"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo"
-	"gitlab.com/asira-ayannah/basemodel"
 )
 
 type (

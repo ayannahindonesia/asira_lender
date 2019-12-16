@@ -1,6 +1,6 @@
 package models
 
-import "gitlab.com/asira-ayannah/basemodel"
+import "github.com/ayannahindonesia/basemodel"
 
 type (
 	Image struct {
