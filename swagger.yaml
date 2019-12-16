@@ -862,8 +862,8 @@ paths:
         - in: query
           name: service_id
           schema:
-            type: number
-            example: 1
+            type: string
+            example: "1,2"
         - in: query
           name: min_timespan
           schema:
@@ -1926,6 +1926,9 @@ paths:
                 username:
                   type: string
                   example: agentK
+                image:
+                  type: string
+                  example: long string of base64 encoded image
                 password:
                   type: string
                   example: password
@@ -2114,6 +2117,7 @@ paths:
         - $ref: '#/components/parameters/orderByQuery'
         - $ref: '#/components/parameters/sortQuery'
         - $ref: '#/components/parameters/searchAll'
+        - $ref: '#/components/parameters/searchStatus'
         - in: query
           name: fullname
           schema:
@@ -2295,6 +2299,7 @@ paths:
         - $ref: '#/components/parameters/pageQuery'
         - $ref: '#/components/parameters/orderByQuery'
         - $ref: '#/components/parameters/sortQuery'
+        - $ref: '#/components/parameters/searchStatus'
         - in: query
           name: fullname
           schema:
@@ -2617,7 +2622,7 @@ components:
             name:
               type: string
               example: 
-            image_url:
+            image:
               type: string
               example: image.com/fj019jf1092j.jpeg
             status:
@@ -2785,6 +2790,10 @@ components:
             name:
               type: string
               example: Agent K
+            image_id:
+              type: number
+              example: 1
+              description: image file id
             username:
               type: string
               example: agentK
