@@ -132,7 +132,7 @@ func LenderBorrowerList(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Joins("INNER JOIN loans l ON l.borrower = b.id").
-		Where("ba.id = ?", bankRep.BankID)
+		Where("ba.id = ?", bankRep.BankID).
 		Where("b.status != ?", "rejected")
 
 	accountNumber := c.QueryParam("account_number")
