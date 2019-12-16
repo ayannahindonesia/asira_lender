@@ -13,6 +13,7 @@ services:
       - APPNAME=asira_lender
       - ENV=dev
       - APPPORT=8001
+      - CONFIGPATH=$$GOPATH/src/asira_lender
     container_name: asira_lender
     
   zookeeper:
