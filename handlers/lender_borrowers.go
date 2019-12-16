@@ -133,6 +133,7 @@ func LenderBorrowerList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Joins("INNER JOIN loans l ON l.borrower = b.id").
 		Where("ba.id = ?", bankRep.BankID)
+		Where("b.status != ?", "rejected")
 
 	accountNumber := c.QueryParam("account_number")
 
@@ -260,6 +261,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 		Joins("INNER JOIN loans l ON l.borrower = b.id").
 		Where("ba.id = ?", bankRep.BankID).
 		Where("b.id = ?", borrowerID).
+		Where("b.status != ?", "rejected").
 		Find(&borrower).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
