@@ -34,7 +34,7 @@ func TestLenderGetLoanRequestList(t *testing.T) {
 	obj := auth.GET("/lender/loanrequest_list").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("total_data").ValueEqual("total_data", 2)
+	obj.ContainsKey("total_data").ValueEqual("total_data", 6)
 
 	// wrong token
 	auth = e.Builder(func(req *httpexpect.Request) {
@@ -73,9 +73,9 @@ func TestLenderGetLoanRequestListDetail(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 
 	// not owned by lender
-	auth.GET("/lender/loanrequest_list/2/detail").
+	auth.GET("/lender/loanrequest_list/7/detail").
 		Expect().
-		Status(http.StatusInternalServerError).JSON().Object()
+		Status(http.StatusNotFound).JSON().Object()
 }
 
 func TestLenderApproveRejectLoan(t *testing.T) {

@@ -3,13 +3,11 @@ package middlewares
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/Shopify/sarama"
 )
@@ -23,58 +21,6 @@ type (
 	// BorrowerInfo borrower info passed to lender
 	BorrowerInfo struct {
 		Info interface{} `json:"borrower_info"`
-	}
-	// BorrowerContainer for json marshaling
-	BorrowerContainer struct {
-		Fullname             string        `json:"fullname"`
-		Nickname             string        `json:"nickname"`
-		Gender               string        `json:"gender"`
-		IDCardNumber         string        `json:"idcard_number"`
-		IDCardImage          sql.NullInt64 `json:"idcard_image"`
-		TaxIDnumber          string        `json:"taxid_number"`
-		TaxIDImage           sql.NullInt64 `json:"taxid_image"`
-		Nationality          string        `json:"nationality"`
-		Email                string        `json:"email"`
-		Birthday             time.Time     `json:"birthday"`
-		Birthplace           string        `json:"birthplace"`
-		LastEducation        string        `json:"last_education"`
-		MotherName           string        `json:"mother_name"`
-		Phone                string        `json:"phone"`
-		MarriedStatus        string        `json:"marriage_status"`
-		SpouseName           string        `json:"spouse_name"`
-		SpouseBirthday       time.Time     `json:"spouse_birthday"`
-		SpouseLastEducation  string        `json:"spouse_lasteducation"`
-		Dependants           int           `json:"dependants"`
-		Address              string        `json:"address"`
-		Province             string        `json:"province"`
-		City                 string        `json:"city"`
-		NeighbourAssociation string        `json:"neighbour_association"`
-		Hamlets              string        `json:"hamlets"`
-		HomePhoneNumber      string        `json:"home_phonenumber"`
-		Subdistrict          string        `json:"subdistrict"`
-		UrbanVillage         string        `json:"urban_village"`
-		HomeOwnership        string        `json:"home_ownership" `
-		LivedFor             int           `json:"lived_for"`
-		Occupation           string        `json:"occupation"`
-		EmployeeID           string        `json:"employee_id"`
-		EmployerName         string        `json:"employer_name"`
-		EmployerAddress      string        `json:"employer_address"`
-		Department           string        `json:"department"`
-		BeenWorkingFor       int           `json:"been_workingfor"`
-		DirectSuperior       string        `json:"direct_superiorname"`
-		EmployerNumber       string        `json:"employer_number"`
-		MonthlyIncome        int           `json:"monthly_income"`
-		OtherIncome          int           `json:"other_income"`
-		OtherIncomeSource    string        `json:"other_incomesource"`
-		FieldOfWork          string        `json:"field_of_work"`
-		RelatedPersonName    string        `json:"related_personname"`
-		RelatedRelation      string        `json:"related_relation"`
-		RelatedPhoneNumber   string        `json:"related_phonenumber"`
-		RelatedHomePhone     string        `json:"related_homenumber"`
-		RelatedAddress       string        `json:"related_address"`
-		Bank                 sql.NullInt64 `json:"bank"`
-		BankAccountNumber    string        `json:"bank_accountnumber"`
-		AgentID              sql.NullInt64 `json:"agent_id"`
 	}
 	// Filter for searching basemodel
 	Filter struct {
@@ -141,87 +87,22 @@ func processMessage(kafkaMessage []byte) (err error) {
 	default:
 		return nil
 	case "loan":
-		// create borrower first
-		var (
-			borrowerInfo      BorrowerInfo
-			borrowerContainer BorrowerContainer
-			borrower          models.Borrower
-		)
-		err = json.Unmarshal([]byte(data[1]), &borrowerInfo)
-		if err != nil {
-			return err
-		}
-
-		marshal, err := json.Marshal(borrowerInfo.Info)
-		if err != nil {
-			return err
-		}
-
-		err = json.Unmarshal(marshal, &borrowerContainer)
-		if err != nil {
-			return err
-		}
-
-		marshal, err = json.Marshal(borrowerContainer)
-		if err != nil {
-			return err
-		}
-
-		// find same borrower profile
-		err = borrower.FilterSearchSingle(&Filter{
-			IDCardNumber: borrowerContainer.IDCardNumber,
-		})
-		json.Unmarshal(marshal, &borrower)
-		if err != nil {
-			borrower = models.Borrower{}
-			json.Unmarshal(marshal, &borrower)
-			err = borrower.Create()
-		} else {
-			err = borrower.Save()
-		}
-
-		if err != nil {
-			return err
-		}
-
-		// create loan
 		var loan models.Loan
+
 		err = json.Unmarshal([]byte(data[1]), &loan)
 		if err != nil {
 			return err
 		}
-
-		loan.Bank = borrower.Bank
-		loan.Owner = sql.NullInt64{
-			Int64: int64(borrower.ID),
-			Valid: true,
-		}
-
-		err = loan.Save() // finish create loan
+		err = loan.Save()
 		break
-	case "agent_borrower":
-		var (
-			borrowerContainer BorrowerContainer
-			borrower          models.Borrower
-		)
+	case "borrower":
+		var borrower models.Borrower
 
-		err = json.Unmarshal([]byte(data[1]), &borrowerContainer)
+		err = json.Unmarshal([]byte(data[1]), &borrower)
 		if err != nil {
 			return err
 		}
-		marshal, _ := json.Marshal(borrowerContainer)
-
-		err := borrower.FilterSearchSingle(&Filter{
-			IDCardNumber: borrowerContainer.IDCardNumber,
-		})
-		json.Unmarshal(marshal, &borrower)
-		if err != nil {
-			borrower = models.Borrower{}
-			json.Unmarshal(marshal, &borrower)
-			err = borrower.Create()
-		} else {
-			err = borrower.Save()
-		}
+		err = borrower.Save()
 		break
 	}
 	return err

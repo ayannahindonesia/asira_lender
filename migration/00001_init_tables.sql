@@ -55,10 +55,9 @@ CREATE TABLE "services" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
-    "image_id" bigserial,
+    "image" text,
     "status" varchar(255),
-    PRIMARY KEY ("id"),
-    FOREIGN KEY ("image_id") REFERENCES images(id)
+    PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
 CREATE TABLE "products" (
@@ -103,6 +102,7 @@ CREATE TABLE "agents" (
     "name" varchar(255),
     "username" varchar(255) UNIQUE,
     "password" text,
+    "image_id" bigint,
     "email" varchar(255) UNIQUE,
     "phone" varchar(255) UNIQUE,
     "category" varchar(255),
@@ -166,9 +166,8 @@ CREATE TABLE "borrowers" (
     "related_address" text,
     "bank" bigserial,
     "bank_accountnumber" varchar(255),
-    "agent_id" int,
+    "agent_referral" bigint,
     FOREIGN KEY ("bank") REFERENCES banks(id),
-    FOREIGN KEY ("agent_id") REFERENCES agents(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
@@ -177,8 +176,7 @@ CREATE TABLE "loans" (
     "created_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
-    "owner" bigserial,
-    "bank" bigserial,
+    "borrower" bigserial,
     "product" bigserial,
     "status" varchar(255) DEFAULT ('processing'),
     "loan_amount" FLOAT NOT NULL,
@@ -196,8 +194,7 @@ CREATE TABLE "loans" (
     "disburse_status" varchar(255) DEFAULT ('processing'),
     "approval_date" timestamptz,
     "reject_reason" text,
-    FOREIGN KEY ("owner") REFERENCES borrowers(id),
-    FOREIGN KEY ("bank") REFERENCES banks(id),
+    FOREIGN KEY ("borrower") REFERENCES borrowers(id),
     FOREIGN KEY ("product") REFERENCES products(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);

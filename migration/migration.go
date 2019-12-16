@@ -83,44 +83,44 @@ func Seed() {
 		// seed services
 		services := []models.Service{
 			models.Service{
-				Name:    "Pinjaman PNS",
-				Status:  "active",
-				ImageID: 1,
+				Name:   "Pinjaman PNS",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Pensiun",
-				Status:  "active",
-				ImageID: 2,
+				Name:   "Pinjaman Pensiun",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman UMKN",
-				Status:  "active",
-				ImageID: 3,
+				Name:   "Pinjaman UMKN",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Mikro",
-				Status:  "inactive",
-				ImageID: 4,
+				Name:   "Pinjaman Mikro",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Lainnya",
-				Status:  "inactive",
-				ImageID: 5,
+				Name:   "Pinjaman Lainnya",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Jeruk",
-				Status:  "active",
-				ImageID: 5,
+				Name:   "Pinjaman Jeruk",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Pisang",
-				Status:  "active",
-				ImageID: 5,
+				Name:   "Pinjaman Pisang",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Mangga",
-				Status:  "active",
-				ImageID: 5,
+				Name:   "Pinjaman Mangga",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 		}
 		for _, service := range services {
@@ -472,6 +472,10 @@ func Seed() {
 					Int64: 1,
 					Valid: true,
 				},
+				ImageID: sql.NullInt64{
+					Int64: 1,
+					Valid: true,
+				},
 				Banks:  pq.Int64Array{1, 2},
 				Status: "active",
 			},
@@ -481,9 +485,13 @@ func Seed() {
 				Password: "password",
 				Email:    "agentj@mib.com",
 				Phone:    "081234567891",
-				Category: "agent_executive",
-				Banks:    pq.Int64Array{1},
-				Status:   "active",
+				Category: "account_executive",
+				ImageID: sql.NullInt64{
+					Int64: 2,
+					Valid: true,
+				},
+				Banks:  pq.Int64Array{1},
+				Status: "active",
 			},
 			models.Agent{
 				Name:     "Agent Buah Personal",
@@ -505,7 +513,7 @@ func Seed() {
 				Password: "testing123",
 				Email:    "agentbexe@buah.com",
 				Phone:    "08123456789122",
-				Category: "agent_executive",
+				Category: "account_executive",
 				Banks:    pq.Int64Array{3},
 				Status:   "active",
 			},
@@ -583,29 +591,29 @@ func TestSeed() {
 		// seed services
 		services := []models.Service{
 			models.Service{
-				Name:    "Pinjaman PNS",
-				Status:  "active",
-				ImageID: 1,
+				Name:   "Pinjaman PNS",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Pensiun",
-				Status:  "active",
-				ImageID: 2,
+				Name:   "Pinjaman Pensiun",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman UMKN",
-				Status:  "active",
-				ImageID: 3,
+				Name:   "Pinjaman UMKN",
+				Status: "active",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Mikro",
-				Status:  "inactive",
-				ImageID: 4,
+				Name:   "Pinjaman Mikro",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 			models.Service{
-				Name:    "Pinjaman Lainnya",
-				Status:  "inactive",
-				ImageID: 5,
+				Name:   "Pinjaman Lainnya",
+				Status: "inactive",
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 			},
 		}
 		for _, service := range services {
@@ -880,14 +888,7 @@ func TestSeed() {
 		}})
 		loans := []models.Loan{
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       5000000,
 				Installment:      8,
 				LoanIntention:    "a loan 1 intention",
@@ -899,14 +900,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       2000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -918,14 +912,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       29000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -937,14 +924,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       3000000,
 				Installment:      3,
 				LoanIntention:    "a loan 1 intention",
@@ -956,14 +936,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       9123456,
 				Installment:      3,
 				LoanIntention:    "a loan 3 intention",
@@ -975,14 +948,7 @@ func TestSeed() {
 				Product:          1,
 			},
 			models.Loan{
-				Bank: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Owner: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Borrower:         1,
 				LoanAmount:       80123456,
 				Installment:      11,
 				LoanIntention:    "a loan 3 intention",
@@ -1112,6 +1078,10 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
+				ImageID: sql.NullInt64{
+					Int64: 1,
+					Valid: true,
+				},
 				Banks:  pq.Int64Array{1, 2},
 				Status: "active",
 			},
@@ -1121,9 +1091,13 @@ func TestSeed() {
 				Password: "password",
 				Email:    "agentj@mib.com",
 				Phone:    "081234567891",
-				Category: "agent_executive",
+				Category: "account_executive",
 				Banks:    pq.Int64Array{1},
-				Status:   "active",
+				ImageID: sql.NullInt64{
+					Int64: 2,
+					Valid: true,
+				},
+				Status: "active",
 			},
 		}
 		for _, agent := range agents {

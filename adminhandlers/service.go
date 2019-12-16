@@ -1,11 +1,14 @@
 package adminhandlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/models"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"gitlab.com/asira-ayannah/basemodel"
 
@@ -92,15 +95,17 @@ func ServiceNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	image := models.Image{
-		Image_string: servicePayload.Image,
+	unbased, _ := base64.StdEncoding.DecodeString(servicePayload.Image)
+	filename := "svc" + strconv.FormatInt(time.Now().Unix(), 10)
+	url, err := asira.App.S3.UploadJPEG(unbased, filename)
+	if err != nil {
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
 	}
-	image.Create()
 
 	service := models.Service{
-		Name:    servicePayload.Name,
-		ImageID: image.ID,
-		Status:  servicePayload.Status,
+		Name:   servicePayload.Name,
+		Image:  url,
+		Status: servicePayload.Status,
 	}
 	err = service.Create()
 	if err != nil {
@@ -145,9 +150,6 @@ func ServicePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceID))
 	}
 
-	serviceImg := models.Image{}
-	err = serviceImg.FindbyID(int(service.ImageID))
-
 	servicePayload := ServicePayload{}
 	payloadRules := govalidator.MapData{
 		"name":   []string{},
@@ -163,17 +165,20 @@ func ServicePatch(c echo.Context) error {
 		service.Name = servicePayload.Name
 	}
 	if len(servicePayload.Image) > 0 {
-		serviceImg.Image_string = servicePayload.Image
+		unbased, _ := base64.StdEncoding.DecodeString(servicePayload.Image)
+		filename := "svc" + strconv.FormatInt(time.Now().Unix(), 10)
+		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
+		}
+
+		service.Image = url
 	}
 	if len(servicePayload.Status) > 0 {
 		service.Status = servicePayload.Status
 	}
 
 	err = service.Save()
-	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
-	}
-	err = serviceImg.Save()
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}

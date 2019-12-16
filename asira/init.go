@@ -1,6 +1,7 @@
 package asira
 
 import (
+	"asira_lender/custommodule"
 	"asira_lender/validator"
 	"fmt"
 	"log"
@@ -24,14 +25,15 @@ var App *Application
 type (
 	// Application main variable of the app
 	Application struct {
-		Name       string        `json:"name"`
-		Port       string        `json:"port"`
-		Version    string        `json:"version"`
-		ENV        string        `json:"env"`
-		Config     viper.Viper   `json:"prog_config"`
-		DB         *gorm.DB      `json:"db"`
-		Kafka      KafkaInstance `json:"kafka"`
-		Permission viper.Viper   `json:"prog_permission"`
+		Name       string          `json:"name"`
+		Port       string          `json:"port"`
+		Version    string          `json:"version"`
+		ENV        string          `json:"env"`
+		Config     viper.Viper     `json:"prog_config"`
+		DB         *gorm.DB        `json:"db"`
+		Kafka      KafkaInstance   `json:"kafka"`
+		S3         custommodule.S3 `json:"s3"`
+		Permission viper.Viper     `json:"prog_permission"`
 	}
 
 	// KafkaInstance stores kafka configs
@@ -60,6 +62,7 @@ func init() {
 	}
 
 	App.KafkaInit()
+	App.S3init()
 
 	// apply custom validator
 	v := validator.AsiraValidator{DB: App.DB}
@@ -188,4 +191,13 @@ func (x *Application) LoadPermissions() error {
 	x.Permission = viper.Viper(*conf)
 
 	return nil
+}
+
+// S3init load config for s3
+func (x *Application) S3init() (err error) {
+	s3conf := x.Config.GetStringMap(fmt.Sprintf("%s.s3", x.ENV))
+
+	x.S3, err = custommodule.NewS3(s3conf["access_key"].(string), s3conf["secret_key"].(string), s3conf["host"].(string), s3conf["bucket_name"].(string), s3conf["region"].(string))
+
+	return err
 }

@@ -1,10 +1,13 @@
 package adminhandlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,17 +20,26 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
-// AgentPayload request body container
-type AgentPayload struct {
-	Name          string  `json:"name"`
-	Username      string  `json:"username"`
-	Email         string  `json:"email"`
-	Phone         string  `json:"phone"`
-	Category      string  `json:"category"`
-	AgentProvider int64   `json:"agent_provider"`
-	Banks         []int64 `json:"banks"`
-	Status        string  `json:"status"`
-}
+type (
+	// AgentPayload request body container
+	AgentPayload struct {
+		Name          string  `json:"name"`
+		Username      string  `json:"username"`
+	Image         string  `json:"image"`
+		Email         string  `json:"email"`
+		Phone         string  `json:"phone"`
+		Category      string  `json:"category"`
+		AgentProvider int64   `json:"agent_provider"`
+		Banks         []int64 `json:"banks"`
+		Status        string  `json:"status"`
+	}
+	// AgentSelect query result container
+	AgentSelect struct {
+		models.Agent
+		AgentProviderName string         `json:"agent_provider_name"`
+		BankNames         pq.StringArray `json:"bank_names"`
+	}
+)
 
 // AgentList get all agents
 func AgentList(c echo.Context) error {
@@ -37,64 +49,106 @@ func AgentList(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	// pagination parameters
-	rows, err := strconv.Atoi(c.QueryParam("rows"))
-	page, err := strconv.Atoi(c.QueryParam("page"))
-	order := strings.Split(c.QueryParam("orderby"), ",")
-	sort := strings.Split(c.QueryParam("sort"), ",")
-
+	db := asira.App.DB
 	var (
-		agent  models.Agent
-		result basemodel.PagedFindResult
+		totalRows int
+		offset    int
+		rows      int
+		page      int
+		lastPage  int
+		agents    []AgentSelect
 	)
 
-	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		type Filter struct {
-			Name          string `json:"name" condition:"LIKE,optional"`
-			Username      string `json:"username" condition:"LIKE,optional"`
-			ID            int64  `json:"id" condition:"optional"`
-			Email         string `json:"email" condition:"optional"`
-			Phone         string `json:"phone" condition:"optional"`
-			Category      string `json:"category" condition:"optional"`
-			AgentProvider int64  `json:"agent_provider" condition:"optional"`
-			Status        string `json:"status" condition:"optional"`
+	// pagination parameters
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
 		}
-		id, _ := strconv.ParseInt(searchAll, 10, 64)
-		result, err = agent.PagedFilterSearch(page, rows, order, sort, &Filter{
-			Name:          searchAll,
-			Username:      searchAll,
-			ID:            id,
-			Email:         searchAll,
-			Phone:         searchAll,
-			Category:      searchAll,
-			AgentProvider: id,
-			Status:        searchAll,
-		})
-	} else {
-		type Filter struct {
-			Name          string   `json:"name" condition:"LIKE"`
-			Username      string   `json:"username" condition:"LIKE"`
-			ID            []string `json:"id"`
-			Email         string   `json:"email"`
-			Phone         string   `json:"phone"`
-			Category      string   `json:"category"`
-			AgentProvider []string `json:"agent_provider"`
-			Status        string   `json:"status"`
-		}
-		result, err = agent.PagedFilterSearch(page, rows, order, sort, &Filter{
-			Name:          c.QueryParam("name"),
-			Username:      c.QueryParam("username"),
-			ID:            customSplit(c.QueryParam("id"), ","),
-			Email:         c.QueryParam("email"),
-			Phone:         c.QueryParam("phone"),
-			Category:      c.QueryParam("category"),
-			AgentProvider: customSplit(c.QueryParam("agent_provider"), ","),
-			Status:        c.QueryParam("status"),
-		})
+		offset = (page * rows) - rows
 	}
 
+	db = db.Table("agents a").
+		Select("a.*, ap.name as agent_provider_name, (SELECT ARRAY_AGG(name) FROM banks WHERE id IN (SELECT UNNEST(a.banks))) as bank_names").
+		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
+
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		extraquery := fmt.Sprintf("CAST(a.id as varchar(255)) = '%v'", searchAll) +
+			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
+			fmt.Sprintf(" OR LOWER(a.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+
+		db = db.Where(extraquery)
+	} else {
+		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+			db = db.Where("a.id IN (?)", id)
+		}
+		if name := c.QueryParam("name"); len(name) > 0 {
+			db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+		}
+		if username := c.QueryParam("username"); len(username) > 0 {
+			db = db.Where("LOWER(a.username) = ?", "%"+strings.ToLower(username)+"%")
+		}
+		if email := c.QueryParam("email"); len(email) > 0 {
+			db = db.Where("LOWER(a.email) LIKE ?", "%"+strings.ToLower(email)+"%")
+		}
+		if phone := c.QueryParam("phone"); len(phone) > 0 {
+			db = db.Where("a.phone LIKE ?", "%"+phone+"%")
+		}
+		if category := c.QueryParam("category"); len(category) > 0 {
+			db = db.Where("LOWER(a.category) LIKE ?", "%"+strings.ToLower(category)+"%")
+		}
+		if agentProvider := customSplit(c.QueryParam("agent_provider"), ","); len(agentProvider) > 0 {
+			db = db.Where("ap.id IN (?)", agentProvider)
+		}
+		if status := c.QueryParam("status"); len(status) > 0 {
+			db = db.Where("LOWER(a.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+		}
+		if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
+			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
+		}
+		if bankID := c.QueryParam("bank_id"); len(bankID) > 0 {
+			db = db.Where("a.banks LIKE ?", "%"+bankID+"%")
+		}
+	}
+
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
+	}
+
+	tempDB := db
+	tempDB.Count(&totalRows)
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
+	}
+	err = db.Find(&agents).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, "Agent provider tidak Ditemukan")
+		log.Println(err)
+	}
+
+	result := basemodel.PagedFindResult{
+		TotalData:   totalRows,
+		Rows:        rows,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		From:        offset + 1,
+		To:          offset + rows,
+		Data:        agents,
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -110,8 +164,16 @@ func AgentDetails(c echo.Context) error {
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	agent := models.Agent{}
-	err = agent.FindbyID(id)
+	agent := AgentSelect{}
+
+	db := asira.App.DB
+
+	err = db.Table("agents a").
+		Select("a.*, ap.name as agent_provider_name, (SELECT ARRAY_AGG(name) FROM banks WHERE id IN (SELECT UNNEST(a.banks))) as bank_names").
+		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("a.id = ?", id).
+		Find(&agent).Error
+
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
 	}
@@ -132,6 +194,7 @@ func AgentNew(c echo.Context) error {
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
 		"username":       []string{"required", "unique:agents,username"},
+		"image":          []string{},
 		"email":          []string{"required", "unique:agents,email"},
 		"phone":          []string{"required", "unique:agents,phone"},
 		"category":       []string{"required", "agent_categories"},
@@ -158,8 +221,17 @@ func AgentNew(c echo.Context) error {
 
 	agent := models.Agent{}
 
+	image := models.Image{
+		Image_string: agentPayload.Image,
+	}
+	image.Create()
+
 	marshal, _ := json.Marshal(agentPayload)
 	json.Unmarshal(marshal, &agent)
+	agent.ImageID = sql.NullInt64{
+		Int64: int64(image.ID),
+		Valid: true,
+	}
 
 	if agentPayload.AgentProvider != 0 {
 		agent.AgentProvider = sql.NullInt64{
