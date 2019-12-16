@@ -3,7 +3,6 @@ package handlers
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
-	"database/sql"
 	"fmt"
 	"log"
 	"math"
@@ -22,7 +21,7 @@ type (
 	// LoanRequestListCSV type
 	LoanRequestListCSV struct {
 		ID                uint64  `json:"id"`
-		OwnerName         string  `json:"owner_name"`
+		BorrowerName      string  `json:"borrower_name"`
 		BankName          string  `json:"bank_name"`
 		Status            string  `json:"status"`
 		LoanAmount        float64 `json:"loan_amount"`
@@ -42,7 +41,7 @@ type (
 	// LoanSelect select custom type
 	LoanSelect struct {
 		models.Loan
-		OwnerName         string `json:"owner_name"`
+		BorrowerName      string `json:"borrower_name"`
 		BankName          string `json:"bank_name"`
 		BankAccount       string `json:"bank_account"`
 		Service           string `json:"service"`
@@ -90,14 +89,14 @@ func LenderLoanRequestList(c echo.Context) error {
 	}
 
 	db = db.Table("loans l").
-		Select("l.*, b.fullname as owner_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Select("l.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
-		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
-		Joins("LEFT JOIN borrowers b ON b.id = l.owner").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Where("l.bank = ?", bankRep.BankID)
+		Where("b.bank = ?", bankRep.BankID)
 
 	status := c.QueryParam("status")
 	disburseStatus := c.QueryParam("disburse_status")
@@ -132,11 +131,11 @@ func LenderLoanRequestList(c echo.Context) error {
 
 		db = db.Where(extraquery)
 	} else {
-		if owner := c.QueryParam("owner"); len(owner) > 0 {
-			db = db.Where("l.owner = ?", owner)
+		if borrower := c.QueryParam("borrower"); len(borrower) > 0 {
+			db = db.Where("l.borrower = ?", borrower)
 		}
-		if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
-			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(ownerName)+"%")
+		if borrowerName := c.QueryParam("borrower_name"); len(borrowerName) > 0 {
+			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(borrowerName)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("l.id IN (?)", id)
@@ -233,19 +232,19 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	loan := LoanSelect{}
 
 	err = db.Table("loans l").
-		Select("l.*, b.fullname as owner_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Select("l.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
 		Joins("LEFT JOIN products p ON l.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
-		Joins("LEFT JOIN banks ba ON l.bank = ba.id").
-		Joins("LEFT JOIN borrowers b ON b.id = l.owner").
-		Joins("LEFT JOIN agents a ON b.agent_id = a.id").
+		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Where("l.bank = ?", bankRep.BankID).
+		Where("b.bank = ?", bankRep.BankID).
 		Where("l.id = ?", loanID).
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+		return returnInvalidResponse(http.StatusNotFound, err, "result not found")
 	}
 
 	return c.JSON(http.StatusOK, loan)
@@ -269,21 +268,17 @@ func LenderLoanApproveReject(c echo.Context) error {
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 
-	type Filter struct {
-		Bank   sql.NullInt64 `json:"bank"`
-		ID     int           `json:"id"`
-		Status string        `json:"status"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err = loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID:     loanID,
-		Status: "processing", // only search for processing loan.
-	})
+
+	err = db.Table("loans l").
+		Select("*").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("ba.id = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Limit(1).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
@@ -333,8 +328,8 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	var results []LoanRequestListCSV
 
 	db = db.Table("loans l").
-		Select("l.id, l.owner_name, ba.name as bank_name, l.status, l.loan_amount, l.installment, l.total_loan, l.due_date, l.layaway_plan, l.loan_intention, l.intention_details, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
-		Joins("INNER JOIN borrowers b ON b.id = l.owner").
+		Select("l.id, b.fullname as borrower_name, ba.name as bank_name, l.status, l.loan_amount, l.installment, l.total_loan, l.due_date, l.layaway_plan, l.loan_intention, l.intention_details, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").
 		Where("ba.id = ?", bankRep.BankID)
 
@@ -342,8 +337,8 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	if status := c.QueryParam("status"); len(status) > 0 {
 		db = db.Where("LOWER(l.status) = ?", strings.ToLower(status))
 	}
-	if ownerName := c.QueryParam("owner_name"); len(ownerName) > 0 {
-		db = db.Where("LOWER(l.owner_name) = ?", strings.ToLower(ownerName))
+	if borrowerName := c.QueryParam("borrower_name"); len(borrowerName) > 0 {
+		db = db.Where("LOWER(l.borrower_name) = ?", strings.ToLower(borrowerName))
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("l.id IN (?)", id)
@@ -392,23 +387,19 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
 
-	type Filter struct {
-		Bank           sql.NullInt64 `json:"bank"`
-		ID             int           `json:"id"`
-		Status         string        `json:"status"`
-		DisburseStatus string        `json:"disburse_status"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err := loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID:             loanID,
-		Status:         "approved",
-		DisburseStatus: "processing", // only search for processing loan.
-	})
+
+	err = db.Table("loans l").
+		Select("*").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("ba.id = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Where("l.status = ?", "approved").
+		Where("l.disburse_status = ?", "processing").
+		Limit(1).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
@@ -436,21 +427,18 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 
 	loanID, err := strconv.Atoi(c.Param("loan_id"))
 
-	type Filter struct {
-		Bank           sql.NullInt64 `json:"bank"`
-		ID             int           `json:"id"`
-		DisburseStatus bool          `json:"disburse_status"`
-	}
-
+	db := asira.App.DB
 	loan := models.Loan{}
-	err = loan.FilterSearchSingle(&Filter{
-		Bank: sql.NullInt64{
-			Int64: int64(bankRep.BankID),
-			Valid: true,
-		},
-		ID:             loanID,
-		DisburseStatus: false,
-	})
+
+	err = db.Table("loans l").
+		Select("*").
+		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("ba.id = ?", bankRep.BankID).
+		Where("l.id = ?", loanID).
+		Where("l.disburse_status = ?", "processing").
+		Limit(1).
+		Find(&loan).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")

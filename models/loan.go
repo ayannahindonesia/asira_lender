@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -13,8 +12,7 @@ type (
 	Loan struct {
 		basemodel.BaseModel
 		DeletedTime         time.Time      `json:"deleted_time" gorm:"column:deleted_time"`
-		Owner               sql.NullInt64  `json:"owner" gorm:"column:owner;foreignkey"`
-		Bank                sql.NullInt64  `json:"bank" gorm:"column:bank;foreignkey"`
+		Borrower            uint64         `json:"borrower" gorm:"column:borrower;foreignkey"`
 		Status              string         `json:"status" gorm:"column:status;type:varchar(255)" sql:"DEFAULT:'processing'"`
 		LoanAmount          float64        `json:"loan_amount" gorm:"column:loan_amount;type:int;not null"`
 		Installment         int            `json:"installment" gorm:"column:installment;type:int;not null"` // plan of how long loan to be paid
