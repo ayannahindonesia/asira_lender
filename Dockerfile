@@ -3,6 +3,7 @@ FROM golang:alpine  AS build-env
 
 ARG APPNAME="asira_lender"
 ARG ENV="staging"
+ARG CONFIGPATH="/data/"
 
 #RUN adduser -D -g '' golang
 #USER root
@@ -46,6 +47,7 @@ EXPOSE 8000
 # FROM golang:alpine
 
 # ARG APPNAME="asira_lender"
+# ARG CONFIGPATH="$$GOPATH/src/asira_lender"
 
 # ADD . $GOPATH/src/"${APPNAME}"
 # WORKDIR $GOPATH/src/"${APPNAME}"
