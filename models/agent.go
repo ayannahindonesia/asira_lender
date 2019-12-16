@@ -15,6 +15,7 @@ type Agent struct {
 	Name          string        `json:"name" gorm:"column:name"`
 	Username      string        `json:"username" gorm:"column:username"`
 	Password      string        `json:"password" gorm:"column:password"`
+	ImageID       sql.NullInt64 `json:"image_id" gorm:"column:image_id"`
 	Email         string        `json:"email" gorm:"column:email"`
 	Phone         string        `json:"phone" gorm:"column:phone"`
 	Category      string        `json:"category" gorm:"column:category"`

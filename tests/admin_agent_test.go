@@ -87,6 +87,7 @@ func TestAgentNew(t *testing.T) {
 		"phone":          "0812345567890",
 		"category":       "agent",
 		"agent_provider": 1,
+		"image":          "base64 very long string",
 		"banks":          []int{1},
 		"status":         "active",
 	}
