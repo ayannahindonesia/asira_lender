@@ -10,6 +10,8 @@ import (
 )
 
 func TestResetPassword(t *testing.T) {
+	RebuildData()
+
 	api := router.NewRouter()
 
 	server := httptest.NewServer(api)
@@ -32,7 +34,17 @@ func TestResetPassword(t *testing.T) {
 		req.WithHeader("Authorization", "Bearer "+clienttoken)
 	})
 
-	auth.GET("/client/forgotpassword").
+	payload := map[string]interface{}{
+		"email": "testuser@ayannah.id",
+	}
+	auth.POST("/client/forgotpassword").WithJSON(payload).
 		Expect().
-		Status(http.StatusOK).JSON().Object()
+		Status(http.StatusNotFound).JSON().Object()
+
+	payload = map[string]interface{}{
+		"email": "toib@ayannah.com",
+	}
+	auth.POST("/client/forgotpassword").WithJSON(payload).
+		Expect().
+		Status(http.StatusOK)
 }

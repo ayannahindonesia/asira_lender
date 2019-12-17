@@ -1011,12 +1011,16 @@ func TestSeed() {
 			models.User{
 				Roles:    pq.Int64Array{3},
 				Username: "Banktoib",
+				Email:    "toib@ayannah.com",
+				Phone:    "081234567892",
 				Password: "password",
 				Status:   "active",
 			},
 			models.User{
 				Roles:    pq.Int64Array{3},
 				Username: "Banktoic",
+				Email:    "toic@ayannah.com",
+				Phone:    "081234567893",
 				Password: "password",
 				Status:   "active",
 			},
