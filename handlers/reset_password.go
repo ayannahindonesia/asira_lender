@@ -122,14 +122,14 @@ func UserResetPasswordRequest(c echo.Context) error {
 
 	token, err := generateResetPassToken(fmt.Sprintf("%v:%v", resetRequestPayload.Email, user.ID))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("error boss"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error"))
 	}
 
 	message := fmt.Sprintf("link reset password : %v", "https://asira.ayannah.com/ubahpassword?token="+token)
 
 	err = SendMail("Forgot Password Request", message, resetRequestPayload.Email)
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("error boss"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error"))
 	}
 
 	return c.JSON(http.StatusOK, fmt.Sprintf("instruction has been sent to %v", resetRequestPayload.Email))
@@ -154,12 +154,12 @@ func UserResetPasswordVerify(c echo.Context) error {
 
 	d, err := decrypt(resetVerifyPayload.Token, asira.App.Config.GetString(fmt.Sprintf("%s.passphrase", asira.App.ENV)))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("error boss"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error, failed decrypt"))
 	}
 
 	splits := strings.Split(d, "|")
 	if len(splits) != 3 {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("error boss, len ga nyampe"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
 	}
 	t, _ := strconv.ParseInt(splits[0], 10, 64)
 	e, _ := strconv.ParseInt(splits[1], 10, 64)
@@ -167,7 +167,7 @@ func UserResetPasswordVerify(c echo.Context) error {
 	if time.Now().Unix() >= t && time.Now().Unix() <= e {
 		splits2 := strings.Split(splits[2], ":")
 		if len(splits2) != 2 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("error boss, len ga nyampe"))
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
 		}
 		user := models.User{}
 		err := user.FilterSearchSingle(&Filter{
@@ -179,7 +179,7 @@ func UserResetPasswordVerify(c echo.Context) error {
 		user.ChangePassword(resetVerifyPayload.Password)
 		user.Save()
 	} else {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("error boss, token salah"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
 	}
 
 	return c.JSON(http.StatusOK, d)
