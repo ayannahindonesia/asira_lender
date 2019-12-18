@@ -702,6 +702,7 @@ func TestSeed() {
 		lenders := []models.Bank{
 			models.Bank{
 				Name:                "Bank A",
+				Image:               "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Type:                1,
 				Address:             "Bank A Address",
 				Province:            "Province A",
@@ -715,6 +716,7 @@ func TestSeed() {
 			},
 			models.Bank{
 				Name:                "Bank B",
+				Image:               "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Type:                2,
 				Address:             "Bank B Address",
 				Province:            "Province B",
@@ -728,6 +730,7 @@ func TestSeed() {
 			},
 			models.Bank{
 				Name:                "Bank ",
+				Image:               "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Type:                2,
 				Address:             "Bank B Address",
 				Province:            "Province B",

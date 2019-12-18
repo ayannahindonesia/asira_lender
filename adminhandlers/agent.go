@@ -271,6 +271,7 @@ func AgentPatch(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
+		"image":          []string{},
 		"email":          []string{},
 		"phone":          []string{},
 		"category":       []string{"agent_categories"},
@@ -318,6 +319,23 @@ func AgentPatch(c echo.Context) error {
 	}
 	if len(agentPayload.Status) > 0 {
 		agent.Status = agentPayload.Status
+	}
+	if len(agentPayload.Image) > 0 {
+		unbased, _ := base64.StdEncoding.DecodeString(agentPayload.Image)
+		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
+		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
+		}
+
+		i := strings.Split(agent.Image, "/")
+		delImage := i[len(i)-1]
+		err = asira.App.S3.DeleteObject(delImage)
+		if err != nil {
+			log.Printf("failed to delete image %v from s3 bucket", delImage)
+		}
+
+		agent.Image = url
 	}
 
 	err = agent.Save()
