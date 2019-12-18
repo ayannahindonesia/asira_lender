@@ -174,7 +174,7 @@ func UserResetPasswordVerify(c echo.Context) error {
 			Email: splits2[0],
 		})
 		if err != nil {
-			return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("error lagi bos"))
+			return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("not found"))
 		}
 		user.ChangePassword(resetVerifyPayload.Password)
 		user.Save()
