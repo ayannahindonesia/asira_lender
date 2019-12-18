@@ -4,6 +4,7 @@ import (
 	"asira_lender/asira"
 	"asira_lender/models"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 
@@ -221,16 +223,18 @@ func AgentNew(c echo.Context) error {
 
 	agent := models.Agent{}
 
-	image := models.Image{
-		Image_string: agentPayload.Image,
-	}
-	image.Create()
-
 	marshal, _ := json.Marshal(agentPayload)
 	json.Unmarshal(marshal, &agent)
-	agent.ImageID = sql.NullInt64{
-		Int64: int64(image.ID),
-		Valid: true,
+
+	if len(agentPayload.Image) > 0 {
+		unbased, _ := base64.StdEncoding.DecodeString(agentPayload.Image)
+		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
+		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
+		}
+
+		agent.Image = url
 	}
 
 	if agentPayload.AgentProvider != 0 {
