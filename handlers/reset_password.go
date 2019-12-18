@@ -135,7 +135,7 @@ func UserResetPasswordRequest(c echo.Context) error {
 	return c.JSON(http.StatusOK, fmt.Sprintf("instruction has been sent to %v", resetRequestPayload.Email))
 }
 
-// UserResetPasswordVerify
+// UserResetPasswordVerify reset pass with confirmed token
 func UserResetPasswordVerify(c echo.Context) error {
 	defer c.Request().Body.Close()
 	var (
@@ -182,5 +182,5 @@ func UserResetPasswordVerify(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
 	}
 
-	return c.JSON(http.StatusOK, d)
+	return c.JSON(http.StatusOK, "changed password successfully")
 }
