@@ -4,6 +4,7 @@ import (
 	"asira_lender/email"
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
@@ -28,6 +29,9 @@ type Agent struct {
 
 // BeforeCreate gorm callback
 func (model *Agent) BeforeCreate() (err error) {
+	if len(model.Password) < 1 {
+		model.Password = randString(8)
+	}
 	passwordByte, err := bcrypt.GenerateFromPassword([]byte(model.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -100,4 +104,14 @@ func (model *Agent) SendPasswordEmail(password string) {
 	message := fmt.Sprintf("Selamat bergabung dengan asira sebagai Agent. anda dapat login menggunakan username dengan password : %v", password)
 
 	email.SendMail(model.Email, "Selamat Bergabung dengan Asira", message)
+}
+
+func randString(n int) string {
+	var letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
