@@ -1,6 +1,8 @@
 development:
   react_cors: true
   passphrase: BpLnfgDsc3WD9F3q
+  dashboard_url: http://asira.ayannah.com
+  core_url: http://asira-api-core.ayannah.com
   database:
     table: asira_lender
     username: asirauser

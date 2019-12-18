@@ -125,7 +125,15 @@ func UserResetPasswordRequest(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error"))
 	}
 
-	message := fmt.Sprintf("link reset password : %v", "https://asira.ayannah.com/ubahpassword?token="+token)
+	message := ""
+	switch c.QueryParam("system") {
+	case "core":
+		message = fmt.Sprintf("link reset password : %v", asira.App.Config.GetString(fmt.Sprintf("%s.core_url", asira.App.ENV))+"/ubahpassword?token="+token)
+		break
+	default:
+		message = fmt.Sprintf("link reset password : %v", asira.App.Config.GetString(fmt.Sprintf("%s.dashboard_url", asira.App.ENV))+"/ubahpassword?token="+token)
+		break
+	}
 
 	err = SendMail("Forgot Password Request", message, resetRequestPayload.Email)
 	if err != nil {
