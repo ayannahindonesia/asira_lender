@@ -1,7 +1,9 @@
 package models
 
 import (
+	"asira_lender/email"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
@@ -30,6 +32,8 @@ func (model *Agent) BeforeCreate() (err error) {
 	if err != nil {
 		return err
 	}
+
+	model.SendPasswordEmail(model.Password)
 
 	model.Password = string(passwordByte)
 	return nil
@@ -89,4 +93,11 @@ func (model *Agent) PagedFilterSearch(page int, rows int, order []string, sort [
 	result, err = basemodel.PagedFindFilter(&agents, page, rows, order, sort, filter)
 
 	return result, err
+}
+
+// SendPasswordEmail sends password to agent
+func (model *Agent) SendPasswordEmail(password string) {
+	message := fmt.Sprintf("Selamat bergabung dengan asira sebagai Agent. anda dapat login menggunakan username dengan password : %v", password)
+
+	email.SendMail(model.Email, "Selamat Bergabung dengan Asira", message)
 }
