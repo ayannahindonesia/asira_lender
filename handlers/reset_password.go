@@ -19,11 +19,11 @@ import (
 )
 
 type (
-	// ResetPayload container type
+	// ResetRequestPayload container type
 	ResetRequestPayload struct {
 		Email string `json:"email"`
 	}
-	// ResetVerifyPayload
+	// ResetVerifyPayload container type
 	ResetVerifyPayload struct {
 		Token    string `json:"token"`
 		Password string `json:"password"`
