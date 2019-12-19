@@ -231,6 +231,7 @@ CREATE TABLE "users" (
     "email" varchar(255) UNIQUE,
     "phone" varchar(255) UNIQUE,
     "status" varchar(255),
+    "first_login" boolean DEFAULT TRUE,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 

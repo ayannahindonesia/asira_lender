@@ -1,6 +1,8 @@
 package models
 
 import (
+	"log"
+
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -9,12 +11,13 @@ import (
 type (
 	User struct {
 		basemodel.BaseModel
-		Roles    pq.Int64Array `json:"roles" gorm:"column:roles"`
-		Username string        `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
-		Email    string        `json:"email" gorm:"column:email;type:varchar(255)"`
-		Phone    string        `json:"phone" gorm:"column:phone;type:varchar(255)"`
-		Password string        `json:"password" gorm:"column:password;type:text;not null"`
-		Status   string        `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
+		Roles      pq.Int64Array `json:"roles" gorm:"column:roles"`
+		Username   string        `json:"username" gorm:"column:username;type:varchar(255);unique;not null"`
+		Email      string        `json:"email" gorm:"column:email;type:varchar(255)"`
+		Phone      string        `json:"phone" gorm:"column:phone;type:varchar(255)"`
+		Password   string        `json:"password" gorm:"column:password;type:text;not null"`
+		Status     string        `json:"status" gorm:"column:status;type:boolean" sql:"DEFAULT:TRUE"`
+		FirstLogin bool          `json:"first_login" gorm:"column:first_login;type:boolean" sql:"DEFAULT:TRUE"`
 	}
 )
 
@@ -61,4 +64,17 @@ func (u *User) PagedFilterSearch(page int, rows int, orderby string, sort string
 	result, err = basemodel.PagedFindFilter(&user, page, rows, order, sorts, filter)
 
 	return result, err
+}
+
+// FirstLoginChangePassword set new password and first login to false
+func (model *User) FirstLoginChangePassword(password string) {
+	passwordByte, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println(err)
+	}
+
+	model.Password = string(passwordByte)
+	model.FirstLogin = false
+
+	model.Save()
 }
