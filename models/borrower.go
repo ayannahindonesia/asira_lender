@@ -15,6 +15,7 @@ type (
 		Fullname             string        `json:"fullname" gorm:"column:fullname;type:varchar(255);not_null" csv:"fullname"`
 		Nickname             string        `json:"nickname" gorm:"column:nickname;type:varchar(255)"`
 		Gender               string        `json:"gender" gorm:"column:gender;type:varchar(1);not null csv:"gender"`
+		Image                string        `json:"image" gorm:"column:image"`
 		IdCardNumber         string        `json:"idcard_number" gorm:"column:idcard_number;type:varchar(255);unique;not null" csv:"idcard_number"`
 		IdCardImage          string        `json:"idcard_image" gorm:"column:idcard_image;type:varchar(255)" csv:"idcard_image"`
 		TaxIDnumber          string        `json:"taxid_number" gorm:"column:taxid_number;type:varchar(255)" csv:"taxid_number"`
