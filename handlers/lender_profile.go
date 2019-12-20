@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
 	"net/http"
@@ -32,6 +33,7 @@ type LenderProfilePayload struct {
 type TemporalSelect struct {
 	ID         uint64 `json:"id"`
 	Name       string `json:"name"`
+	Image      string `json:"image"`
 	FirstLogin bool   `json:"first_login"`
 }
 
@@ -47,26 +49,21 @@ func LenderProfile(c echo.Context) error {
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
 
-	lenderModel := models.Bank{}
-	userModel := models.User{}
-
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	err = lenderModel.FindbyID(int(bankRep.BankID))
-	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
-	}
-	err = userModel.FindbyID(int(bankRep.UserID))
-	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
-	}
+	temporal := TemporalSelect{}
 
-	temporal := TemporalSelect{
-		ID:         lenderModel.ID,
-		Name:       lenderModel.Name,
-		FirstLogin: userModel.FirstLogin,
+	db := asira.App.DB
+	err := db.Table("bank_representatives br").
+		Select("u.id, b.name, b.image, u.first_login").
+		Joins("INNER JOIN users u ON u.id = br.user_id").
+		Joins("INNER JOIN banks b ON b.id = br.bank_id").
+		Where("br.user_id = ?", lenderID).Find(&temporal).Error
+
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
 
 	return c.JSON(http.StatusOK, temporal)
