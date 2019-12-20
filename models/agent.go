@@ -9,13 +9,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Agent main type
 type Agent struct {
 	basemodel.BaseModel
 	DeletedTime   time.Time     `json:"deleted_time" gorm:"column:deleted_time"`
 	Name          string        `json:"name" gorm:"column:name"`
 	Username      string        `json:"username" gorm:"column:username"`
 	Password      string        `json:"password" gorm:"column:password"`
-	ImageID       sql.NullInt64 `json:"image_id" gorm:"column:image_id"`
+	Image         string        `json:"image" gorm:"column:image"`
 	Email         string        `json:"email" gorm:"column:email"`
 	Phone         string        `json:"phone" gorm:"column:phone"`
 	Category      string        `json:"category" gorm:"column:category"`

@@ -21,9 +21,6 @@ func AdminGroup(e *echo.Echo) {
 	// Client Management
 	g.POST("/client", adminhandlers.CreateClient)
 
-	// Images
-	g.GET("/image/:image_id", adminhandlers.GetImageB64String)
-
 	// Borrowers
 	g.GET("/borrower", adminhandlers.BorrowerGetAll)
 	g.GET("/borrower/:borrower_id", adminhandlers.BorrowerGetDetails)

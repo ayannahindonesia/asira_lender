@@ -488,10 +488,7 @@ func Seed() {
 					Int64: 1,
 					Valid: true,
 				},
-				ImageID: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Banks:  pq.Int64Array{1, 2},
 				Status: "active",
 			},
@@ -502,12 +499,9 @@ func Seed() {
 				Email:    "agentj@mib.com",
 				Phone:    "081234567891",
 				Category: "account_executive",
-				ImageID: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Banks:  pq.Int64Array{1},
-				Status: "active",
+				Image:    "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
+				Banks:    pq.Int64Array{1},
+				Status:   "active",
 			},
 			models.Agent{
 				Name:     "Agent Buah Personal",
@@ -724,6 +718,7 @@ func TestSeed() {
 		lenders := []models.Bank{
 			models.Bank{
 				Name:                "Bank A",
+				Image:               "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Type:                1,
 				Address:             "Bank A Address",
 				Province:            "Province A",
@@ -737,6 +732,7 @@ func TestSeed() {
 			},
 			models.Bank{
 				Name:                "Bank B",
+				Image:               "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Type:                2,
 				Address:             "Bank B Address",
 				Province:            "Province B",
@@ -750,6 +746,7 @@ func TestSeed() {
 			},
 			models.Bank{
 				Name:                "Bank ",
+				Image:               "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Type:                2,
 				Address:             "Bank B Address",
 				Province:            "Province B",
@@ -1114,10 +1111,7 @@ func TestSeed() {
 					Int64: 1,
 					Valid: true,
 				},
-				ImageID: sql.NullInt64{
-					Int64: 1,
-					Valid: true,
-				},
+				Image:  "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
 				Banks:  pq.Int64Array{1, 2},
 				Status: "active",
 			},
@@ -1129,11 +1123,8 @@ func TestSeed() {
 				Phone:    "081234567891",
 				Category: "account_executive",
 				Banks:    pq.Int64Array{1},
-				ImageID: sql.NullInt64{
-					Int64: 2,
-					Valid: true,
-				},
-				Status: "active",
+				Image:    "https://images.unsplash.com/photo-1576039716094-066beef36943?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
+				Status:   "active",
 			},
 		}
 		for _, agent := range agents {
