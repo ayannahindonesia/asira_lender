@@ -113,9 +113,14 @@ func UserResetPasswordRequest(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err := user.FilterSearchSingle(&Filter{
-		Email: resetRequestPayload.Email,
-	})
+	db := asira.App.DB
+
+	err := db.Table("users u").
+		Select("u.*").
+		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
+		Where("LOWER(r.system) = ?", strings.ToLower(c.QueryParam("system"))).
+		First(&user).Error
+
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("email %s not found", resetRequestPayload.Email))
 	}
