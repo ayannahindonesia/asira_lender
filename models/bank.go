@@ -13,6 +13,7 @@ type (
 		basemodel.BaseModel
 		DeletedTime         time.Time     `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
 		Name                string        `json:"name" gorm:"column:name;type:varchar(255)"`
+		Image               string        `json:"image" gorm:"column:image;type:text"`
 		Type                uint64        `json:"type" gorm:"column:type;type:bigserial"`
 		Address             string        `json:"address" gorm:"column:address;type:text"`
 		Province            string        `json:"province" gorm:"column:province;type:varchar(255)"`

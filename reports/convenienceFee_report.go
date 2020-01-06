@@ -55,7 +55,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 	}
 
 	db = db.Table("loans l").
-		Select("b.name as bank_name, s.name as service_name, p.name as product_name, l.id as loan_id, l.created_time, loan_amount as plafond, value->>'amount' as convenience_fee").
+		Select("ba.name as bank_name, s.name as service_name, p.name as product_name, l.id as loan_id, l.created_time, loan_amount as plafond, value->>'amount' as convenience_fee").
 		Joins("JOIN LATERAL jsonb_array_elements(l.fees) j ON true").
 		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").

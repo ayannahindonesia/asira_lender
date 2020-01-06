@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
 	"net/http"
@@ -28,6 +29,14 @@ type LenderProfilePayload struct {
 	ConvenienceFeeSetup string  `json:"convfee_setup"`
 }
 
+// TemporalSelect select sementara karena harusnya disini yang d select user bukan bank
+type TemporalSelect struct {
+	ID         uint64 `json:"id"`
+	Name       string `json:"name"`
+	Image      string `json:"image"`
+	FirstLogin bool   `json:"first_login"`
+}
+
 // LenderProfile show current lender info
 func LenderProfile(c echo.Context) error {
 	defer c.Request().Body.Close()
@@ -40,18 +49,24 @@ func LenderProfile(c echo.Context) error {
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
 
-	lenderModel := models.Bank{}
-
 	lenderID, _ := strconv.Atoi(claims["jti"].(string))
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	err = lenderModel.FindbyID(int(bankRep.BankID))
+	temporal := TemporalSelect{}
+
+	db := asira.App.DB
+	err := db.Table("bank_representatives br").
+		Select("u.id, b.name, b.image, u.first_login").
+		Joins("INNER JOIN users u ON u.id = br.user_id").
+		Joins("INNER JOIN banks b ON b.id = br.bank_id").
+		Where("br.user_id = ?", lenderID).Find(&temporal).Error
+
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
 
-	return c.JSON(http.StatusOK, lenderModel)
+	return c.JSON(http.StatusOK, temporal)
 }
 
 // LenderProfileEdit edit current lender profile
@@ -137,4 +152,44 @@ func LenderProfileEdit(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, lenderModel)
+}
+
+// UserFirstLoginChangePassword check if user is first login and change the password
+func UserFirstLoginChangePassword(c echo.Context) error {
+	defer c.Request().Body.Close()
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	userModel := models.User{}
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	err = userModel.FindbyID(int(bankRep.UserID))
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
+	}
+
+	if userModel.FirstLogin {
+		type Password struct {
+			Pass string `json:"password"`
+		}
+		var pass Password
+		payloadRules := govalidator.MapData{
+			"password": []string{"required"},
+		}
+
+		validate := validateRequestPayload(c, payloadRules, &pass)
+		if validate != nil {
+			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		}
+		userModel.FirstLoginChangePassword(pass.Pass)
+
+		return c.JSON(http.StatusOK, "Password anda telah diganti.")
+	}
+
+	return c.JSON(http.StatusUnauthorized, "Akun anda bukan akun baru.")
 }
