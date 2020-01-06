@@ -131,7 +131,6 @@ func LenderBorrowerList(c echo.Context) error {
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Joins("INNER JOIN loans l ON l.borrower = b.id").
 		Where("ba.id = ?", bankRep.BankID).
 		Where("b.status != ?", "rejected")
 
@@ -258,7 +257,6 @@ func LenderBorrowerListDetail(c echo.Context) error {
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Joins("INNER JOIN loans l ON l.borrower = b.id").
 		Where("ba.id = ?", bankRep.BankID).
 		Where("b.id = ?", borrowerID).
 		Where("b.status != ?", "rejected").
@@ -311,7 +309,6 @@ func LenderBorrowerListDownload(c echo.Context) error {
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Joins("INNER JOIN loans l ON l.borrower = b.id").
 		Where("ba.id = ?", bankRep.BankID)
 
 	if fullname := c.QueryParam("fullname"); len(fullname) > 0 {

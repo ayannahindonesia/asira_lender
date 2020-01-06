@@ -3,6 +3,7 @@ package adminhandlers
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/labstack/echo"
@@ -26,6 +28,7 @@ type (
 	// BankPayload request body container
 	BankPayload struct {
 		Name                string  `json:"name"`
+		Image               string  `json:"image"`
 		Type                uint64  `json:"type"`
 		Address             string  `json:"address"`
 		Province            string  `json:"province"`
@@ -144,6 +147,7 @@ func BankNew(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{"required"},
+		"image":          []string{},
 		"type":           []string{"required", "valid_id:bank_types"},
 		"address":        []string{"required"},
 		"province":       []string{"required"},
@@ -163,6 +167,17 @@ func BankNew(c echo.Context) error {
 
 	marshal, _ := json.Marshal(bankPayload)
 	json.Unmarshal(marshal, &bank)
+
+	if len(bankPayload.Image) > 0 {
+		unbased, _ := base64.StdEncoding.DecodeString(bankPayload.Image)
+		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
+		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
+		}
+
+		bank.Image = url
+	}
 
 	err = bank.Create()
 	if err != nil {
@@ -217,6 +232,7 @@ func BankPatch(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
+		"image":          []string{},
 		"type":           []string{"valid_id:bank_types"},
 		"address":        []string{},
 		"province":       []string{},
@@ -266,6 +282,23 @@ func BankPatch(c echo.Context) error {
 	}
 	if len(bankPayload.ConvenienceFeeSetup) > 0 {
 		bank.ConvenienceFeeSetup = bankPayload.ConvenienceFeeSetup
+	}
+	if len(bankPayload.Image) > 0 {
+		unbased, _ := base64.StdEncoding.DecodeString(bankPayload.Image)
+		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
+		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		if err != nil {
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
+		}
+
+		i := strings.Split(bank.Image, "/")
+		delImage := i[len(i)-1]
+		err = asira.App.S3.DeleteObject(delImage)
+		if err != nil {
+			log.Printf("failed to delete image %v from s3 bucket", delImage)
+		}
+
+		bank.Image = url
 	}
 
 	err = bank.Save()

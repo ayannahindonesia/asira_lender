@@ -35,6 +35,7 @@ CREATE TABLE "banks" (
     "updated_time" timestamptz DEFAULT CURRENT_TIMESTAMP,
     "deleted_time" timestamptz,
     "name" varchar(255),
+    "image" text,
     "type" bigserial,
     "address" text,
     "province" varchar(255),
@@ -102,7 +103,7 @@ CREATE TABLE "agents" (
     "name" varchar(255),
     "username" varchar(255) UNIQUE,
     "password" text,
-    "image_id" bigint,
+    "image" text,
     "email" varchar(255) UNIQUE,
     "phone" varchar(255) UNIQUE,
     "category" varchar(255),
@@ -122,10 +123,11 @@ CREATE TABLE "borrowers" (
     "fullname" varchar(255) NOT NULL,
     "nickname" varchar(255),
     "gender" varchar(1) NOT NULL,
+    "image" text,
     "idcard_number" varchar(255) NOT NULL,
-    "idcard_image" int,
+    "idcard_image" text,
     "taxid_number" varchar(255),
-    "taxid_image" int,
+    "taxid_image" text,
     "email" varchar(255) NOT NULL,
     "birthday" DATE NOT NULL,
     "birthplace" varchar(255) NOT NULL,
@@ -231,6 +233,7 @@ CREATE TABLE "users" (
     "email" varchar(255) UNIQUE,
     "phone" varchar(255) UNIQUE,
     "status" varchar(255),
+    "first_login" boolean DEFAULT TRUE,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 

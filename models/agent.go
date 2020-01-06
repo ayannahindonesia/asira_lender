@@ -1,7 +1,10 @@
 package models
 
 import (
+	"asira_lender/email"
 	"database/sql"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
@@ -9,13 +12,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Agent main type
 type Agent struct {
 	basemodel.BaseModel
 	DeletedTime   time.Time     `json:"deleted_time" gorm:"column:deleted_time"`
 	Name          string        `json:"name" gorm:"column:name"`
 	Username      string        `json:"username" gorm:"column:username"`
 	Password      string        `json:"password" gorm:"column:password"`
-	ImageID       sql.NullInt64 `json:"image_id" gorm:"column:image_id"`
+	Image         string        `json:"image" gorm:"column:image"`
 	Email         string        `json:"email" gorm:"column:email"`
 	Phone         string        `json:"phone" gorm:"column:phone"`
 	Category      string        `json:"category" gorm:"column:category"`
@@ -26,10 +30,15 @@ type Agent struct {
 
 // BeforeCreate gorm callback
 func (model *Agent) BeforeCreate() (err error) {
+	if len(model.Password) < 1 {
+		model.Password = randString(8)
+	}
 	passwordByte, err := bcrypt.GenerateFromPassword([]byte(model.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
+
+	model.SendPasswordEmail(model.Password)
 
 	model.Password = string(passwordByte)
 	return nil
@@ -89,4 +98,21 @@ func (model *Agent) PagedFilterSearch(page int, rows int, order []string, sort [
 	result, err = basemodel.PagedFindFilter(&agents, page, rows, order, sort, filter)
 
 	return result, err
+}
+
+// SendPasswordEmail sends password to agent
+func (model *Agent) SendPasswordEmail(password string) {
+	message := fmt.Sprintf("Selamat bergabung dengan asira sebagai Agent. anda dapat login menggunakan username dengan password : %v", password)
+
+	email.SendMail(model.Email, "Selamat Bergabung dengan Asira", message)
+}
+
+func randString(n int) string {
+	var letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
