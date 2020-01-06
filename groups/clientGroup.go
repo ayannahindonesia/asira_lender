@@ -16,4 +16,6 @@ func ClientGroup(e *echo.Echo) {
 	g.POST("/admin_login", adminhandlers.AdminLogin)
 	g.POST("/forgotpassword", handlers.UserResetPasswordRequest)
 	g.POST("/resetpassword", handlers.UserResetPasswordVerify)
+
+	g.GET("/serviceinfo", handlers.ServiceInfo)
 }
