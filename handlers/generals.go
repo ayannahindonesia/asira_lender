@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"asira_lender/asira"
+	"flag"
 	"fmt"
 	"strings"
 	"time"
@@ -144,26 +145,27 @@ func validatePermission(c echo.Context, permission string) error {
 
 // SendMail sends email, reci
 func SendMail(subject string, message string, recipients ...string) error {
-	Config := asira.App.Config.GetStringMap(fmt.Sprintf("%s.mailer", asira.App.ENV))
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", Config["email"].(string))
-	mailer.SetHeader("To", recipients[0])
-	if len(recipients) > 1 {
-		mailer.SetHeader("Cc", recipients[1])
-	}
-	mailer.SetHeader("Subject", subject)
-	mailer.SetBody("text/plain", message)
+	if flag.Lookup("test.v") == nil {
+		Config := asira.App.Config.GetStringMap(fmt.Sprintf("%s.mailer", asira.App.ENV))
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", Config["email"].(string))
+		mailer.SetHeader("To", recipients[0])
+		if len(recipients) > 1 {
+			mailer.SetHeader("Cc", recipients[1])
+		}
+		mailer.SetHeader("Subject", subject)
+		mailer.SetBody("text/plain", message)
 
-	dialer := gomail.NewPlainDialer(Config["host"].(string),
-		Config["port"].(int),
-		Config["email"].(string),
-		Config["password"].(string))
+		dialer := gomail.NewPlainDialer(Config["host"].(string),
+			Config["port"].(int),
+			Config["email"].(string),
+			Config["password"].(string))
 
-	err := dialer.DialAndSend(mailer)
-	if err != nil {
-		return err
+		err := dialer.DialAndSend(mailer)
+		if err != nil {
+			return err
+		}
 	}
-	//
 
 	return nil
 }

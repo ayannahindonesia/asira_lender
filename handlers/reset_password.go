@@ -115,10 +115,9 @@ func UserResetPasswordRequest(c echo.Context) error {
 
 	db := asira.App.DB
 
-	err := db.Table("users u").
-		Select("u.*").
-		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
-		Where("LOWER(r.system) = ?", strings.ToLower(c.QueryParam("system"))).
+	err := db.Table("users").
+		Select("*").
+		Where("email = ?", resetRequestPayload.Email).
 		First(&user).Error
 
 	if err != nil {

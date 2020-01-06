@@ -35,14 +35,16 @@ func TestResetPassword(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"email": "testuser@ayannah.id",
+		"email":  "testuser@ayannah.id",
+		"system": "dashboard",
 	}
 	auth.POST("/client/forgotpassword").WithJSON(payload).
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 
 	payload = map[string]interface{}{
-		"email": "toib@ayannah.com",
+		"email":  "toib@ayannah.com",
+		"system": "dashboard",
 	}
 	auth.POST("/client/forgotpassword").WithJSON(payload).
 		Expect().

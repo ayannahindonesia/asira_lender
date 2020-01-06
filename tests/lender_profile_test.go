@@ -34,7 +34,7 @@ func TestLenderGetProfile(t *testing.T) {
 	obj := auth.GET("/lender/profile").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("id").ValueEqual("id", 1)
+	obj.ContainsKey("id").ValueEqual("id", 3)
 
 	// wrong token
 	auth = e.Builder(func(req *httpexpect.Request) {
