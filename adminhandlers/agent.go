@@ -76,13 +76,14 @@ func AgentList(c echo.Context) error {
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		extraquery := fmt.Sprintf("CAST(a.id as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+		searchLike := "%" + strings.ToLower(searchAll) + "%"
+		extraquery := fmt.Sprintf("CAST(a.id as varchar(255)) = ?") + // use searchAll #1
+			fmt.Sprintf(" OR LOWER(a.name) LIKE ?") + // use searchLike #2
+			fmt.Sprintf(" OR LOWER(a.category) LIKE ?") + // use searchLike #3
+			fmt.Sprintf(" OR LOWER(ap.name) LIKE ?") + // use searchLike #4
+			fmt.Sprintf(" OR LOWER(a.status) LIKE ?") // use searchLike #5
 
-		db = db.Where(extraquery)
+		db = db.Where(extraquery, searchAll, searchLike, searchLike, searchLike, searchLike)
 	} else {
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 			db = db.Where("a.id IN (?)", id)

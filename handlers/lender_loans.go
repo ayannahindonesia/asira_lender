@@ -109,27 +109,28 @@ func LenderLoanRequestList(c echo.Context) error {
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
-		extraquery := fmt.Sprintf("CAST(l.id as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(s.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(p.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+		searchLike := "%" + strings.ToLower(searchAll) + "%"
+		extraquery := fmt.Sprintf("CAST(l.id as varchar(255)) = ?") + // use searchAll #1
+			fmt.Sprintf(" OR LOWER(b.fullname) LIKE ?") + // use searchLike #2
+			fmt.Sprintf(" OR LOWER(s.name) LIKE ?") + // use searchLike #3
+			fmt.Sprintf(" OR LOWER(p.name) LIKE ?") // use searchLike #4
 
 		if len(status) > 0 {
 			switch status {
 			case "approved":
 				if len(disburseStatus) < 1 {
-					extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+					extraquery = extraquery + fmt.Sprintf(" OR LOWER(l.disburse_status) LIKE '%v'", searchLike)
 				}
 			case "rejected":
-				extraquery = extraquery + fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+				extraquery = extraquery + fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", searchLike)
 			}
 		} else {
 			extraquery = extraquery +
-				fmt.Sprintf(" OR LOWER(l.status) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-				fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+				fmt.Sprintf(" OR LOWER(l.status) LIKE '%v'", searchLike) +
+				fmt.Sprintf(" OR LOWER(a.category) LIKE '%v'", searchLike)
 		}
 
-		db = db.Where(extraquery)
+		db = db.Where(extraquery, searchAll, searchLike, searchLike, searchLike)
 	} else {
 		if borrower := c.QueryParam("borrower"); len(borrower) > 0 {
 			db = db.Where("l.borrower = ?", borrower)
