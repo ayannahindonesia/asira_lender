@@ -138,13 +138,14 @@ func LenderBorrowerList(c echo.Context) error {
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
-		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.category) = '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(ba.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(a.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR LOWER(ap.name) LIKE '%v'", "%"+strings.ToLower(searchAll)+"%") +
-			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = '%v'", searchAll) +
-			fmt.Sprintf(" OR "+loanStatusQuery+" LIKE '%v'", "%"+strings.ToLower(searchAll)+"%")
+		searchLike := "%" + strings.ToLower(searchAll) + "%"
+		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE ?") + // use searchLike #1
+			fmt.Sprintf(" OR LOWER(a.category) = ?") + // use searchLike #2
+			fmt.Sprintf(" OR LOWER(ba.name) LIKE ?") + // use searchLike #3
+			fmt.Sprintf(" OR LOWER(a.name) LIKE ?") + // use searchLike #4
+			fmt.Sprintf(" OR LOWER(ap.name) LIKE ?") + // use searchLike #5
+			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = ?") + // use searchAll #6
+			fmt.Sprintf(" OR "+loanStatusQuery+" LIKE ?") // use searchLike #7
 
 		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
@@ -154,7 +155,7 @@ func LenderBorrowerList(c echo.Context) error {
 			}
 		}
 
-		db = db.Where(extraquery)
+		db = db.Where(extraquery, searchLike, searchLike, searchLike, searchLike, searchLike, searchAll, searchLike)
 	} else {
 		if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
 			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
