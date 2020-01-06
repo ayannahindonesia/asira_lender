@@ -7,6 +7,7 @@ import (
 )
 
 type (
+	// User main type
 	User struct {
 		basemodel.BaseModel
 		Roles    pq.Int64Array `json:"roles" gorm:"column:roles"`
@@ -18,47 +19,51 @@ type (
 	}
 )
 
-// gorm callback hook
-func (u *User) BeforeCreate() (err error) {
-	passwordByte, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+// BeforCreate gorm callback hook
+func (model *User) BeforeCreate() (err error) {
+	err = model.ChangePassword(model.Password)
+	return err
+}
+
+// Create func
+func (model *User) Create() error {
+	err := basemodel.Create(&model)
+	return err
+}
+
+// Save func
+func (model *User) Save() error {
+	err := basemodel.Save(&model)
+	return err
+}
+
+// FindbyID func
+func (model *User) FindbyID(id int) error {
+	err := basemodel.FindbyID(&model, id)
+	return err
+}
+
+// FilterSearchSingle func
+func (model *User) FilterSearchSingle(filter interface{}) error {
+	err := basemodel.SingleFindFilter(&model, filter)
+	return err
+}
+
+// PagedFilterSearch func
+func (model *User) PagedFilterSearch(page int, rows int, orderby []string, sorts []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+	user := []User{}
+	result, err = basemodel.PagedFindFilter(&user, page, rows, orderby, sorts, filter)
+
+	return result, err
+}
+
+// ChangePassword update password to encrypted. does not save
+func (model *User) ChangePassword(rawpassword string) error {
+	passwordByte, err := bcrypt.GenerateFromPassword([]byte(rawpassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	u.Password = string(passwordByte)
+	model.Password = string(passwordByte)
 	return nil
-}
-
-func (u *User) Create() error {
-	err := basemodel.Create(&u)
-	return err
-}
-
-// gorm callback hook
-func (u *User) BeforeSave() (err error) {
-	return nil
-}
-
-func (u *User) Save() error {
-	err := basemodel.Save(&u)
-	return err
-}
-
-func (u *User) FindbyID(id int) error {
-	err := basemodel.FindbyID(&u, id)
-	return err
-}
-
-func (u *User) FilterSearchSingle(filter interface{}) error {
-	err := basemodel.SingleFindFilter(&u, filter)
-	return err
-}
-
-func (u *User) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
-	user := []User{}
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&user, page, rows, order, sorts, filter)
-
-	return result, err
 }
