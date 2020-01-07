@@ -40,6 +40,12 @@ func (model *User) Save() error {
 	return err
 }
 
+// Delete func
+func (model *User) Delete() error {
+	err := basemodel.Delete(&model)
+	return err
+}
+
 // FindbyID func
 func (model *User) FindbyID(id int) error {
 	err := basemodel.FindbyID(&model, id)

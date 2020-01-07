@@ -10,7 +10,6 @@ import (
 type (
 	Borrower struct {
 		basemodel.BaseModel
-		DeletedTime          time.Time     `json:"deleted_time" gorm:"column:deleted_time"`
 		Status               string        `json:"status" gorm:"column:status"`
 		Fullname             string        `json:"fullname" gorm:"column:fullname;type:varchar(255);not_null" csv:"fullname"`
 		Nickname             string        `json:"nickname" gorm:"column:nickname;type:varchar(255)"`
@@ -80,10 +79,7 @@ func (model *Borrower) FirstOrCreate() error {
 }
 
 func (b *Borrower) Delete() error {
-	b.DeletedTime = time.Now()
-	err := basemodel.Save(&b)
-
-	return err
+	return basemodel.Delete(&b)
 }
 
 func (b *Borrower) FindbyID(id int) error {

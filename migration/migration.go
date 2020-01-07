@@ -6,8 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
@@ -34,31 +32,6 @@ func Seed() {
 		}
 		for _, client := range clients {
 			client.Create()
-		}
-
-		// seed images
-		file, _ := os.Open("./image_dummy.txt")
-		defer file.Close()
-		b64image, _ := ioutil.ReadAll(file)
-		images := []models.Image{
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-		}
-		for _, image := range images {
-			image.Create()
 		}
 
 		// seed bank types
@@ -552,31 +525,6 @@ func TestSeed() {
 		}
 		for _, client := range clients {
 			client.Create()
-		}
-
-		// seed images
-		file, _ := os.Open("migration/image_dummy.txt")
-		defer file.Close()
-		b64image, _ := ioutil.ReadAll(file)
-		images := []models.Image{
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-		}
-		for _, image := range images {
-			image.Create()
 		}
 
 		// seed bank types
@@ -1145,7 +1093,6 @@ func Truncate(tableList []string) (err error) {
 				"bank_types",
 				"borrowers",
 				"loans",
-				"images",
 				"roles",
 				"users",
 				"bank_representatives",

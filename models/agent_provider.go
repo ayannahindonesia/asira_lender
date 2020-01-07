@@ -2,7 +2,6 @@ package models
 
 import (
 	"asira_lender/asira"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 )
@@ -10,12 +9,11 @@ import (
 // AgentProvider model
 type AgentProvider struct {
 	basemodel.BaseModel
-	DeletedTime time.Time `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
-	Name        string    `json:"name" gorm:"column:name"`
-	PIC         string    `json:"pic" gorm:"column:pic"`
-	Phone       string    `json:"phone" gorm:"column:phone"`
-	Address     string    `json:"address" gorm:"column:address"`
-	Status      string    `json:"status" gorm:"column:status"`
+	Name    string `json:"name" gorm:"column:name"`
+	PIC     string `json:"pic" gorm:"column:pic"`
+	Phone   string `json:"phone" gorm:"column:phone"`
+	Address string `json:"address" gorm:"column:address"`
+	Status  string `json:"status" gorm:"column:status"`
 }
 
 // Create new

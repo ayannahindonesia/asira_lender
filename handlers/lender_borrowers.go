@@ -23,7 +23,6 @@ type (
 	// BorrowerCSV custom type for query
 	BorrowerCSV struct {
 		basemodel.BaseModel
-		DeletedTime          time.Time `json:"deleted_time"`
 		Status               string    `json:"status"`
 		Fullname             string    `json:"fullname"`
 		Gender               string    `json:"gender"`
