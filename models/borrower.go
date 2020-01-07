@@ -82,7 +82,7 @@ func (b *Borrower) Delete() error {
 	return basemodel.Delete(&b)
 }
 
-func (b *Borrower) FindbyID(id int) error {
+func (b *Borrower) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&b, id)
 	return err
 }

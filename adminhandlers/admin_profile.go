@@ -20,7 +20,7 @@ func AdminProfile(c echo.Context) error {
 
 	userModel := models.User{}
 
-	userID, _ := strconv.Atoi(claims["jti"].(string))
+	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
@@ -39,7 +39,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 	userModel := models.User{}
 
-	userID, _ := strconv.Atoi(claims["jti"].(string))
+	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")

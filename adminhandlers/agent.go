@@ -261,7 +261,7 @@ func AgentPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agent := models.Agent{}
 	agentPayload := AgentPayload{}
@@ -355,7 +355,7 @@ func AgentDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agent := models.Agent{}
 	err = agent.FindbyID(id)

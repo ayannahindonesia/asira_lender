@@ -67,11 +67,11 @@
 
 [[projects]]
   branch = "use-gorm-model"
-  digest = "1:aefee33d8c7f051752687fc23360ff3eadcc1d28956be4017d5dbed82b08e043"
+  digest = "1:d40a8ca5c131ecde6e4124e3a00f2df6fbe28a80049ff281119a9ff0a58d0d59"
   name = "github.com/ayannahindonesia/basemodel"
   packages = ["."]
   pruneopts = ""
-  revision = "3195f6cbe3ca3b4398a7c4e08cbae4e676dce117"
+  revision = "ce2b4096181bbebb3ab703eeaef1f510c3528284"
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@github.com/ayannahindonesia/basemodel.git"
 
 [[projects]]

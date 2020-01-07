@@ -88,7 +88,7 @@ func LenderProfileEdit(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	err = lenderModel.FindbyID(int(bankRep.BankID))
+	err = lenderModel.FindbyID(bankRep.BankID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}
@@ -168,7 +168,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	err = userModel.FindbyID(int(bankRep.UserID))
+	err = userModel.FindbyID(bankRep.UserID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
 	}

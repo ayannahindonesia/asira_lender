@@ -24,7 +24,7 @@ func (model *BankRepresentatives) Save() error {
 	return err
 }
 
-func (model *BankRepresentatives) FindbyID(id int) error {
+func (model *BankRepresentatives) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

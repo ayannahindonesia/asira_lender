@@ -247,7 +247,7 @@ func UserPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	userID, _ := strconv.Atoi(c.Param("id"))
+	userID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	userM := models.User{}
 	userPayload := UserPayload{}

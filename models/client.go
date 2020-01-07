@@ -40,7 +40,7 @@ func (model *Client) Delete() (err error) {
 }
 
 // FindbyID func
-func (model *Client) FindbyID(id int) error {
+func (model *Client) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

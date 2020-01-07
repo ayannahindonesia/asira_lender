@@ -123,7 +123,7 @@ func ServiceDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceID, _ := strconv.Atoi(c.Param("id"))
+	serviceID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
@@ -142,7 +142,7 @@ func ServicePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceID, _ := strconv.Atoi(c.Param("id"))
+	serviceID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
@@ -194,7 +194,7 @@ func ServiceDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceID, _ := strconv.Atoi(c.Param("id"))
+	serviceID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	service := models.Service{}
 	err = service.FindbyID(serviceID)

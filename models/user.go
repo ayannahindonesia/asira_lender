@@ -47,7 +47,7 @@ func (model *User) Delete() error {
 }
 
 // FindbyID func
-func (model *User) FindbyID(id int) error {
+func (model *User) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

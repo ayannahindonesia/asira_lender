@@ -79,7 +79,7 @@ func (model *Agent) Delete() error {
 }
 
 // FindbyID find agent with id
-func (model *Agent) FindbyID(id int) error {
+func (model *Agent) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

@@ -103,7 +103,7 @@ func LoanPurposeDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	loanPurposeID, _ := strconv.Atoi(c.Param("loan_purpose_id"))
+	loanPurposeID, _ := strconv.ParseUint(c.Param("loan_purpose_id"), 10, 64)
 
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
@@ -122,7 +122,7 @@ func LoanPurposePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	loanPurposeID, _ := strconv.Atoi(c.Param("loan_purpose_id"))
+	loanPurposeID, _ := strconv.ParseUint(c.Param("loan_purpose_id"), 10, 64)
 
 	purpose := models.LoanPurpose{}
 	purposePayload := LoanPurposePayload{}
@@ -164,7 +164,7 @@ func LoanPurposeDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	loanPurposeID, _ := strconv.Atoi(c.Param("loan_purpose_id"))
+	loanPurposeID, _ := strconv.ParseUint(c.Param("loan_purpose_id"), 10, 64)
 
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)

@@ -221,7 +221,7 @@ func BankPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bank := models.Bank{}
 	bankPayload := BankPayload{}
@@ -317,7 +317,7 @@ func BankDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bank := models.Bank{}
 	err = bank.FindbyID(bankID)

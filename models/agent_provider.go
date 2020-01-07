@@ -55,7 +55,7 @@ func (model *AgentProvider) Delete() error {
 }
 
 // FindbyID func
-func (model *AgentProvider) FindbyID(id int) error {
+func (model *AgentProvider) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

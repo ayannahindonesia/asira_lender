@@ -59,7 +59,7 @@ func (l *Loan) Delete() error {
 	return err
 }
 
-func (l *Loan) FindbyID(id int) error {
+func (l *Loan) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&l, id)
 	return err
 }

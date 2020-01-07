@@ -162,7 +162,7 @@ func ProductDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.Atoi(c.Param("id"))
+	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	product := models.Product{}
 	err = product.FindbyID(productID)
@@ -181,7 +181,7 @@ func ProductPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.Atoi(c.Param("id"))
+	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	product := models.Product{}
 	productPayload := ProductPayload{}
@@ -262,7 +262,7 @@ func ProductDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.Atoi(c.Param("id"))
+	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	product := models.Product{}
 	err = product.FindbyID(productID)

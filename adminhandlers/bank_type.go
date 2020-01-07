@@ -90,7 +90,7 @@ func BankTypeDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
@@ -109,7 +109,7 @@ func BankTypePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bankType := models.BankType{}
 	bankTypePayload := BankTypePayload{}
@@ -152,7 +152,7 @@ func BankTypeDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
