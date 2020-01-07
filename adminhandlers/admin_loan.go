@@ -55,35 +55,35 @@ func LoanGetAll(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	db = db.Table("loans l").
-		Select("l.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
-		Joins("LEFT JOIN products p ON l.product = p.id").
+	db = db.Table("loans").
+		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Joins("LEFT JOIN products p ON loans.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
-		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
+		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		db = db.Or("CAST(l.id as varchar(255)) = ?", searchAll).
+		db = db.Or("CAST(loans.id as varchar(255)) = ?", searchAll).
 			Or("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(a.category) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(s.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
 			Or("LOWER(p.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("LOWER(l.status) LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+			Or("LOWER(loans.status) LIKE ?", "%"+strings.ToLower(searchAll)+"%")
 	} else {
 		if borrower := c.QueryParam("borrower"); len(borrower) > 0 {
-			db = db.Where("l.borrower = ?", borrower)
+			db = db.Where("loans.borrower = ?", borrower)
 		}
 		if borrowerName := c.QueryParam("borrower_name"); len(borrowerName) > 0 {
 			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(borrowerName)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-			db = db.Where("l.id IN (?)", id)
+			db = db.Where("loans.id IN (?)", id)
 		}
 		if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
-			db = db.Where("LOWER(l.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
+			db = db.Where("LOWER(loans.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
 		}
 		if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
 			db = db.Where("LOWER(ba.name) LIKE ?", "%"+strings.ToLower(bankName)+"%")
@@ -93,16 +93,16 @@ func LoanGetAll(c echo.Context) error {
 		}
 		if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
 			if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
-				db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
+				db = db.Where("loans.created_at BETWEEN ? AND ?", startDate, endDate)
 			} else {
-				db = db.Where("l.created_time BETWEEN ? AND ?", startDate, startDate)
+				db = db.Where("loans.created_at BETWEEN ? AND ?", startDate, startDate)
 			}
 		}
 		if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
 			if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
-				db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
+				db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
 			} else {
-				db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+				db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
 			}
 		}
 		if category := c.QueryParam("category"); len(category) > 0 {
@@ -115,7 +115,7 @@ func LoanGetAll(c echo.Context) error {
 			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 		}
 		if status := c.QueryParam("status"); len(status) > 0 {
-			db = db.Where("l.status = ?", strings.ToLower(status))
+			db = db.Where("loans.status = ?", strings.ToLower(status))
 		}
 
 		if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
@@ -171,15 +171,15 @@ func LoanGetDetails(c echo.Context) error {
 	db := asira.App.DB
 
 	loanID, _ := strconv.Atoi(c.Param("loan_id"))
-	err = db.Table("loans l").
-		Select("l.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
-		Joins("LEFT JOIN products p ON l.product = p.id").
+	err = db.Table("loans").
+		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
+		Joins("LEFT JOIN products p ON loans.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
-		Joins("LEFT JOIN borrowers b ON b.id = l.borrower").
+		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Where("l.id = ?", loanID).
+		Where("loans.id = ?", loanID).
 		Find(&loan).Error
 
 	if err != nil {

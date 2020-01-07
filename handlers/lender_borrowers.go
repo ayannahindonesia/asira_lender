@@ -125,39 +125,39 @@ func LenderBorrowerList(c echo.Context) error {
 
 	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
 
-	db = db.Table("borrowers b").
-		Select("DISTINCT b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
-		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
-		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
+	db = db.Table("borrowers").
+		Select("DISTINCT borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
+		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
+		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID).
-		Where("b.status != ?", "rejected")
+		Where("borrowers.status != ?", "rejected")
 
 	accountNumber := c.QueryParam("account_number")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
 		searchLike := "%" + strings.ToLower(searchAll) + "%"
-		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE ?") + // use searchLike #1
+		extraquery := fmt.Sprintf("LOWER(borrowers.fullname) LIKE ?") + // use searchLike #1
 			fmt.Sprintf(" OR LOWER(a.category) = ?") + // use searchLike #2
 			fmt.Sprintf(" OR LOWER(ba.name) LIKE ?") + // use searchLike #3
 			fmt.Sprintf(" OR LOWER(a.name) LIKE ?") + // use searchLike #4
 			fmt.Sprintf(" OR LOWER(ap.name) LIKE ?") + // use searchLike #5
-			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = ?") + // use searchAll #6
+			fmt.Sprintf(" OR CAST(borrowers.id as varchar(255)) = ?") + // use searchAll #6
 			fmt.Sprintf(" OR "+loanStatusQuery+" LIKE ?") // use searchLike #7
 
 		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
-				db = db.Where("b.bank_accountnumber = ?", "")
+				db = db.Where("borrowers.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
-				db = db.Where("b.bank_accountnumber != ?", "")
+				db = db.Where("borrowers.bank_accountnumber != ?", "")
 			}
 		}
 
 		db = db.Where(extraquery, searchLike, searchLike, searchLike, searchLike, searchLike, searchAll, searchLike)
 	} else {
 		if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
+			db = db.Where("LOWER(borrowers.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 		}
 		if category := c.QueryParam("category"); len(category) > 0 {
 			db = db.Where("LOWER(a.category) = ?", "%"+strings.ToLower(category)+"%")
@@ -172,15 +172,15 @@ func LenderBorrowerList(c echo.Context) error {
 			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-			db = db.Where("b.id IN (?)", id)
+			db = db.Where("borrowers.id IN (?)", id)
 		}
 		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
-				db = db.Where("b.bank_accountnumber = ?", "")
+				db = db.Where("borrowers.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
-				db = db.Where("b.bank_accountnumber != ?", "")
+				db = db.Where("borrowers.bank_accountnumber != ?", "")
 			} else {
-				db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+				db = db.Where("borrowers.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
 			}
 		}
 	}
@@ -250,16 +250,16 @@ func LenderBorrowerListDetail(c echo.Context) error {
 
 	borrower := BorrowerSelect{}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
 
-	err = db.Table("borrowers b").
-		Select("DISTINCT b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
-		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
-		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
+	err = db.Table("borrowers").
+		Select("DISTINCT borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
+		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
+		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID).
-		Where("b.id = ?", borrowerID).
-		Where("b.status != ?", "rejected").
+		Where("borrowers.id = ?", borrowerID).
+		Where("borrowers.status != ?", "rejected").
 		Find(&borrower).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
@@ -302,17 +302,17 @@ func LenderBorrowerListDownload(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
 
-	db = db.Table("borrowers b").
-		Select("DISTINCT b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
-		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
-		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
+	db = db.Table("borrowers").
+		Select("DISTINCT borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
+		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
+		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID)
 
 	if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-		db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
+		db = db.Where("LOWER(borrowers.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 	}
 	if category := c.QueryParam("category"); len(category) > 0 {
 		db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
@@ -327,15 +327,15 @@ func LenderBorrowerListDownload(c echo.Context) error {
 		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("b.id IN (?)", id)
+		db = db.Where("borrowers.id IN (?)", id)
 	}
 	if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
 		if accountNumber == "null" {
-			db = db.Where("b.bank_accountnumber = ?", "")
+			db = db.Where("borrowers.bank_accountnumber = ?", "")
 		} else if accountNumber == "not null" {
-			db = db.Where("b.bank_accountnumber != ?", "")
+			db = db.Where("borrowers.bank_accountnumber != ?", "")
 		} else {
-			db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+			db = db.Where("borrowers.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
 		}
 	}
 

@@ -31,7 +31,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 		ServiceName    string    `json:"service_name"`
 		ProductName    string    `json:"product_name"`
 		LoanID         string    `json:"loan_id"`
-		CreatedTime    time.Time `json:"created_time"`
+		CreatedTime    time.Time `json:"created_at"`
 		Plafond        float64   `json:"plafond"`
 		ConvenienceFee float64   `json:"convenience_fee"`
 	}
@@ -54,12 +54,12 @@ func ConvenienceFeeReport(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	db = db.Table("loans l").
-		Select("ba.name as bank_name, s.name as service_name, p.name as product_name, l.id as loan_id, l.created_time, loan_amount as plafond, value->>'amount' as convenience_fee").
-		Joins("JOIN LATERAL jsonb_array_elements(l.fees) j ON true").
-		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+	db = db.Table("loans").
+		Select("ba.name as bank_name, s.name as service_name, p.name as product_name, loans.id as loan_id, loans.created_at, loan_amount as plafond, value->>'amount' as convenience_fee").
+		Joins("JOIN LATERAL jsonb_array_elements(loans.fees) j ON true").
+		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").
-		Joins("INNER JOIN products p ON p.id = l.product").
+		Joins("INNER JOIN products p ON p.id = loans.product").
 		Joins("INNER JOIN services s ON s.id = p.service_id").
 		Where("LOWER(value->>'description') LIKE 'convenience%'")
 
@@ -74,7 +74,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 		db = db.Where("LOWER(p.name) LIKE ?", "%"+strings.ToLower(productName)+"%")
 	}
 	if loanID := c.QueryParam("loan_id"); len(loanID) > 0 {
-		db = db.Where("l.id = ?", loanID)
+		db = db.Where("loans.id = ?", loanID)
 	}
 	if plafond := c.QueryParam("plafond"); len(plafond) > 0 {
 		db = db.Where("loan_amount = ?", plafond)
@@ -87,13 +87,13 @@ func ConvenienceFeeReport(c echo.Context) error {
 		if len(endDate) < 1 {
 			endDate = startDate
 		}
-		db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
+		db = db.Where("loans.created_at BETWEEN ? AND ?", startDate, endDate)
 	}
 	if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
 		if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
+			db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
 		} else {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+			db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
 		}
 	}
 

@@ -56,11 +56,11 @@ func LenderProfile(c echo.Context) error {
 	temporal := TemporalSelect{}
 
 	db := asira.App.DB
-	err := db.Table("bank_representatives br").
+	err := db.Table("bank_representatives").
 		Select("u.id, b.name, b.image, u.first_login").
-		Joins("INNER JOIN users u ON u.id = br.user_id").
-		Joins("INNER JOIN banks b ON b.id = br.bank_id").
-		Where("br.user_id = ?", lenderID).Find(&temporal).Error
+		Joins("INNER JOIN users u ON u.id = bank_representatives.user_id").
+		Joins("INNER JOIN banks b ON b.id = bank_representatives.bank_id").
+		Where("bank_representatives.user_id = ?", lenderID).Find(&temporal).Error
 
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
