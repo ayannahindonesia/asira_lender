@@ -40,16 +40,14 @@ func ConvenienceFeeReport(c echo.Context) error {
 	var offset int
 	var rows int
 	var page int
+	var lastPage int
 
 	// pagination parameters
-	if c.QueryParam("rows") != "all" {
-		rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		if page <= 0 {
 			page = 1
-		}
-		if rows <= 0 {
-			rows = 25
 		}
 		offset = (page * rows) - rows
 	}
@@ -61,7 +59,8 @@ func ConvenienceFeeReport(c echo.Context) error {
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").
 		Joins("INNER JOIN products p ON p.id = loans.product").
 		Joins("INNER JOIN services s ON s.id = p.service_id").
-		Where("LOWER(value->>'description') LIKE 'convenience%'")
+		Where("LOWER(value->>'description') LIKE ?", "convenience%").
+		Where("loans.status = ?", "approved")
 
 	// filters
 	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
@@ -98,15 +97,32 @@ func ConvenienceFeeReport(c echo.Context) error {
 		}
 	}
 
-	if rows > 0 && offset > 0 {
-		db = db.Limit(rows).Offset(offset)
+	tempDB := db
+	tempDB.Where("loans.deleted_at IS NULL").Count(&totalRows)
+
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
 	}
-	err = db.Find(&results).Count(&totalRows).Error
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
+	}
+	err = db.Find(&results).Error
 	if err != nil {
 		log.Println(err)
 	}
-
-	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
 
 	response := basemodel.PagedFindResult{
 		TotalData:   totalRows,
