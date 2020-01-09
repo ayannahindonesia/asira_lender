@@ -106,7 +106,7 @@ func UserList(c echo.Context) error {
 	}
 
 	tempDB := db
-	tempDB.Count(&totalRows)
+	tempDB.Where("users.deleted_at IS NULL").Count(&totalRows)
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
