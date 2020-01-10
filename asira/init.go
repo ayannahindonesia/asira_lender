@@ -1,6 +1,7 @@
 package asira
 
 import (
+	"asira_lender/cron"
 	"asira_lender/custommodule"
 	"asira_lender/validator"
 	"fmt"
@@ -33,6 +34,7 @@ type (
 		DB         *gorm.DB        `json:"db"`
 		Kafka      KafkaInstance   `json:"kafka"`
 		S3         custommodule.S3 `json:"s3"`
+		Cron       cron.Cron       `json:"cron"`
 		Permission viper.Viper     `json:"prog_permission"`
 	}
 
@@ -63,6 +65,7 @@ func init() {
 
 	App.KafkaInit()
 	App.S3init()
+	App.CronInit()
 
 	// apply custom validator
 	v := validator.AsiraValidator{DB: App.DB}
@@ -74,6 +77,7 @@ func (x *Application) Close() (err error) {
 	if err = x.DB.Close(); err != nil {
 		return err
 	}
+	x.Cron.Stop()
 
 	return nil
 }
@@ -200,4 +204,15 @@ func (x *Application) S3init() (err error) {
 	x.S3, err = custommodule.NewS3(s3conf["access_key"].(string), s3conf["secret_key"].(string), s3conf["host"].(string), s3conf["bucket_name"].(string), s3conf["region"].(string))
 
 	return err
+}
+
+// CronInit load cron
+func (x *Application) CronInit() (err error) {
+	x.Cron.TZ = x.Config.GetString(fmt.Sprintf("%s.timezone", x.ENV))
+	cron.DB = x.DB
+
+	x.Cron.New()
+	x.Cron.Start()
+
+	return nil
 }
