@@ -104,6 +104,15 @@ func processMessage(kafkaMessage []byte) (err error) {
 		}
 		err = borrower.Save()
 		break
+	case "agent":
+		var agent models.Agent
+
+		err = json.Unmarshal([]byte(data[1]), &agent)
+		if err != nil {
+			return err
+		}
+		err = agent.SaveNoKafka()
+		break
 	}
 	return err
 }

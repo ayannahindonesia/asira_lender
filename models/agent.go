@@ -66,6 +66,11 @@ func (model *Agent) Save() error {
 	return err
 }
 
+// SaveNoKafka agent without writing kafka
+func (model *Agent) SaveNoKafka() error {
+	return basemodel.Save(&model)
+}
+
 // Delete agent
 func (model *Agent) Delete() error {
 	err := basemodel.Delete(&model)
