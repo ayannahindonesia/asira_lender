@@ -68,7 +68,7 @@ func ServiceList(c echo.Context) error {
 	}
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -92,7 +92,7 @@ func ServiceNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	unbased, _ := base64.StdEncoding.DecodeString(servicePayload.Image)
@@ -128,7 +128,7 @@ func ServiceDetail(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
 	return c.JSON(http.StatusOK, service)
@@ -147,7 +147,7 @@ func ServicePatch(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("layanan %v tidak ditemukan", serviceID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
 	servicePayload := ServicePayload{}
@@ -158,7 +158,7 @@ func ServicePatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(servicePayload.Name) > 0 {
@@ -199,7 +199,7 @@ func ServiceDelete(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", serviceID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
 	err = service.Delete()

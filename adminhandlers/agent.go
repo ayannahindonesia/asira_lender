@@ -178,7 +178,7 @@ func AgentDetails(c echo.Context) error {
 		Find(&agent).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	return c.JSON(http.StatusOK, agent)
@@ -208,17 +208,17 @@ func AgentNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if agentPayload.Category == "account_executive" {
 		if agentPayload.AgentProvider > 0 || len(agentPayload.Banks) > 1 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "account executive cannot have any agent_providers and only allowed 1 bank at a time.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Account executive tidak dapat memiliki penyedia agen dan hanya memiliki 1 bank.", "Hambatan validasi")
 		}
 	}
 	if agentPayload.Category == "agent" {
 		if agentPayload.AgentProvider <= 0 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "agent must choose an agent provider.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Agen harus memilih penyedia agent.", "validation error")
 		}
 	}
 
@@ -267,7 +267,7 @@ func AgentPatch(c echo.Context) error {
 	agentPayload := AgentPayload{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -283,17 +283,17 @@ func AgentPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if agentPayload.Category == "account_executive" {
 		if agentPayload.AgentProvider > 0 || len(agentPayload.Banks) > 1 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "account executive cannot have any agent_providers and only allowed 1 bank at a time.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Account executive tidak dapat memiliki penyedia agen dan hanya boleh memiliki 1 bank.", "Hambatan validasi")
 		}
 	}
 	if agentPayload.Category == "agent" {
 		if agentPayload.AgentProvider <= 0 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "agent must choose an agent provider.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Agen harus memilih penyedia agen.", "Hambatan validasi")
 		}
 	}
 
@@ -360,12 +360,12 @@ func AgentDelete(c echo.Context) error {
 	agent := models.Agent{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	err = agent.Delete()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agen baru")
 	}
 
 	return c.JSON(http.StatusOK, agent)

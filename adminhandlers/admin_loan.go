@@ -183,7 +183,7 @@ func LoanGetDetails(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, "query result error")
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 
 	return c.JSON(http.StatusOK, loan)

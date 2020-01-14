@@ -182,7 +182,7 @@ func BorrowerGetDetails(c echo.Context) error {
 		Where("b.id = ?", borrowerID).
 		Find(&borrower).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Nasabah %v tidak ditemukan", borrowerID))
 	}
 
 	return c.JSON(http.StatusOK, borrower)
