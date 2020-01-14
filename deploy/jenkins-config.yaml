@@ -1,0 +1,49 @@
+development:
+  react_cors: true
+  passphrase: BpLnfgDsc3WD9F3q
+  dashboard_url: http://asira.ayannah.com
+  core_url: http://asira-api-core.ayannah.com
+  database:
+    table: asira_lender
+    username: asirauser
+    password: asirapass
+    host: "127.0.0.1"
+    port: "5432"
+    maxlifetime: 30
+    idle_conns: 10
+    open_conns: 100
+    sslmode: disable
+    logmode: true
+    timezone: Asia/Jakarta
+  kafka:
+    host: "10.148.0.3"
+    port: "9092"
+    user: user
+    pass: oRB5KjfuHdXc
+    client_id: asira
+    sasl: true
+    log_verbose: true
+    topics:
+      produces:
+        for_borrower: asira_lender_to_borrower
+      consumes:
+        for_lender: asira_borrower_to_lender
+  jwt:
+    duration: 10080 # in minutes
+    jwt_secret: sXQ8jUMpueOvN5P3cdCR
+  mailer:
+    host : smtp.gmail.com
+    port : 587
+    email : infra.ayannah@gmail.com 
+    password : jakarta2019
+  s3:
+    debug_mode: 1
+    region: id-tbs
+    access_key: J2BYZXZ43VPZ27V4TCP3
+    secret_key: s0yHeS/eBvjmyshVckbNqVWnTKwhnaP6kYBpFBHk
+    host: https://bucket.cloud.lintasarta.co.id:8082
+    bucket_name: bucket-ayannah
+    
+staging:
+
+production:

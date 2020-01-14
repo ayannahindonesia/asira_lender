@@ -1,0 +1,87 @@
+version: '3'
+
+services:
+
+  postgres_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: asirauser
+      POSTGRES_PASSWORD: asirapass
+      POSTGRES_DB: asira_db
+    ports:
+      - 5432:5432
+    container_name: postgres_db
+    networks: 
+      - asira_net
+
+  asira_lender:
+    build: .
+    ports:
+      - 8001:8001
+    image: asira_lender:development
+    volumes:
+      - ./:/go/src/asira_lender
+    hostname: localhost
+    environment:
+      - APPNAME=asira_lender
+      - ENV=local
+      - APPPORT=8001
+      - CONFIGPATH=$$GOPATH/src/asira_lender
+    container_name: asira_lender
+    
+  # zookeeper:
+  #   image: bitnami/zookeeper
+  #   ports:
+  #     - 2181:2181
+  #   environment:
+  #     - ALLOW_ANONYMOUS_LOGIN=yes
+  #     - ZOO_SERVER_USERS=asirauser
+  #     - ZOO_SERVER_PASSWORDS=asirapass
+  #   container_name: asira_zookeeper
+
+  # kafka:
+  #   image: bitnami/kafka
+  #   ports:
+  #     - 9092:9092
+  #   environment:
+  #     - ALLOW_PLAINTEXT_LISTENER=yes
+  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+  #     - KAFKA_BROKER_USER=asirauser
+  #     - KAFKA_BROKER_PASSWORD=asirapass
+  #   container_name: asira_kafka
+
+  # postgres_db:
+  #   image: postgres
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: asirauser
+  #     POSTGRES_PASSWORD: asirapass
+  #     POSTGRES_DB: asira_db
+  #   ports:
+  #     - 5432:5432
+  #   container_name: postgres_db
+  #   networks: 
+  #     - asira_net
+
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8010:8080
+  #   container_name: asira_adminer
+  #   hostname: "adminer.local"
+
+  # portainer:
+  #   image: portainer/portainer
+  #   container_name: "portainer"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   command: -H unix:///var/run/docker.sock --no-auth
+  #   ports:
+  #     - 9000:9000
+
+networks:
+  default:
+    external:
+      name: asira_net
