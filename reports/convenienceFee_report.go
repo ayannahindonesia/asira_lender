@@ -96,6 +96,13 @@ func ConvenienceFeeReport(c echo.Context) error {
 			db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
 		}
 	}
+	if startApprovalDate := c.QueryParam("start_approval_date"); len(startApprovalDate) > 0 {
+		if endApprovalDate := c.QueryParam("end_approval_date"); len(endApprovalDate) > 0 {
+			db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, endApprovalDate)
+		} else {
+			db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, startApprovalDate)
+		}
+	}
 
 	tempDB := db
 	tempDB.Where("loans.deleted_at IS NULL").Count(&totalRows)
