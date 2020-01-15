@@ -13,7 +13,6 @@ import (
 
 	"github.com/ayannahindonesia/basemodel"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/jszwec/csvutil"
 	"github.com/labstack/echo"
 )
 
@@ -24,17 +23,17 @@ type (
 		BorrowerName      string    `json:"borrower_name"`
 		BankName          string    `json:"bank_name"`
 		Status            string    `json:"status"`
-		LoanAmount        float64   `json:"loan_amount"`
-		Installment       int       `json:"installment"`
+		LoanAmount        string    `json:"loan_amount"`
+		Installment       string    `json:"installment"`
 		Fees              string    `json:"fees"`
-		Interest          float64   `json:"interest"`
-		TotalLoan         float64   `json:"total_loan"`
+		Interest          string    `json:"interest"`
+		TotalLoan         string    `json:"total_loan"`
 		DueDate           time.Time `json:"due_date"`
-		LayawayPlan       float64   `json:"layaway_plan"`
+		LayawayPlan       string    `json:"layaway_plan"`
 		LoanIntention     string    `json:"loan_intention"`
 		IntentionDetails  string    `json:"intention_details"`
-		MonthlyIncome     int       `json:"monthly_income"`
-		OtherIncome       int       `json:"other_income"`
+		MonthlyIncome     string    `json:"monthly_income"`
+		OtherIncome       string    `json:"other_income"`
 		OtherIncomeSource string    `json:"other_incomesource"`
 		BankAccountNumber string    `json:"bank_accountnumber"`
 	}
@@ -346,6 +345,12 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Where("ba.id = ?", bankRep.BankID)
 
 	// filters
+	if status := c.QueryParam("status"); len(status) > 0 {
+		db = db.Where("loans.status = ?", strings.ToLower(status))
+	}
+	if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
+		db = db.Where("loans.disburse_status = ?", strings.ToLower(disburseStatus))
+	}
 	if borrower := c.QueryParam("borrower"); len(borrower) > 0 {
 		db = db.Where("loans.borrower = ?", borrower)
 	}
@@ -399,12 +404,12 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 
 	err = db.Find(&results).Error
 
-	b, err := csvutil.Marshal(results)
-	if err != nil {
-		return err
-	}
+	// b, err := csvutil.Marshal(results)
+	// if err != nil {
+	// 	return err
+	// }
 
-	return c.JSON(http.StatusOK, string(b))
+	return c.JSON(http.StatusOK, results)
 }
 
 // LenderLoanConfirmDisbursement confirm a loan disbursement
