@@ -336,7 +336,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	var results []LoanRequestListCSV
 
 	db = db.Table("loans").
-		Select("loans.id, b.fullname as borrower_name, ba.name as bank_name, loans.status, loans.loan_amount, loans.installment, loans.total_loan, loans.due_date, loans.layaway_plan, loans.loan_intention, loans.intention_details, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
+		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
 		Joins("LEFT JOIN products p ON loans.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
