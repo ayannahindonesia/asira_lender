@@ -20,13 +20,13 @@ import (
 type (
 	// LoanRequestListCSV type
 	LoanRequestListCSV struct {
-		ID                uint64  `json:"id"`
-		BorrowerName      string  `json:"borrower_name"`
-		BankName          string  `json:"bank_name"`
-		Status            string  `json:"status"`
-		LoanAmount        float64 `json:"loan_amount"`
-		Installment       int     `json:"installment"`
-		Fees              string
+		ID                uint64    `json:"id"`
+		BorrowerName      string    `json:"borrower_name"`
+		BankName          string    `json:"bank_name"`
+		Status            string    `json:"status"`
+		LoanAmount        float64   `json:"loan_amount"`
+		Installment       int       `json:"installment"`
+		Fees              string    `json:"fees"`
 		Interest          float64   `json:"interest"`
 		TotalLoan         float64   `json:"total_loan"`
 		DueDate           time.Time `json:"due_date"`
@@ -159,6 +159,13 @@ func LenderLoanRequestList(c echo.Context) error {
 				db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
 			} else {
 				db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+			}
+		}
+		if startApprovalDate := c.QueryParam("start_approval_date"); len(startApprovalDate) > 0 {
+			if endApprovalDate := c.QueryParam("end_approval_date"); len(endApprovalDate) > 0 {
+				db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, endApprovalDate)
+			} else {
+				db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, startApprovalDate)
 			}
 		}
 		if category := c.QueryParam("category"); len(category) > 0 {
@@ -330,19 +337,29 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 
 	db = db.Table("loans").
 		Select("loans.id, b.fullname as borrower_name, ba.name as bank_name, loans.status, loans.loan_amount, loans.installment, loans.total_loan, loans.due_date, loans.layaway_plan, loans.loan_intention, loans.intention_details, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
-		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
-		Joins("INNER JOIN banks ba ON ba.id = b.bank").
+		Joins("LEFT JOIN products p ON loans.product = p.id").
+		Joins("LEFT JOIN services s ON p.service_id = s.id").
+		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
+		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
+		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID)
 
 	// filters
-	if status := c.QueryParam("status"); len(status) > 0 {
-		db = db.Where("LOWER(loans.status) = ?", strings.ToLower(status))
+	if borrower := c.QueryParam("borrower"); len(borrower) > 0 {
+		db = db.Where("loans.borrower = ?", borrower)
 	}
 	if borrowerName := c.QueryParam("borrower_name"); len(borrowerName) > 0 {
-		db = db.Where("LOWER(loans.borrower_name) = ?", strings.ToLower(borrowerName))
+		db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(borrowerName)+"%")
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
 		db = db.Where("loans.id IN (?)", id)
+	}
+	if bankAccount := c.QueryParam("bank_account"); len(bankAccount) > 0 {
+		db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(bankAccount)+"%")
+	}
+	if disburseStatus := c.QueryParam("disburse_status"); len(disburseStatus) > 0 {
+		db = db.Where("LOWER(loans.disburse_status) LIKE ?", "%"+strings.ToLower(disburseStatus)+"%")
 	}
 	if startDate := c.QueryParam("start_date"); len(startDate) > 0 {
 		if endDate := c.QueryParam("end_date"); len(endDate) > 0 {
@@ -357,6 +374,22 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		} else {
 			db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
 		}
+	}
+	if startApprovalDate := c.QueryParam("start_approval_date"); len(startApprovalDate) > 0 {
+		if endApprovalDate := c.QueryParam("end_approval_date"); len(endApprovalDate) > 0 {
+			db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, endApprovalDate)
+		} else {
+			db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, startApprovalDate)
+		}
+	}
+	if category := c.QueryParam("category"); len(category) > 0 {
+		db = db.Where("LOWER(a.category) LIKE ?", "%"+strings.ToLower(category)+"%")
+	}
+	if agentName := c.QueryParam("agent_name"); len(agentName) > 0 {
+		db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(agentName)+"%")
+	}
+	if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
+		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 	}
 	orderby := c.QueryParam("orderby")
 	sort := c.QueryParam("sort")
