@@ -13,29 +13,30 @@ import (
 
 	"github.com/ayannahindonesia/basemodel"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo"
 )
 
 type (
 	// LoanRequestListCSV type
 	LoanRequestListCSV struct {
-		ID                uint64    `json:"id"`
-		BorrowerName      string    `json:"borrower_name"`
-		BankName          string    `json:"bank_name"`
-		Status            string    `json:"status"`
-		LoanAmount        string    `json:"loan_amount"`
-		Installment       string    `json:"installment"`
-		Fees              string    `json:"fees"`
-		Interest          string    `json:"interest"`
-		TotalLoan         string    `json:"total_loan"`
-		DueDate           time.Time `json:"due_date"`
-		LayawayPlan       string    `json:"layaway_plan"`
-		LoanIntention     string    `json:"loan_intention"`
-		IntentionDetails  string    `json:"intention_details"`
-		MonthlyIncome     string    `json:"monthly_income"`
-		OtherIncome       string    `json:"other_income"`
-		OtherIncomeSource string    `json:"other_incomesource"`
-		BankAccountNumber string    `json:"bank_accountnumber"`
+		ID                uint64         `json:"id"`
+		BorrowerName      string         `json:"borrower_name"`
+		BankName          string         `json:"bank_name"`
+		Status            string         `json:"status"`
+		LoanAmount        float64        `json:"loan_amount"`
+		Installment       string         `json:"installment"`
+		Fees              postgres.Jsonb `json:"fees"`
+		Interest          float64        `json:"interest"`
+		TotalLoan         float64        `json:"total_loan"`
+		DueDate           time.Time      `json:"due_date"`
+		LayawayPlan       float64        `json:"layaway_plan"`
+		LoanIntention     string         `json:"loan_intention"`
+		IntentionDetails  string         `json:"intention_details"`
+		MonthlyIncome     string         `json:"monthly_income"`
+		OtherIncome       string         `json:"other_income"`
+		OtherIncomeSource string         `json:"other_incomesource"`
+		BankAccountNumber string         `json:"bank_accountnumber"`
 	}
 	// LoanSelect select custom type
 	LoanSelect struct {
