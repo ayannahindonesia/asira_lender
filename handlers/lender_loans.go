@@ -35,8 +35,8 @@ type (
 		IntentionDetails  string         `json:"intention_details"`
 		MonthlyIncome     string         `json:"monthly_income"`
 		OtherIncome       string         `json:"other_income"`
-		OtherIncomeSource string         `json:"other_incomesource"`
-		BankAccountNumber string         `json:"bank_account"`
+		OtherIncomesource string         `json:"other_incomesource"`
+		BankAccount       string         `json:"bank_account"`
 	}
 	// LoanSelect select custom type
 	LoanSelect struct {
