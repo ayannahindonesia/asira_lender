@@ -2,6 +2,7 @@ package adminhandlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"database/sql"
 	"encoding/base64"
@@ -245,7 +246,7 @@ func AgentNew(c echo.Context) error {
 		}
 	}
 
-	err = agent.Create()
+	err = middlewares.SubmitKafkaPayload(agent, "agent")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 	}
@@ -339,7 +340,7 @@ func AgentPatch(c echo.Context) error {
 		agent.Image = url
 	}
 
-	err = agent.Save()
+	err = middlewares.SubmitKafkaPayload(agent, "agent")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
 	}
@@ -363,7 +364,7 @@ func AgentDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
 	}
 
-	err = agent.Delete()
+	err = middlewares.SubmitKafkaPayload(agent, "agent_delete")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
 	}

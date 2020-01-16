@@ -44,55 +44,32 @@ func (model *Agent) BeforeCreate() (err error) {
 
 // Create new agent
 func (model *Agent) Create() error {
-	err := basemodel.Create(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "agent")
-
-	return err
+	return basemodel.Create(&model)
 }
 
 // Save update agent
 func (model *Agent) Save() error {
-	err := basemodel.Save(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "agent")
-
-	return err
+	return basemodel.Save(&model)
 }
 
-// SaveNoKafka agent without writing kafka
-func (model *Agent) SaveNoKafka() error {
-	return basemodel.Save(&model)
+// FirstOrCreate saves, or create if not exist
+func (model *Agent) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
 // Delete agent
 func (model *Agent) Delete() error {
-	err := basemodel.Delete(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "agent_delete")
-
-	return err
+	return basemodel.Delete(&model)
 }
 
 // FindbyID find agent with id
 func (model *Agent) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+	return basemodel.FindbyID(&model, id)
 }
 
-// FilterSearchSingle search using filter and return last
-func (model *Agent) FilterSearchSingle(filter interface{}) error {
-	err := basemodel.SingleFindFilter(&model, filter)
-	return err
+// SingleFindFilter search using filter and return last
+func (model *Agent) SingleFindFilter(filter interface{}) error {
+	return basemodel.SingleFindFilter(&model, filter)
 }
 
 // PagedFilterSearch search using filter and return with pagination format

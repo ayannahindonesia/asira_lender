@@ -24,10 +24,8 @@ development:
     sasl: true
     log_verbose: true
     topics:
-      produces:
-        for_borrower: asira_lender_to_borrower
-      consumes:
-        for_lender: asira_borrower_to_lender
+      produces: asira_backend
+      consumes: asira_backend
   jwt:
     duration: 10080 # in minutes
     jwt_secret: sXQ8jUMpueOvN5P3cdCR
