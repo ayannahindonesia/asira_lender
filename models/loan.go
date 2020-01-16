@@ -83,6 +83,7 @@ func (l *Loan) Approve(disburseDate time.Time) error {
 	l.Status = "approved"
 	l.DisburseDate = disburseDate
 	l.ApprovalDate = time.Now()
+	l.DueDate = disburseDate.AddDate(0, l.Installment, 0)
 
 	err := l.Save()
 	if err != nil {
