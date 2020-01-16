@@ -1,6 +1,7 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
@@ -74,7 +75,7 @@ func BankTypeNew(c echo.Context) error {
 	marshal, _ := json.Marshal(bankTypePayload)
 	json.Unmarshal(marshal, &bankType)
 
-	err = bankType.Create()
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
@@ -136,7 +137,7 @@ func BankTypePatch(c echo.Context) error {
 		bankType.Description = bankTypePayload.Description
 	}
 
-	err = bankType.Save()
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
@@ -160,7 +161,7 @@ func BankTypeDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
 	}
 
-	err = bankType.Delete()
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_delete")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
