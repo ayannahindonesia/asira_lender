@@ -36,7 +36,7 @@ type (
 		MonthlyIncome     string         `json:"monthly_income"`
 		OtherIncome       string         `json:"other_income"`
 		OtherIncomeSource string         `json:"other_incomesource"`
-		BankAccountNumber string         `json:"bank_accountnumber"`
+		BankAccountNumber string         `json:"bank_account"`
 	}
 	// LoanSelect select custom type
 	LoanSelect struct {
@@ -336,7 +336,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	var results []LoanRequestListCSV
 
 	db = db.Table("loans").
-		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber").
+		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber as bank_account").
 		Joins("LEFT JOIN products p ON loans.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
@@ -403,12 +403,12 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		db = db.Order(fmt.Sprintf("%s %s", orderby, sort))
 	}
 
-	err = db.Find(&results).Error
+	err = db.Scan(&results).Error
 
 	// b, err := csvutil.Marshal(results)
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
 	return c.JSON(http.StatusOK, results)
 }
