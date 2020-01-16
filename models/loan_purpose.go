@@ -4,58 +4,41 @@ import (
 	"github.com/ayannahindonesia/basemodel"
 )
 
+// LoanPurpose main type
 type LoanPurpose struct {
 	basemodel.BaseModel
 	Name   string `json:"name" gorm:"column:name"`
 	Status string `json:"status" gorm:"column:status"`
 }
 
-func (l *LoanPurpose) Create() (err error) {
-	err = basemodel.Create(&l)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan_purpose")
-	return err
+// Create func
+func (model *LoanPurpose) Create() (err error) {
+	return basemodel.Create(&model)
 }
 
-func (l *LoanPurpose) Save() (err error) {
-	err = basemodel.Save(&l)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan_purpose")
-	return err
+// Save func
+func (model *LoanPurpose) Save() (err error) {
+	return basemodel.Save(&model)
 }
 
-func (l *LoanPurpose) Delete() (err error) {
-	err = basemodel.Delete(&l)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan_purpose_delete")
-
-	return err
+// Delete func
+func (model *LoanPurpose) Delete() (err error) {
+	return basemodel.Delete(&model)
 }
 
-func (l *LoanPurpose) FindbyID(id uint64) (err error) {
-	err = basemodel.FindbyID(&l, id)
-	return err
+// FindbyID func
+func (model *LoanPurpose) FindbyID(id uint64) (err error) {
+	return basemodel.FindbyID(&model, id)
 }
 
-func (l *LoanPurpose) FilterSearchSingle(filter interface{}) (err error) {
-	err = basemodel.SingleFindFilter(&l, filter)
-	return err
+// SingleFindFilter func
+func (model *LoanPurpose) SingleFindFilter(filter interface{}) (err error) {
+	return basemodel.SingleFindFilter(&model, filter)
 }
 
-func (l *LoanPurpose) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
-	loan_purposes := []LoanPurpose{}
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&loan_purposes, page, rows, order, sorts, filter)
+// PagedFindFilter func
+func (model *LoanPurpose) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+	loanpurposes := []LoanPurpose{}
 
-	return result, err
+	return basemodel.PagedFindFilter(&loanpurposes, page, rows, orderby, sort, filter)
 }

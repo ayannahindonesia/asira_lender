@@ -23,30 +23,25 @@ func (model *Client) BeforeCreate() (err error) {
 
 // Create func
 func (model *Client) Create() (err error) {
-	err = basemodel.Create(&model)
-	return err
+	return basemodel.Create(&model)
 }
 
 // Save func
 func (model *Client) Save() (err error) {
-	err = basemodel.Save(&model)
-	return err
+	return basemodel.Save(&model)
 }
 
 // Delete func
 func (model *Client) Delete() (err error) {
-	err = basemodel.Delete(&model)
-	return err
+	return basemodel.Delete(&model)
 }
 
 // FindbyID func
 func (model *Client) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+	return basemodel.FindbyID(&model, id)
 }
 
 // FilterSearchSingle func
-func (model *Client) FilterSearchSingle(filter interface{}) (err error) {
-	err = basemodel.SingleFindFilter(&model, filter)
-	return err
+func (model *Client) SingleFindFilter(filter interface{}) (err error) {
+	return basemodel.SingleFindFilter(&model, filter)
 }

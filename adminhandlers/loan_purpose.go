@@ -1,6 +1,7 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
@@ -87,7 +88,7 @@ func LoanPurposeNew(c echo.Context) error {
 	marshal, _ := json.Marshal(purposePayload)
 	json.Unmarshal(marshal, &purpose)
 
-	err = purpose.Create()
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
@@ -148,7 +149,7 @@ func LoanPurposePatch(c echo.Context) error {
 		purpose.Status = purposePayload.Status
 	}
 
-	err = purpose.Save()
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update loan purpose %v", loanPurposeID))
 	}
@@ -172,7 +173,7 @@ func LoanPurposeDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
 	}
 
-	err = purpose.Delete()
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_delete")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete loan purpose %v", loanPurposeID))
 	}
