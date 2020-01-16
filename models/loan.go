@@ -128,6 +128,7 @@ func (l *Loan) ChangeDisburseDate(disburseDate time.Time) (err error) {
 	if l.DisburseDateChanged != true {
 		l.DisburseDate = disburseDate
 		l.DisburseDateChanged = true
+		l.DueDate = disburseDate.AddDate(0, l.Installment, 0)
 
 		err = l.Save()
 		if err != nil {
