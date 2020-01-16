@@ -18,12 +18,7 @@ type AgentProvider struct {
 
 // Create new
 func (model *AgentProvider) Create() error {
-	err := basemodel.Create(&model)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return basemodel.Create(&model)
 }
 
 // BeforeSave gorm callback
@@ -36,28 +31,22 @@ func (model *AgentProvider) BeforeSave() error {
 
 // Save update
 func (model *AgentProvider) Save() error {
-	err := basemodel.Save(&model)
-	if err != nil {
-		return err
-	}
+	return basemodel.Save(&model)
+}
 
-	return err
+// FirstOrCreate saves, or create if not exist
+func (model *AgentProvider) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
 // Delete model
 func (model *AgentProvider) Delete() error {
-	err := basemodel.Delete(&model)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return basemodel.Delete(&model)
 }
 
 // FindbyID func
 func (model *AgentProvider) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+	return basemodel.FindbyID(&model, id)
 }
 
 // PagedFilterSearch paged list

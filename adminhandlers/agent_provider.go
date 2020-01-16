@@ -1,6 +1,7 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"fmt"
 	"net/http"
@@ -114,7 +115,7 @@ func AgentProviderNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err = agentProvider.Create()
+	err = middlewares.SubmitKafkaPayload(agentProvider, "agent_provider")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
@@ -151,7 +152,7 @@ func AgentProviderPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
-	err = agentProvider.Save()
+	err = middlewares.SubmitKafkaPayload(agentProvider, "agent_provider")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
