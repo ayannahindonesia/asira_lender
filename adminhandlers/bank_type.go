@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -30,8 +31,8 @@ func BankTypeList(c echo.Context) error {
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	orderby := strings.Split(c.QueryParam("orderby"), ",")
+	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
 	name := c.QueryParam("name")
@@ -41,7 +42,7 @@ func BankTypeList(c echo.Context) error {
 	}
 
 	bankType := models.BankType{}
-	result, err := bankType.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+	result, err := bankType.PagedFindFilter(page, rows, orderby, sort, &Filter{
 		Name: name,
 	})
 	if err != nil {

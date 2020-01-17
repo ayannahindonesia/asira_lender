@@ -188,9 +188,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -215,9 +212,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -242,9 +236,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -269,9 +260,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -296,9 +284,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -323,9 +308,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -350,9 +332,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -377,9 +356,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {
@@ -404,9 +380,6 @@ func processMessage(kafkaMessage []byte) (err error) {
 			}
 
 			err = mod.Delete()
-			if err != nil {
-				return err
-			}
 		} else {
 			err = json.Unmarshal([]byte(data[1]), &mod)
 			if err != nil {

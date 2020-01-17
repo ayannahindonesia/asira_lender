@@ -1,6 +1,7 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
@@ -146,9 +147,9 @@ func ProductNew(c echo.Context) error {
 	marshal, _ := json.Marshal(productPayload)
 	json.Unmarshal(marshal, &product)
 
-	err = product.Create()
+	err = middlewares.SubmitKafkaPayload(product, "product")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")
 	}
 
 	return c.JSON(http.StatusCreated, product)
@@ -246,9 +247,9 @@ func ProductPatch(c echo.Context) error {
 		product.Status = productPayload.Status
 	}
 
-	err = product.Save()
+	err = middlewares.SubmitKafkaPayload(product, "product")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", productID))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update produk %v", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)
@@ -270,9 +271,9 @@ func ProductDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
 	}
 
-	err = product.Delete()
+	err = middlewares.SubmitKafkaPayload(product, "product_delete")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", productID))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete produk %v", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)

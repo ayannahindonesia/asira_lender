@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/labstack/echo"
@@ -30,8 +31,8 @@ func LoanPurposeList(c echo.Context) error {
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	orderby := strings.Split(c.QueryParam("orderby"), ",")
+	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	var (
 		purpose models.LoanPurpose
@@ -43,7 +44,7 @@ func LoanPurposeList(c echo.Context) error {
 			Name   string `json:"name" condition:"LIKE,optional"`
 			Status string `json:"status" condition:"optional"`
 		}
-		result, err = purpose.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		result, err = purpose.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			Name:   searchAll,
 			Status: searchAll,
 		})
@@ -52,7 +53,7 @@ func LoanPurposeList(c echo.Context) error {
 			Name   string `json:"name" condition:"LIKE"`
 			Status string `json:"status"`
 		}
-		result, err = purpose.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		result, err = purpose.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			Name:   c.QueryParam("name"),
 			Status: c.QueryParam("status"),
 		})
