@@ -73,6 +73,7 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 		type LoanStatusUpdate struct {
 			ID                  uint64    `json:"id"`
 			Status              string    `json:"status"`
+			DueDate             time.Time `json:"due_date"`
 			DisburseDate        time.Time `json:"disburse_date"`
 			DisburseStatus      string    `json:"disburse_status"`
 			DisburseDateChanged bool      `json:"disburse_date_changed"`
@@ -82,6 +83,7 @@ func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
 			payload = LoanStatusUpdate{
 				ID:                  e.ID,
 				Status:              e.Status,
+				DueDate:             e.DueDate,
 				DisburseDate:        e.DisburseDate,
 				DisburseStatus:      e.DisburseStatus,
 				DisburseDateChanged: e.DisburseDateChanged,
