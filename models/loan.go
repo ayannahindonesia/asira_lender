@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
@@ -9,6 +8,7 @@ import (
 )
 
 type (
+	// Loan main struct
 	Loan struct {
 		basemodel.BaseModel
 		Borrower            uint64         `json:"borrower" gorm:"column:borrower;foreignkey"`
@@ -31,113 +31,54 @@ type (
 		RejectReason        string         `json:"reject_reason" gorm:"column:reject_reason"`
 	}
 
+	// LoanFee for loan fee
 	LoanFee struct { // temporary hardcoded
 		Description string  `json:"description"`
 		Amount      float64 `json:"amount"`
 	}
+	// LoanFees slice of LoanFee
 	LoanFees []LoanFee
 
+	// LoanStatusUpdate type
 	LoanStatusUpdate struct {
 		ID     uint64 `json:"id"`
 		Status string `json:"status"`
 	}
 )
 
-func (l *Loan) Create() error {
-	err := basemodel.Create(&l)
-	return err
+// Create func
+func (model *Loan) Create() error {
+	return basemodel.Create(&model)
 }
 
-func (l *Loan) Save() error {
-	err := basemodel.Save(&l)
-	return err
+// Save func
+func (model *Loan) Save() error {
+	return basemodel.Save(&model)
 }
 
-func (l *Loan) Delete() error {
-	err := basemodel.Delete(&l)
-
-	return err
+// FirstOrCreate func
+func (model *Loan) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
-func (l *Loan) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&l, id)
-	return err
+// Delete func
+func (model *Loan) Delete() error {
+	return basemodel.Delete(&model)
 }
 
-func (l *Loan) FilterSearchSingle(filter interface{}) error {
-	err := basemodel.SingleFindFilter(&l, filter)
-	return err
+// FindbyID func
+func (model *Loan) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
 }
 
-func (l *Loan) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+// SingleFindFilter func
+func (model *Loan) SingleFindFilter(filter interface{}) error {
+	return basemodel.SingleFindFilter(&model, filter)
+}
+
+// PagedFilterSearch func
+func (model *Loan) PagedFilterSearch(page int, rows int, orderby []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
 	loans := []Loan{}
 
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&loans, page, rows, order, sorts, filter)
-
-	return result, err
-}
-
-func (l *Loan) Approve(disburseDate time.Time) error {
-	l.Status = "approved"
-	l.DisburseDate = disburseDate
-	l.ApprovalDate = time.Now()
-
-	err := l.Save()
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan")
-
-	return err
-}
-
-func (l *Loan) Reject(reason string) error {
-	l.Status = "rejected"
-	l.RejectReason = reason
-	l.ApprovalDate = time.Now()
-
-	err := l.Save()
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan")
-
-	return err
-}
-
-// DisburseConfirmed confirm disburse
-func (model *Loan) DisburseConfirmed() error {
-	model.DisburseStatus = "confirmed"
-
-	err := model.Save()
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "loan")
-
-	return err
-}
-
-// ChangeDisburseDate func
-func (l *Loan) ChangeDisburseDate(disburseDate time.Time) (err error) {
-	if l.DisburseDateChanged != true {
-		l.DisburseDate = disburseDate
-		l.DisburseDateChanged = true
-
-		err = l.Save()
-		if err != nil {
-			return err
-		}
-
-		err = KafkaSubmitModel(l, "loan")
-	} else {
-		err = fmt.Errorf("disburse date already changed before.")
-	}
-
-	return err
+	return basemodel.PagedFindFilter(&loans, page, rows, orderby, sort, filter)
 }

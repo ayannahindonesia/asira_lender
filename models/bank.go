@@ -33,6 +33,11 @@ func (model *Bank) Save() error {
 	return basemodel.Save(&model)
 }
 
+// FirstOrCreate func
+func (model *Bank) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
+}
+
 // Delete func
 func (model *Bank) Delete() error {
 	return basemodel.Delete(&model)

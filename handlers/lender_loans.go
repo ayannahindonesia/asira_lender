@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"fmt"
 	"log"
@@ -304,13 +305,27 @@ func LenderLoanApproveReject(c echo.Context) error {
 		if err != nil {
 			return returnInvalidResponse(http.StatusBadRequest, "", "error parsing disburse date")
 		}
-		loan.Approve(disburseDate)
+		loan.Status = "approved"
+		loan.DisburseDate = disburseDate
+		loan.ApprovalDate = time.Now()
+
+		err = middlewares.SubmitKafkaPayload(loan, "loan")
+		if err != nil {
+			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal approve pinjaman")
+		}
 	case "reject":
 		reason := c.QueryParam("reason")
 		if len(reason) < 1 {
 			return returnInvalidResponse(http.StatusBadRequest, "", "please fill reject reason")
 		}
-		loan.Reject(reason)
+		loan.Status = "rejected"
+		loan.RejectReason = reason
+		loan.ApprovalDate = time.Now()
+
+		err = middlewares.SubmitKafkaPayload(loan, "loan")
+		if err != nil {
+			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal reject pinjaman")
+		}
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loanID, loan.Status)})
@@ -448,7 +463,12 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, "", "not found")
 	}
 
-	loan.DisburseConfirmed()
+	loan.DisburseStatus = "confirmed"
+
+	err = middlewares.SubmitKafkaPayload(loan, "loan")
+	if err != nil {
+		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
+	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loanID, loan.DisburseStatus)})
 }
@@ -488,8 +508,13 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	if err != nil {
 		return returnInvalidResponse(http.StatusBadRequest, err, "error parsing disburse date")
 	}
-	if err = loan.ChangeDisburseDate(disburseDate); err != nil {
-		return returnInvalidResponse(http.StatusBadRequest, err, "error changing disburse date")
+
+	loan.DisburseDate = disburseDate
+	loan.DisburseDateChanged = true
+
+	err = middlewares.SubmitKafkaPayload(loan, "loan")
+	if err != nil {
+		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
 
 	return c.JSON(http.StatusOK, loan)
