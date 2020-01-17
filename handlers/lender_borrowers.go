@@ -400,7 +400,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 	}
 
 	borrower := models.Borrower{}
-	err = borrower.FilterSearchSingle(&Filter{
+	err = borrower.SingleFindFilter(&Filter{
 		Bank: sql.NullInt64{
 			Int64: int64(bankRep.BankID),
 			Valid: true,

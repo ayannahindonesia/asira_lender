@@ -32,7 +32,7 @@ func ClientLogin(c echo.Context) error {
 	}
 
 	client := models.Client{}
-	err = client.FilterSearchSingle(&Login{
+	err = client.SingleFindFilter(&Login{
 		Key:    auth[0],
 		Secret: auth[1],
 	})

@@ -2,6 +2,7 @@ package migration
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
@@ -50,7 +51,8 @@ func Seed() {
 			},
 		}
 		for _, bankType := range bankTypes {
-			bankType.Create()
+			// bankType.Create()
+			middlewares.SubmitKafkaPayload(bankType, "bank_type")
 		}
 
 		// seed services
@@ -97,7 +99,8 @@ func Seed() {
 			},
 		}
 		for _, service := range services {
-			service.Create()
+			// service.Create()
+			middlewares.SubmitKafkaPayload(service, "service")
 		}
 
 		// seed products
@@ -237,7 +240,8 @@ func Seed() {
 			},
 		}
 		for _, product := range products {
-			product.Create()
+			// product.Create()
+			middlewares.SubmitKafkaPayload(product, "product")
 		}
 
 		purposes := []models.LoanPurpose{
@@ -271,7 +275,8 @@ func Seed() {
 			},
 		}
 		for _, purpose := range purposes {
-			purpose.Create()
+			// purpose.Create()
+			middlewares.SubmitKafkaPayload(purpose, "loan_purpose")
 		}
 
 		// seed lenders
@@ -317,7 +322,8 @@ func Seed() {
 			},
 		}
 		for _, lender := range lenders {
-			lender.Create()
+			// lender.Create()
+			middlewares.SubmitKafkaPayload(lender, "bank")
 		}
 
 		roles := []models.Roles{
@@ -446,7 +452,8 @@ func Seed() {
 			},
 		}
 		for _, agentProvider := range agentProviders {
-			agentProvider.Create()
+			// agentProvider.Create()
+			middlewares.SubmitKafkaPayload(agentProvider, "agent_provider")
 		}
 
 		agents := []models.Agent{
@@ -502,7 +509,8 @@ func Seed() {
 			},
 		}
 		for _, agent := range agents {
-			agent.Create()
+			// agent.Create()
+			middlewares.SubmitKafkaPayload(agent, "agent")
 		}
 	}
 }
