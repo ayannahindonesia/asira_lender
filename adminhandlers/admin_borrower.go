@@ -55,7 +55,7 @@ func BorrowerGetAll(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status IN ('%s', '%s') AND (due_date IS NULL OR due_date = '0001-01-01 00:00:00+00' OR (NOW() > l.disburse_date AND NOW() < l.due_date + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "processing", "active", "inactive")
 
 	db = db.Table("borrowers").
 		Select("borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
@@ -172,7 +172,7 @@ func BorrowerGetDetails(c echo.Context) error {
 
 	borrower := BorrowerSelect{}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status IN ('%s', '%s') AND (due_date IS NULL OR due_date = '0001-01-01 00:00:00+00' OR (NOW() > l.disburse_date AND NOW() < l.due_date + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "processing", "active", "inactive")
 
 	err = db.Table("borrowers").
 		Select("borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
@@ -182,7 +182,7 @@ func BorrowerGetDetails(c echo.Context) error {
 		Where("borrowers.id = ?", borrowerID).
 		Find(&borrower).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Nasabah %v tidak ditemukan", borrowerID))
 	}
 
 	return c.JSON(http.StatusOK, borrower)

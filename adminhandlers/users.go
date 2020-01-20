@@ -181,7 +181,7 @@ func UserNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if userPayload.Bank > 0 {
@@ -266,7 +266,7 @@ func UserPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	bankRep := models.BankRepresentatives{}

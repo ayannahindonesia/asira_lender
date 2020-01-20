@@ -163,7 +163,7 @@ func BankNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	marshal, _ := json.Marshal(bankPayload)
@@ -208,7 +208,7 @@ func BankDetail(c echo.Context) error {
 	bank := BankSelect{}
 	err = db.Find(&bank).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
 	return c.JSON(http.StatusOK, bank)
@@ -228,7 +228,7 @@ func BankPatch(c echo.Context) error {
 	bankPayload := BankPayload{}
 	err = bank.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank %v tidak ditemukan", bankID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank %v tidak ditemukan", bankID))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -248,7 +248,7 @@ func BankPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(bankPayload.Name) > 0 {
@@ -323,7 +323,7 @@ func BankDelete(c echo.Context) error {
 	bank := models.Bank{}
 	err = bank.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
 	err = middlewares.SubmitKafkaPayload(bank, "bank_delete")

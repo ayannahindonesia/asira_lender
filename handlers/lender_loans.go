@@ -253,7 +253,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, "result not found")
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 
 	return c.JSON(http.StatusOK, loan)
@@ -290,20 +290,20 @@ func LenderLoanApproveReject(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 	if loan.ID == 0 {
-		return returnInvalidResponse(http.StatusNotFound, "", "not found")
+		return returnInvalidResponse(http.StatusNotFound, "", fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 
 	status := c.Param("approve_reject")
 	switch status {
 	default:
-		return returnInvalidResponse(http.StatusBadRequest, "", "not allowed status")
+		return returnInvalidResponse(http.StatusBadRequest, "", fmt.Sprintf("Status %v tidak dapat digunakan", status))
 	case "approve":
 		disburseDate, err := time.Parse("2006-01-02", c.QueryParam("disburse_date"))
 		if err != nil {
-			return returnInvalidResponse(http.StatusBadRequest, "", "error parsing disburse date")
+			return returnInvalidResponse(http.StatusBadRequest, "", "Terjadi kesalahan")
 		}
 		loan.Status = "approved"
 		loan.DisburseDate = disburseDate
@@ -316,7 +316,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 	case "reject":
 		reason := c.QueryParam("reason")
 		if len(reason) < 1 {
-			return returnInvalidResponse(http.StatusBadRequest, "", "please fill reject reason")
+			return returnInvalidResponse(http.StatusBadRequest, "", "Harap mengisi alasan menolak")
 		}
 		loan.Status = "rejected"
 		loan.RejectReason = reason
@@ -457,10 +457,10 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 	if loan.ID == 0 {
-		return returnInvalidResponse(http.StatusNotFound, "", "not found")
+		return returnInvalidResponse(http.StatusNotFound, "", fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 
 	loan.DisburseStatus = "confirmed"
@@ -501,12 +501,12 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "query result error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 
 	disburseDate, err := time.Parse("2006-01-02", c.QueryParam("disburse_date"))
 	if err != nil {
-		return returnInvalidResponse(http.StatusBadRequest, err, "error parsing disburse date")
+		return returnInvalidResponse(http.StatusBadRequest, err, "Terjadi kesalahan")
 	}
 
 	loan.DisburseDate = disburseDate

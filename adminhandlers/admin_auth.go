@@ -40,7 +40,7 @@ func AdminLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusBadRequest, validate, "invalid login")
+		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
 
 	// check if theres record
@@ -49,11 +49,11 @@ func AdminLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
 		if err != nil {
-			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
+			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		if user.Status == "inactive" {
-			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
+			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), "users")
@@ -61,7 +61,7 @@ func AdminLogin(c echo.Context) error {
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}
 	} else {
-		return returnInvalidResponse(http.StatusUnauthorized, "", "invalid login")
+		return returnInvalidResponse(http.StatusUnauthorized, "", "Login tidak valid")
 	}
 
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))

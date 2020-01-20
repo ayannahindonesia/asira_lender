@@ -60,7 +60,7 @@ func LoanPurposeList(c echo.Context) error {
 	}
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -83,7 +83,7 @@ func LoanPurposeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	marshal, _ := json.Marshal(purposePayload)
@@ -110,7 +110,7 @@ func LoanPurposeDetail(c echo.Context) error {
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	return c.JSON(http.StatusOK, purpose)
@@ -130,7 +130,7 @@ func LoanPurposePatch(c echo.Context) error {
 	purposePayload := LoanPurposePayload{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	payloadRules := govalidator.MapData{
@@ -140,7 +140,7 @@ func LoanPurposePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(purposePayload.Name) > 0 {
@@ -171,7 +171,7 @@ func LoanPurposeDelete(c echo.Context) error {
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_delete")

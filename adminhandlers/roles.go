@@ -114,7 +114,7 @@ func RoleNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &rolePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	marshal, _ := json.Marshal(rolePayload)
@@ -155,7 +155,7 @@ func RolePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &rolePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(rolePayload.Name) > 0 {

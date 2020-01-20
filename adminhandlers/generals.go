@@ -145,8 +145,8 @@ func validatePermission(c echo.Context, permission string) error {
 				}
 			}
 		}
-		return fmt.Errorf("Permission Denied")
+		return fmt.Errorf("Tidak memiliki hak akses")
 	}
 
-	return fmt.Errorf("Permission Denied")
+	return fmt.Errorf("Tidak memiliki hak akses")
 }

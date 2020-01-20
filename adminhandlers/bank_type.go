@@ -46,7 +46,7 @@ func BankTypeList(c echo.Context) error {
 		Name: name,
 	})
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -70,7 +70,7 @@ func BankTypeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankTypePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	marshal, _ := json.Marshal(bankTypePayload)
@@ -97,7 +97,7 @@ func BankTypeDetail(c echo.Context) error {
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	return c.JSON(http.StatusOK, bankType)
@@ -117,7 +117,7 @@ func BankTypePatch(c echo.Context) error {
 	bankTypePayload := BankTypePayload{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -128,7 +128,7 @@ func BankTypePatch(c echo.Context) error {
 	validate := validateRequestPayload(c, payloadRules, &bankTypePayload)
 	log.Println(bankType)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(bankTypePayload.Name) > 0 {
@@ -159,7 +159,7 @@ func BankTypeDelete(c echo.Context) error {
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("bank type %v tidak ditemukan", bankID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
 	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_delete")
