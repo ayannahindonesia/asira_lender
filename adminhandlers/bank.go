@@ -70,27 +70,27 @@ func BankList(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	db = db.Table("banks b").
-		Select("b.*, bt.name as bank_type_name").
-		Joins("INNER JOIN bank_types bt ON b.type = bt.id")
+	db = db.Table("banks").
+		Select("banks.*, bt.name as bank_type_name").
+		Joins("INNER JOIN bank_types bt ON banks.type = bt.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		db = db.Or("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("LOWER(b.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("LOWER(b.pic) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
-			Or("CAST(b.id as varchar(255)) = ?", searchAll)
+			Or("LOWER(banks.name) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("LOWER(banks.pic) LIKE ?", "%"+strings.ToLower(searchAll)+"%").
+			Or("CAST(banks.id as varchar(255)) = ?", searchAll)
 	} else {
 		if name := c.QueryParam("name"); len(name) > 0 {
-			db = db.Where("LOWER(b.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+			db = db.Where("LOWER(banks.name) LIKE ?", "%"+strings.ToLower(name)+"%")
 		}
 		if bankType := c.QueryParam("bank_type"); len(bankType) > 0 {
 			db = db.Where("LOWER(bt.name) LIKE ?", "%"+strings.ToLower(bankType)+"%")
 		}
 		if pic := c.QueryParam("pic"); len(pic) > 0 {
-			db = db.Where("LOWER(b.pic) LIKE ?", "%"+strings.ToLower(pic)+"%")
+			db = db.Where("LOWER(banks.pic) LIKE ?", "%"+strings.ToLower(pic)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-			db = db.Where("b.id IN (?)", id)
+			db = db.Where("banks.id IN (?)", id)
 		}
 	}
 
@@ -110,7 +110,7 @@ func BankList(c echo.Context) error {
 	}
 
 	tempDB := db
-	tempDB.Count(&totalRows)
+	tempDB.Where("banks.deleted_at IS NULL").Count(&totalRows)
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
@@ -199,10 +199,10 @@ func BankDetail(c echo.Context) error {
 
 	bankID, _ := strconv.Atoi(c.Param("bank_id"))
 
-	db = db.Table("banks b").
-		Select("b.*, bt.name as bank_type_name").
-		Joins("INNER JOIN bank_types bt ON b.type = bt.id").
-		Where("b.id = ?", bankID)
+	db = db.Table("banks").
+		Select("banks.*, bt.name as bank_type_name").
+		Joins("INNER JOIN bank_types bt ON banks.type = bt.id").
+		Where("banks.id = ?", bankID)
 
 	bank := BankSelect{}
 	err = db.Find(&bank).Error
@@ -221,7 +221,7 @@ func BankPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bank := models.Bank{}
 	bankPayload := BankPayload{}
@@ -317,7 +317,7 @@ func BankDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	bankID, _ := strconv.Atoi(c.Param("bank_id"))
+	bankID, _ := strconv.ParseUint(c.Param("bank_id"), 10, 64)
 
 	bank := models.Bank{}
 	err = bank.FindbyID(bankID)

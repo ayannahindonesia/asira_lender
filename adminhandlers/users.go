@@ -64,26 +64,26 @@ func UserList(c echo.Context) error {
 		}
 		offset = (page * rows) - rows
 	}
-	db = db.Table("users u").
-		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
-		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
-		Joins("LEFT JOIN bank_representatives br ON br.user_id = u.id").
+	db = db.Table("users").
+		Select("DISTINCT users.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(users.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
+		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(users.roles))").
+		Joins("LEFT JOIN bank_representatives br ON br.user_id = users.id").
 		Joins("LEFT JOIN banks b ON br.bank_id = b.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		db = db.Or("u.username LIKE ?", "%"+searchAll+"%").Or("u.id = ?", searchAll).Or("u.email LIKE ?", "%"+searchAll+"%").Or("u.phone LIKE ?", "%"+searchAll+"%").Or("bank_name LIKE ?", "%"+searchAll+"%")
+		db = db.Or("users.username LIKE ?", "%"+searchAll+"%").Or("users.id = ?", searchAll).Or("users.email LIKE ?", "%"+searchAll+"%").Or("users.phone LIKE ?", "%"+searchAll+"%").Or("bank_name LIKE ?", "%"+searchAll+"%")
 	} else {
 		if name := c.QueryParam("username"); len(name) > 0 {
-			db = db.Where("u.username LIKE ?", "%"+name+"%")
+			db = db.Where("users.username LIKE ?", "%"+name+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-			db = db.Where("u.id IN (?)", id)
+			db = db.Where("users.id IN (?)", id)
 		}
 		if email := c.QueryParam("email"); len(email) > 0 {
-			db = db.Where("u.email LIKE ?", "%"+email+"%")
+			db = db.Where("users.email LIKE ?", "%"+email+"%")
 		}
 		if phone := c.QueryParam("phone"); len(phone) > 0 {
-			db = db.Where("u.phone LIKE ?", "%"+phone+"%")
+			db = db.Where("users.phone LIKE ?", "%"+phone+"%")
 		}
 		if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
 			db = db.Where("bank_name LIKE ?", "%"+bankName+"%")
@@ -106,7 +106,7 @@ func UserList(c echo.Context) error {
 	}
 
 	tempDB := db
-	tempDB.Count(&totalRows)
+	tempDB.Where("users.deleted_at IS NULL").Count(&totalRows)
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
@@ -145,12 +145,12 @@ func UserDetails(c echo.Context) error {
 
 	userID, _ := strconv.Atoi(c.Param("id"))
 
-	err = db.Table("users u").
-		Select("DISTINCT u.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(u.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
-		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(u.roles))").
-		Joins("LEFT JOIN bank_representatives br ON br.user_id = u.id").
+	err = db.Table("users").
+		Select("DISTINCT users.*, (SELECT ARRAY_AGG(r.name) FROM roles r WHERE id IN (SELECT UNNEST(users.roles))) as roles_name, b.id as bank_id, b.name as bank_name").
+		Joins("INNER JOIN roles r ON r.id IN (SELECT UNNEST(users.roles))").
+		Joins("LEFT JOIN bank_representatives br ON br.user_id = users.id").
 		Joins("LEFT JOIN banks b ON br.bank_id = b.id").
-		Where("u.id = ?", userID).Find(&user).Error
+		Where("users.id = ?", userID).Find(&user).Error
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
 	}
@@ -187,9 +187,9 @@ func UserNew(c echo.Context) error {
 	if userPayload.Bank > 0 {
 		db := asira.App.DB
 		var count int
-		db.Table("roles r").Select("*").
-			Where("r.id IN (?)", []int64(userPayload.Roles)).
-			Where("r.system = ?", "Dashboard").Count(&count)
+		db.Table("roles").Select("*").
+			Where("roles.id IN (?)", []int64(userPayload.Roles)).
+			Where("roles.system = ?", "Dashboard").Count(&count)
 
 		if len(userPayload.Roles) != count {
 			return returnInvalidResponse(http.StatusInternalServerError, nil, "Roles tidak valid.")
@@ -247,7 +247,7 @@ func UserPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	userID, _ := strconv.Atoi(c.Param("id"))
+	userID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	userM := models.User{}
 	userPayload := UserPayload{}
@@ -274,9 +274,9 @@ func UserPatch(c echo.Context) error {
 	if len(userPayload.Roles) > 0 && bankRep.ID != 0 {
 		db := asira.App.DB
 		var count int
-		db.Table("roles r").Select("*").
-			Where("r.id IN (?)", []int64(userPayload.Roles)).
-			Where("r.system = ?", "Dashboard").Count(&count)
+		db.Table("roles").Select("*").
+			Where("roles.id IN (?)", []int64(userPayload.Roles)).
+			Where("roles.system = ?", "Dashboard").Count(&count)
 
 		if len(userPayload.Roles) != count {
 			return returnInvalidResponse(http.StatusUnprocessableEntity, nil, "Roles tidak valid.")
