@@ -147,7 +147,7 @@ func ProductNew(c echo.Context) error {
 	marshal, _ := json.Marshal(productPayload)
 	json.Unmarshal(marshal, &product)
 
-	err = middlewares.SubmitKafkaPayload(product, "product")
+	err = middlewares.SubmitKafkaPayload(product, "product_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")
 	}
@@ -247,7 +247,7 @@ func ProductPatch(c echo.Context) error {
 		product.Status = productPayload.Status
 	}
 
-	err = middlewares.SubmitKafkaPayload(product, "product")
+	err = middlewares.SubmitKafkaPayload(product, "product_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update produk %v", productID))
 	}

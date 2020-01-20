@@ -180,7 +180,7 @@ func BankNew(c echo.Context) error {
 		bank.Image = url
 	}
 
-	err = middlewares.SubmitKafkaPayload(bank, "bank")
+	err = middlewares.SubmitKafkaPayload(bank, "bank_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
@@ -302,7 +302,7 @@ func BankPatch(c echo.Context) error {
 		bank.Image = url
 	}
 
-	err = middlewares.SubmitKafkaPayload(bank, "bank")
+	err = middlewares.SubmitKafkaPayload(bank, "bank_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bankID))
 	}

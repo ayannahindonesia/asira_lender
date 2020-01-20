@@ -89,7 +89,7 @@ func LoanPurposeNew(c echo.Context) error {
 	marshal, _ := json.Marshal(purposePayload)
 	json.Unmarshal(marshal, &purpose)
 
-	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose")
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
@@ -150,7 +150,7 @@ func LoanPurposePatch(c echo.Context) error {
 		purpose.Status = purposePayload.Status
 	}
 
-	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose")
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update loan purpose %v", loanPurposeID))
 	}

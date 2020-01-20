@@ -76,7 +76,7 @@ func BankTypeNew(c echo.Context) error {
 	marshal, _ := json.Marshal(bankTypePayload)
 	json.Unmarshal(marshal, &bankType)
 
-	err = middlewares.SubmitKafkaPayload(bankType, "bank_type")
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
@@ -138,7 +138,7 @@ func BankTypePatch(c echo.Context) error {
 		bankType.Description = bankTypePayload.Description
 	}
 
-	err = middlewares.SubmitKafkaPayload(bankType, "bank_type")
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}

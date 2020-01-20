@@ -418,7 +418,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		if accNumber := c.QueryParam("account_number"); len(accNumber) > 0 {
 			borrower.BankAccountNumber = accNumber
 			borrower.Status = "approved"
-			err = middlewares.SubmitKafkaPayload(borrower, "borrower")
+			err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
 			if err != nil {
 				returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal approve borrower")
 			}
@@ -428,7 +428,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		break
 	case "reject":
 		borrower.Status = "rejected"
-		err = middlewares.SubmitKafkaPayload(borrower, "borrower")
+		err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
 		if err != nil {
 			returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal reject borrower")
 		}

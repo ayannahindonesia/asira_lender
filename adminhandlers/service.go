@@ -109,7 +109,7 @@ func ServiceNew(c echo.Context) error {
 		Status: servicePayload.Status,
 	}
 
-	err = middlewares.SubmitKafkaPayload(service, "service")
+	err = middlewares.SubmitKafkaPayload(service, "service_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan baru")
 	}
@@ -180,7 +180,7 @@ func ServicePatch(c echo.Context) error {
 		service.Status = servicePayload.Status
 	}
 
-	err = middlewares.SubmitKafkaPayload(service, "service")
+	err = middlewares.SubmitKafkaPayload(service, "service_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}

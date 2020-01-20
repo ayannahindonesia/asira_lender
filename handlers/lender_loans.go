@@ -309,7 +309,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 		loan.DisburseDate = disburseDate
 		loan.ApprovalDate = time.Now()
 
-		err = middlewares.SubmitKafkaPayload(loan, "loan")
+		err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 		if err != nil {
 			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal approve pinjaman")
 		}
@@ -322,7 +322,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 		loan.RejectReason = reason
 		loan.ApprovalDate = time.Now()
 
-		err = middlewares.SubmitKafkaPayload(loan, "loan")
+		err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 		if err != nil {
 			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal reject pinjaman")
 		}
@@ -465,7 +465,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 
 	loan.DisburseStatus = "confirmed"
 
-	err = middlewares.SubmitKafkaPayload(loan, "loan")
+	err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
@@ -512,7 +512,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	loan.DisburseDate = disburseDate
 	loan.DisburseDateChanged = true
 
-	err = middlewares.SubmitKafkaPayload(loan, "loan")
+	err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}

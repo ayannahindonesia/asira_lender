@@ -246,7 +246,7 @@ func AgentNew(c echo.Context) error {
 		}
 	}
 
-	err = middlewares.SubmitKafkaPayload(agent, "agent")
+	err = middlewares.SubmitKafkaPayload(agent, "agent_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 	}
@@ -340,7 +340,7 @@ func AgentPatch(c echo.Context) error {
 		agent.Image = url
 	}
 
-	err = middlewares.SubmitKafkaPayload(agent, "agent")
+	err = middlewares.SubmitKafkaPayload(agent, "agent_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
 	}

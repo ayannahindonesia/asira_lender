@@ -118,49 +118,35 @@ func SubmitKafkaPayload(i interface{}, model string) (err error) {
 }
 
 func kafkaPayloadBuilder(i interface{}, model string) (payload interface{}) {
-	switch model {
-	default:
-		if strings.HasSuffix(model, "_delete") {
-			type ModelDelete struct {
-				ID     float64 `json:"id"`
-				Model  string  `json:"model"`
-				Delete bool    `json:"delete"`
-			}
-			var inInterface map[string]interface{}
-			inrec, _ := json.Marshal(i)
-			json.Unmarshal(inrec, &inInterface)
-			if modelID, ok := inInterface["id"].(float64); ok {
-				payload = ModelDelete{
-					ID:     modelID,
-					Model:  strings.TrimSuffix(model, "_delete"),
-					Delete: true,
-				}
-			}
-		} else {
-			payload = i
-		}
-		break
-		// case "loan":
-		// 	type LoanStatusUpdate struct {
-		// 		ID                  uint64    `json:"id"`
-		// 		Status              string    `json:"status"`
-		// 		DisburseDate        time.Time `json:"disburse_date"`
-		// 		DisburseStatus      string    `json:"disburse_status"`
-		// 		DisburseDateChanged bool      `json:"disburse_date_changed"`
-		// 		RejectReason        string    `json:"reject_reason"`
-		// 	}
-		// 	if e, ok := i.(*models.Loan); ok {
-		// 		payload = LoanStatusUpdate{
-		// 			ID:                  e.ID,
-		// 			Status:              e.Status,
-		// 			DisburseDate:        e.DisburseDate,
-		// 			DisburseStatus:      e.DisburseStatus,
-		// 			DisburseDateChanged: e.DisburseDateChanged,
-		// 			RejectReason:        e.RejectReason,
-		// 		}
-		// 	}
-		// 	break
+	type KafkaModelPayload struct {
+		ID      float64     `json:"id"`
+		Payload interface{} `json:"payload"`
+		Mode    string      `json:"mode"`
 	}
+	var mode string
+
+	log.Printf("model : %v", model)
+
+	if strings.HasSuffix(model, "_delete") {
+		mode = "delete"
+	} else if strings.HasSuffix(model, "_create") {
+		mode = "create"
+	} else if strings.HasSuffix(model, "_update") {
+		mode = "update"
+	}
+
+	var inInterface map[string]interface{}
+	inrec, _ := json.Marshal(i)
+	json.Unmarshal(inrec, &inInterface)
+	if modelID, ok := inInterface["id"].(float64); ok {
+		payload = KafkaModelPayload{
+			ID:      modelID,
+			Payload: i,
+			Mode:    mode,
+		}
+	}
+
+	log.Printf("payload built : %v", payload)
 
 	return payload
 }
@@ -169,223 +155,204 @@ func processMessage(kafkaMessage []byte) (err error) {
 	var arr map[string]interface{}
 
 	data := strings.SplitN(string(kafkaMessage), ":", 2)
+
+	err = json.Unmarshal([]byte(data[1]), &arr)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("message processing : %v", arr)
+
 	switch data[0] {
 	default:
 		return nil
 	case "agent_provider":
-		var mod models.AgentProvider
+		mod := models.AgentProvider{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "agent":
-		var mod models.Agent
+		mod := models.Agent{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "bank_type":
-		var mod models.BankType
+		mod := models.BankType{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "bank":
-		var mod models.Bank
+		mod := models.Bank{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "loan_purpose":
-		var mod models.LoanPurpose
+		mod := models.LoanPurpose{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "product":
-		var mod models.Product
+		mod := models.Product{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "service":
-		var mod models.Service
+		mod := models.Service{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "loan":
-		var mod models.Loan
+		mod := models.Loan{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	case "borrower":
-		var mod models.Borrower
+		mod := models.Borrower{}
 
-		err = json.Unmarshal([]byte(data[1]), &arr)
-		if err != nil {
-			return err
-		}
+		marshal, _ := json.Marshal(arr["payload"])
+		json.Unmarshal(marshal, &mod)
 
-		if arr["delete"] != nil && arr["delete"].(bool) == true {
-			ID := uint64(arr["id"].(float64))
-			err := mod.FindbyID(ID)
-			if err != nil {
-				return err
-			}
-
+		switch arr["mode"] {
+		default:
+			err = fmt.Errorf("invalid payload")
+			break
+		case "create":
+			err = mod.Create()
+			break
+		case "update":
+			err = mod.Save()
+			break
+		case "delete":
 			err = mod.Delete()
-		} else {
-			err = json.Unmarshal([]byte(data[1]), &mod)
-			if err != nil {
-				return err
-			}
-			err = mod.FirstOrCreate()
+			break
 		}
 		break
 	}
