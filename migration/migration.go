@@ -52,7 +52,7 @@ func Seed() {
 		}
 		for _, bankType := range bankTypes {
 			// bankType.Create()
-			middlewares.SubmitKafkaPayload(bankType, "bank_type")
+			middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
 		}
 
 		// seed services
@@ -100,7 +100,7 @@ func Seed() {
 		}
 		for _, service := range services {
 			// service.Create()
-			middlewares.SubmitKafkaPayload(service, "service")
+			middlewares.SubmitKafkaPayload(service, "service_create")
 		}
 
 		// seed products
@@ -241,7 +241,7 @@ func Seed() {
 		}
 		for _, product := range products {
 			// product.Create()
-			middlewares.SubmitKafkaPayload(product, "product")
+			middlewares.SubmitKafkaPayload(product, "product_create")
 		}
 
 		purposes := []models.LoanPurpose{
@@ -276,7 +276,7 @@ func Seed() {
 		}
 		for _, purpose := range purposes {
 			// purpose.Create()
-			middlewares.SubmitKafkaPayload(purpose, "loan_purpose")
+			middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 		}
 
 		// seed lenders
@@ -323,7 +323,7 @@ func Seed() {
 		}
 		for _, lender := range lenders {
 			// lender.Create()
-			middlewares.SubmitKafkaPayload(lender, "bank")
+			middlewares.SubmitKafkaPayload(lender, "bank_create")
 		}
 
 		roles := []models.Roles{
@@ -453,7 +453,7 @@ func Seed() {
 		}
 		for _, agentProvider := range agentProviders {
 			// agentProvider.Create()
-			middlewares.SubmitKafkaPayload(agentProvider, "agent_provider")
+			middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
 		}
 
 		agents := []models.Agent{
@@ -510,7 +510,7 @@ func Seed() {
 		}
 		for _, agent := range agents {
 			// agent.Create()
-			middlewares.SubmitKafkaPayload(agent, "agent")
+			middlewares.SubmitKafkaPayload(agent, "agent_create")
 		}
 	}
 }
