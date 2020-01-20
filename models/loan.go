@@ -11,7 +11,6 @@ import (
 type (
 	Loan struct {
 		basemodel.BaseModel
-		DeletedTime         time.Time      `json:"deleted_time" gorm:"column:deleted_time"`
 		Borrower            uint64         `json:"borrower" gorm:"column:borrower;foreignkey"`
 		Status              string         `json:"status" gorm:"column:status;type:varchar(255)" sql:"DEFAULT:'processing'"`
 		LoanAmount          float64        `json:"loan_amount" gorm:"column:loan_amount;type:int;not null"`
@@ -55,13 +54,12 @@ func (l *Loan) Save() error {
 }
 
 func (l *Loan) Delete() error {
-	l.DeletedTime = time.Now()
-	err := basemodel.Save(&l)
+	err := basemodel.Delete(&l)
 
 	return err
 }
 
-func (l *Loan) FindbyID(id int) error {
+func (l *Loan) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&l, id)
 	return err
 }
@@ -85,6 +83,7 @@ func (l *Loan) Approve(disburseDate time.Time) error {
 	l.Status = "approved"
 	l.DisburseDate = disburseDate
 	l.ApprovalDate = time.Now()
+	l.DueDate = disburseDate.AddDate(0, l.Installment, 0)
 
 	err := l.Save()
 	if err != nil {
@@ -130,6 +129,7 @@ func (l *Loan) ChangeDisburseDate(disburseDate time.Time) (err error) {
 	if l.DisburseDateChanged != true {
 		l.DisburseDate = disburseDate
 		l.DisburseDateChanged = true
+		l.DueDate = disburseDate.AddDate(0, l.Installment, 0)
 
 		err = l.Save()
 		if err != nil {

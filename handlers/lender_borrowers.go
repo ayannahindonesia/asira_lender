@@ -23,7 +23,6 @@ type (
 	// BorrowerCSV custom type for query
 	BorrowerCSV struct {
 		basemodel.BaseModel
-		DeletedTime          time.Time `json:"deleted_time"`
 		Status               string    `json:"status"`
 		Fullname             string    `json:"fullname"`
 		Gender               string    `json:"gender"`
@@ -124,41 +123,41 @@ func LenderBorrowerList(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status IN ('%s', '%s') AND (due_date IS NULL OR due_date = '0001-01-01 00:00:00+00' OR (NOW() > l.disburse_date AND NOW() < l.due_date + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "processing", "active", "inactive")
 
-	db = db.Table("borrowers b").
-		Select("DISTINCT b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
-		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
-		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
+	db = db.Table("borrowers").
+		Select("DISTINCT borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
+		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
+		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID).
-		Where("b.status != ?", "rejected")
+		Where("borrowers.status != ?", "rejected")
 
 	accountNumber := c.QueryParam("account_number")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		// gorm havent support nested subquery yet.
 		searchLike := "%" + strings.ToLower(searchAll) + "%"
-		extraquery := fmt.Sprintf("LOWER(b.fullname) LIKE ?") + // use searchLike #1
+		extraquery := fmt.Sprintf("LOWER(borrowers.fullname) LIKE ?") + // use searchLike #1
 			fmt.Sprintf(" OR LOWER(a.category) = ?") + // use searchLike #2
 			fmt.Sprintf(" OR LOWER(ba.name) LIKE ?") + // use searchLike #3
 			fmt.Sprintf(" OR LOWER(a.name) LIKE ?") + // use searchLike #4
 			fmt.Sprintf(" OR LOWER(ap.name) LIKE ?") + // use searchLike #5
-			fmt.Sprintf(" OR CAST(b.id as varchar(255)) = ?") + // use searchAll #6
+			fmt.Sprintf(" OR CAST(borrowers.id as varchar(255)) = ?") + // use searchAll #6
 			fmt.Sprintf(" OR "+loanStatusQuery+" LIKE ?") // use searchLike #7
 
 		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
-				db = db.Where("b.bank_accountnumber = ?", "")
+				db = db.Where("borrowers.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
-				db = db.Where("b.bank_accountnumber != ?", "")
+				db = db.Where("borrowers.bank_accountnumber != ?", "")
 			}
 		}
 
 		db = db.Where(extraquery, searchLike, searchLike, searchLike, searchLike, searchLike, searchAll, searchLike)
 	} else {
 		if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-			db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
+			db = db.Where("LOWER(borrowers.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 		}
 		if category := c.QueryParam("category"); len(category) > 0 {
 			db = db.Where("LOWER(a.category) = ?", "%"+strings.ToLower(category)+"%")
@@ -173,15 +172,15 @@ func LenderBorrowerList(c echo.Context) error {
 			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 		}
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-			db = db.Where("b.id IN (?)", id)
+			db = db.Where("borrowers.id IN (?)", id)
 		}
 		if len(accountNumber) > 0 {
 			if accountNumber == "null" {
-				db = db.Where("b.bank_accountnumber = ?", "")
+				db = db.Where("borrowers.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
-				db = db.Where("b.bank_accountnumber != ?", "")
+				db = db.Where("borrowers.bank_accountnumber != ?", "")
 			} else {
-				db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+				db = db.Where("borrowers.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
 			}
 		}
 	}
@@ -202,7 +201,7 @@ func LenderBorrowerList(c echo.Context) error {
 	}
 
 	tempDB := db
-	tempDB.Count(&totalRows)
+	tempDB.Where("borrowers.deleted_at IS NULL").Count(&totalRows)
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
@@ -244,26 +243,26 @@ func LenderBorrowerListDetail(c echo.Context) error {
 
 	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error parsing borrower id")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
 	db := asira.App.DB
 
 	borrower := BorrowerSelect{}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status IN ('%s', '%s') AND (due_date IS NULL OR due_date = '0001-01-01 00:00:00+00' OR (NOW() > l.disburse_date AND NOW() < l.due_date + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "processing", "active", "inactive")
 
-	err = db.Table("borrowers b").
-		Select("DISTINCT b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
-		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
-		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
+	err = db.Table("borrowers").
+		Select("DISTINCT borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
+		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
+		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID).
-		Where("b.id = ?", borrowerID).
-		Where("b.status != ?", "rejected").
+		Where("borrowers.id = ?", borrowerID).
+		Where("borrowers.status != ?", "rejected").
 		Find(&borrower).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan.", borrowerID))
 	}
 
 	return c.JSON(http.StatusOK, borrower)
@@ -303,17 +302,17 @@ func LenderBorrowerListDownload(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND status = '%s' AND (disburse_date = '0001-01-01 00:00:00+00' OR (disburse_date != '0001-01-01 00:00:00+00' AND NOW() > l.disburse_date AND NOW() < l.disburse_date + make_interval(months => l.installment) + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "active", "inactive")
+	loanStatusQuery := fmt.Sprintf("CASE WHEN (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND status IN ('%s', '%s') AND (due_date IS NULL OR due_date = '0001-01-01 00:00:00+00' OR (NOW() > l.disburse_date AND NOW() < l.due_date + make_interval(days => 1)))) > 0 THEN '%s' ELSE '%s' END", "approved", "processing", "active", "inactive")
 
-	db = db.Table("borrowers b").
-		Select("DISTINCT b.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = b.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
-		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
-		Joins("LEFT JOIN banks ba ON ba.id = b.bank").
+	db = db.Table("borrowers").
+		Select("DISTINCT borrowers.*, a.category, ba.name as bank_name, a.name as agent_name, ap.name as agent_provider_name, (SELECT COUNT(id) FROM loans l WHERE l.borrower = borrowers.id AND l.status = ?) as loan_count, "+loanStatusQuery+" as loan_status", "approved").
+		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
+		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
 		Where("ba.id = ?", bankRep.BankID)
 
 	if fullname := c.QueryParam("fullname"); len(fullname) > 0 {
-		db = db.Where("LOWER(b.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
+		db = db.Where("LOWER(borrowers.fullname) LIKE ?", "%"+strings.ToLower(fullname)+"%")
 	}
 	if category := c.QueryParam("category"); len(category) > 0 {
 		db = db.Where("LOWER(a.category) = ?", strings.ToLower(category))
@@ -328,15 +327,15 @@ func LenderBorrowerListDownload(c echo.Context) error {
 		db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 	}
 	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-		db = db.Where("b.id IN (?)", id)
+		db = db.Where("borrowers.id IN (?)", id)
 	}
 	if accountNumber := c.QueryParam("account_number"); len(accountNumber) > 0 {
 		if accountNumber == "null" {
-			db = db.Where("b.bank_accountnumber = ?", "")
+			db = db.Where("borrowers.bank_accountnumber = ?", "")
 		} else if accountNumber == "not null" {
-			db = db.Where("b.bank_accountnumber != ?", "")
+			db = db.Where("borrowers.bank_accountnumber != ?", "")
 		} else {
-			db = db.Where("b.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
+			db = db.Where("borrowers.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
 		}
 	}
 
@@ -360,14 +359,14 @@ func LenderBorrowerListDownload(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "internal error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan.")
 	}
 
 	data := mapnewBorrowerStruct(borrowers)
 
 	b, err := csvutil.Marshal(data)
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "internal error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan.")
 	}
 
 	return c.JSON(http.StatusOK, string(b))
@@ -391,7 +390,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 
 	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error parsing borrower id")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 	type Filter struct {
 		Bank              sql.NullInt64 `json:"bank"`
@@ -409,7 +408,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		BankAccountNumber: "",
 	})
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, "borrower not found")
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan", borrowerID))
 	}
 
 	approval := c.Param("approval")
@@ -419,7 +418,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 			borrower.BankAccountNumber = accNumber
 			borrower.Approve()
 		} else {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "invalid account number")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Nomor rekening tidak valid")
 		}
 		break
 	case "reject":

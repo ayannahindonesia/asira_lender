@@ -36,7 +36,7 @@ func (model *Roles) Delete() error {
 }
 
 // FindbyID self explanatory
-func (model *Roles) FindbyID(id int) error {
+func (model *Roles) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

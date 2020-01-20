@@ -81,9 +81,9 @@ func createJwtToken(id string, group string) (string, error) {
 	var db = asira.App.DB
 	switch group {
 	case "users":
-		err := db.Table("roles r").
-			Select("DISTINCT TRIM(UNNEST(r.permissions)) as permissions").
-			Joins("INNER JOIN users u ON r.id IN (SELECT UNNEST(u.roles))").
+		err := db.Table("roles").
+			Select("DISTINCT TRIM(UNNEST(roles.permissions)) as permissions").
+			Joins("INNER JOIN users u ON roles.id IN (SELECT UNNEST(u.roles))").
 			Where("u.id = ?", id).Scan(&permModel).Error
 		if err != nil {
 			return "", err
@@ -145,8 +145,8 @@ func validatePermission(c echo.Context, permission string) error {
 				}
 			}
 		}
-		return fmt.Errorf("Permission Denied")
+		return fmt.Errorf("Tidak memiliki hak akses")
 	}
 
-	return fmt.Errorf("Permission Denied")
+	return fmt.Errorf("Tidak memiliki hak akses")
 }

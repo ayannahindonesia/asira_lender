@@ -31,7 +31,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 		ServiceName    string    `json:"service_name"`
 		ProductName    string    `json:"product_name"`
 		LoanID         string    `json:"loan_id"`
-		CreatedTime    time.Time `json:"created_time"`
+		CreatedTime    time.Time `json:"created_at"`
 		Plafond        float64   `json:"plafond"`
 		ConvenienceFee float64   `json:"convenience_fee"`
 	}
@@ -40,32 +40,32 @@ func ConvenienceFeeReport(c echo.Context) error {
 	var offset int
 	var rows int
 	var page int
+	var lastPage int
 
 	// pagination parameters
-	if c.QueryParam("rows") != "all" {
-		rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
 		page, _ = strconv.Atoi(c.QueryParam("page"))
 		if page <= 0 {
 			page = 1
 		}
-		if rows <= 0 {
-			rows = 25
-		}
 		offset = (page * rows) - rows
 	}
 
-	db = db.Table("loans l").
-		Select("ba.name as bank_name, s.name as service_name, p.name as product_name, l.id as loan_id, l.created_time, loan_amount as plafond, value->>'amount' as convenience_fee").
-		Joins("JOIN LATERAL jsonb_array_elements(l.fees) j ON true").
-		Joins("INNER JOIN borrowers b ON b.id = l.borrower").
+	db = db.Table("loans").
+		Select("ba.name as bank_name, s.name as service_name, p.name as product_name, loans.id as loan_id, loans.created_at, loan_amount as plafond, value->>'amount' as convenience_fee").
+		Joins("JOIN LATERAL jsonb_array_elements(loans.fees) j ON true").
+		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON ba.id = b.bank").
-		Joins("INNER JOIN products p ON p.id = l.product").
+		Joins("INNER JOIN products p ON p.id = loans.product").
 		Joins("INNER JOIN services s ON s.id = p.service_id").
-		Where("LOWER(value->>'description') LIKE 'convenience%'")
+		Where("LOWER(value->>'description') LIKE ?", "convenience%").
+		Where("loans.status = ?", "approved")
 
 	// filters
 	if bankName := c.QueryParam("bank_name"); len(bankName) > 0 {
-		db = db.Where("LOWER(b.name) = ?", strings.ToLower(bankName))
+		// di frontend pakai dropdown. jadi pake =
+		db = db.Where("LOWER(ba.name) = ?", strings.ToLower(bankName))
 	}
 	if serviceName := c.QueryParam("service_name"); len(serviceName) > 0 {
 		db = db.Where("LOWER(s.name) LIKE ?", "%"+strings.ToLower(serviceName)+"%")
@@ -74,7 +74,7 @@ func ConvenienceFeeReport(c echo.Context) error {
 		db = db.Where("LOWER(p.name) LIKE ?", "%"+strings.ToLower(productName)+"%")
 	}
 	if loanID := c.QueryParam("loan_id"); len(loanID) > 0 {
-		db = db.Where("l.id = ?", loanID)
+		db = db.Where("loans.id = ?", loanID)
 	}
 	if plafond := c.QueryParam("plafond"); len(plafond) > 0 {
 		db = db.Where("loan_amount = ?", plafond)
@@ -87,25 +87,49 @@ func ConvenienceFeeReport(c echo.Context) error {
 		if len(endDate) < 1 {
 			endDate = startDate
 		}
-		db = db.Where("l.created_time BETWEEN ? AND ?", startDate, endDate)
+		db = db.Where("loans.created_at BETWEEN ? AND ?", startDate, endDate)
 	}
 	if startDisburseDate := c.QueryParam("start_disburse_date"); len(startDisburseDate) > 0 {
 		if endDisburseDate := c.QueryParam("end_disburse_date"); len(endDisburseDate) > 0 {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
+			db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, endDisburseDate)
 		} else {
-			db = db.Where("l.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+			db = db.Where("loans.disburse_date BETWEEN ? AND ?", startDisburseDate, startDisburseDate)
+		}
+	}
+	if startApprovalDate := c.QueryParam("start_approval_date"); len(startApprovalDate) > 0 {
+		if endApprovalDate := c.QueryParam("end_approval_date"); len(endApprovalDate) > 0 {
+			db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, endApprovalDate)
+		} else {
+			db = db.Where("loans.approval_date BETWEEN ? AND ?", startApprovalDate, startApprovalDate)
 		}
 	}
 
-	if rows > 0 && offset > 0 {
-		db = db.Limit(rows).Offset(offset)
+	tempDB := db
+	tempDB.Where("loans.deleted_at IS NULL").Count(&totalRows)
+
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
 	}
-	err = db.Find(&results).Count(&totalRows).Error
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
+	}
+	err = db.Find(&results).Error
 	if err != nil {
 		log.Println(err)
 	}
-
-	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
 
 	response := basemodel.PagedFindResult{
 		TotalData:   totalRows,

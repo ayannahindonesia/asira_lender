@@ -71,49 +71,49 @@ func AgentList(c echo.Context) error {
 		offset = (page * rows) - rows
 	}
 
-	db = db.Table("agents a").
-		Select("a.*, ap.name as agent_provider_name, (SELECT ARRAY_AGG(name) FROM banks WHERE id IN (SELECT UNNEST(a.banks))) as bank_names").
-		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
+	db = db.Table("agents").
+		Select("agents.*, ap.name as agent_provider_name, (SELECT ARRAY_AGG(name) FROM banks WHERE id IN (SELECT UNNEST(agents.banks))) as bank_names").
+		Joins("LEFT JOIN agent_providers ap ON agents.agent_provider = ap.id")
 
 	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
 		searchLike := "%" + strings.ToLower(searchAll) + "%"
-		extraquery := fmt.Sprintf("CAST(a.id as varchar(255)) = ?") + // use searchAll #1
-			fmt.Sprintf(" OR LOWER(a.name) LIKE ?") + // use searchLike #2
-			fmt.Sprintf(" OR LOWER(a.category) LIKE ?") + // use searchLike #3
+		extraquery := fmt.Sprintf("CAST(agents.id as varchar(255)) = ?") + // use searchAll #1
+			fmt.Sprintf(" OR LOWER(agents.name) LIKE ?") + // use searchLike #2
+			fmt.Sprintf(" OR LOWER(agents.category) LIKE ?") + // use searchLike #3
 			fmt.Sprintf(" OR LOWER(ap.name) LIKE ?") + // use searchLike #4
-			fmt.Sprintf(" OR LOWER(a.status) LIKE ?") // use searchLike #5
+			fmt.Sprintf(" OR LOWER(agents.status) LIKE ?") // use searchLike #5
 
 		db = db.Where(extraquery, searchAll, searchLike, searchLike, searchLike, searchLike)
 	} else {
 		if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
-			db = db.Where("a.id IN (?)", id)
+			db = db.Where("agents.id IN (?)", id)
 		}
 		if name := c.QueryParam("name"); len(name) > 0 {
-			db = db.Where("LOWER(a.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+			db = db.Where("LOWER(agents.name) LIKE ?", "%"+strings.ToLower(name)+"%")
 		}
 		if username := c.QueryParam("username"); len(username) > 0 {
-			db = db.Where("LOWER(a.username) = ?", "%"+strings.ToLower(username)+"%")
+			db = db.Where("LOWER(agents.username) = ?", "%"+strings.ToLower(username)+"%")
 		}
 		if email := c.QueryParam("email"); len(email) > 0 {
-			db = db.Where("LOWER(a.email) LIKE ?", "%"+strings.ToLower(email)+"%")
+			db = db.Where("LOWER(agents.email) LIKE ?", "%"+strings.ToLower(email)+"%")
 		}
 		if phone := c.QueryParam("phone"); len(phone) > 0 {
-			db = db.Where("a.phone LIKE ?", "%"+phone+"%")
+			db = db.Where("agents.phone LIKE ?", "%"+phone+"%")
 		}
 		if category := c.QueryParam("category"); len(category) > 0 {
-			db = db.Where("LOWER(a.category) LIKE ?", "%"+strings.ToLower(category)+"%")
+			db = db.Where("LOWER(agents.category) LIKE ?", "%"+strings.ToLower(category)+"%")
 		}
 		if agentProvider := customSplit(c.QueryParam("agent_provider"), ","); len(agentProvider) > 0 {
 			db = db.Where("ap.id IN (?)", agentProvider)
 		}
 		if status := c.QueryParam("status"); len(status) > 0 {
-			db = db.Where("LOWER(a.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+			db = db.Where("LOWER(agents.status) LIKE ?", "%"+strings.ToLower(status)+"%")
 		}
 		if agentProviderName := c.QueryParam("agent_provider_name"); len(agentProviderName) > 0 {
 			db = db.Where("LOWER(ap.name) LIKE ?", "%"+strings.ToLower(agentProviderName)+"%")
 		}
 		if bankID := c.QueryParam("bank_id"); len(bankID) > 0 {
-			db = db.Where("a.banks LIKE ?", "%"+bankID+"%")
+			db = db.Where("agents.banks LIKE ?", "%"+bankID+"%")
 		}
 	}
 
@@ -133,7 +133,7 @@ func AgentList(c echo.Context) error {
 	}
 
 	tempDB := db
-	tempDB.Count(&totalRows)
+	tempDB.Where("agents.deleted_at IS NULL").Count(&totalRows)
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
@@ -171,14 +171,14 @@ func AgentDetails(c echo.Context) error {
 
 	db := asira.App.DB
 
-	err = db.Table("agents a").
-		Select("a.*, ap.name as agent_provider_name, (SELECT ARRAY_AGG(name) FROM banks WHERE id IN (SELECT UNNEST(a.banks))) as bank_names").
-		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Where("a.id = ?", id).
+	err = db.Table("agents").
+		Select("agents.*, ap.name as agent_provider_name, (SELECT ARRAY_AGG(name) FROM banks WHERE id IN (SELECT UNNEST(agents.banks))) as bank_names").
+		Joins("LEFT JOIN agent_providers ap ON agents.agent_provider = ap.id").
+		Where("agents.id = ?", id).
 		Find(&agent).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	return c.JSON(http.StatusOK, agent)
@@ -208,17 +208,17 @@ func AgentNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if agentPayload.Category == "account_executive" {
 		if agentPayload.AgentProvider > 0 || len(agentPayload.Banks) > 1 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "account executive cannot have any agent_providers and only allowed 1 bank at a time.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Account executive tidak dapat memiliki penyedia agen dan hanya memiliki 1 bank.", "Hambatan validasi")
 		}
 	}
 	if agentPayload.Category == "agent" {
 		if agentPayload.AgentProvider <= 0 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "agent must choose an agent provider.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Agen harus memilih penyedia agent.", "validation error")
 		}
 	}
 
@@ -261,13 +261,13 @@ func AgentPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agent := models.Agent{}
 	agentPayload := AgentPayload{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -283,17 +283,17 @@ func AgentPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if agentPayload.Category == "account_executive" {
 		if agentPayload.AgentProvider > 0 || len(agentPayload.Banks) > 1 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "account executive cannot have any agent_providers and only allowed 1 bank at a time.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Account executive tidak dapat memiliki penyedia agen dan hanya boleh memiliki 1 bank.", "Hambatan validasi")
 		}
 	}
 	if agentPayload.Category == "agent" {
 		if agentPayload.AgentProvider <= 0 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "agent must choose an agent provider.", "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "Agen harus memilih penyedia agen.", "Hambatan validasi")
 		}
 	}
 
@@ -355,17 +355,17 @@ func AgentDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agent := models.Agent{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	err = agent.Delete()
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agen baru")
 	}
 
 	return c.JSON(http.StatusOK, agent)

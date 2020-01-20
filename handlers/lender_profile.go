@@ -56,14 +56,14 @@ func LenderProfile(c echo.Context) error {
 	temporal := TemporalSelect{}
 
 	db := asira.App.DB
-	err := db.Table("bank_representatives br").
+	err := db.Table("bank_representatives").
 		Select("u.id, b.name, b.image, u.first_login").
-		Joins("INNER JOIN users u ON u.id = br.user_id").
-		Joins("INNER JOIN banks b ON b.id = br.bank_id").
-		Where("br.user_id = ?", lenderID).Find(&temporal).Error
+		Joins("INNER JOIN users u ON u.id = bank_representatives.user_id").
+		Joins("INNER JOIN banks b ON b.id = bank_representatives.bank_id").
+		Where("bank_representatives.user_id = ?", lenderID).Find(&temporal).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
+		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
 
 	return c.JSON(http.StatusOK, temporal)
@@ -88,9 +88,9 @@ func LenderProfileEdit(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	err = lenderModel.FindbyID(int(bankRep.BankID))
+	err = lenderModel.FindbyID(bankRep.BankID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
+		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
 
 	payloadRules := govalidator.MapData{
@@ -109,7 +109,7 @@ func LenderProfileEdit(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &lenderPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(lenderPayload.Name) > 0 {
@@ -148,7 +148,7 @@ func LenderProfileEdit(c echo.Context) error {
 
 	err = lenderModel.Save()
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error saving profile")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
 	return c.JSON(http.StatusOK, lenderModel)
@@ -168,9 +168,9 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 	bankRep := models.BankRepresentatives{}
 	bankRep.FindbyUserID(lenderID)
 
-	err = userModel.FindbyID(int(bankRep.UserID))
+	err = userModel.FindbyID(bankRep.UserID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
+		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
 
 	if userModel.FirstLogin {
@@ -184,7 +184,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		validate := validateRequestPayload(c, payloadRules, &pass)
 		if validate != nil {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
 
