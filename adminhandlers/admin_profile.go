@@ -23,7 +23,7 @@ func AdminProfile(c echo.Context) error {
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
+		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
 
 	return c.JSON(http.StatusOK, userModel)
@@ -42,7 +42,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusForbidden, err, "unauthorized")
+		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
 
 	if userModel.FirstLogin {
@@ -56,7 +56,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		validate := validateRequestPayload(c, payloadRules, &pass)
 		if validate != nil {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
 

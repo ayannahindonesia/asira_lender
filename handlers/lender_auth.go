@@ -40,7 +40,7 @@ func LenderLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusBadRequest, validate, "invalid login")
+		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
 
 	// check if theres record
@@ -52,15 +52,15 @@ func LenderLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(lender.Password), []byte(credentials.Password))
 		if err != nil {
-			return returnInvalidResponse(http.StatusUnauthorized, err, "invalid login")
+			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "users")
 		if err != nil {
-			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
+			return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan")
 		}
 	} else {
-		return returnInvalidResponse(http.StatusUnauthorized, "", "invalid login")
+		return returnInvalidResponse(http.StatusUnauthorized, "username not found", "Login tidak valid")
 	}
 
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))

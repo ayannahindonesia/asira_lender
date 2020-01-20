@@ -106,7 +106,7 @@ func ProductList(c echo.Context) error {
 	}
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -140,7 +140,7 @@ func ProductNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
 
 	marshal, _ := json.Marshal(productPayload)
@@ -167,7 +167,7 @@ func ProductDetail(c echo.Context) error {
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)
@@ -187,7 +187,7 @@ func ProductPatch(c echo.Context) error {
 	productPayload := ProductPayload{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -206,7 +206,7 @@ func ProductPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
 
 	if len(productPayload.Name) > 0 {
@@ -267,7 +267,7 @@ func ProductDelete(c echo.Context) error {
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
 	err = product.Delete()

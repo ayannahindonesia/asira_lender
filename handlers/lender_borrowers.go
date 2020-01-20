@@ -243,7 +243,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 
 	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error parsing borrower id")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
 	db := asira.App.DB
@@ -262,7 +262,7 @@ func LenderBorrowerListDetail(c echo.Context) error {
 		Where("borrowers.status != ?", "rejected").
 		Find(&borrower).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("id %v not found.", borrowerID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan.", borrowerID))
 	}
 
 	return c.JSON(http.StatusOK, borrower)
@@ -359,14 +359,14 @@ func LenderBorrowerListDownload(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "internal error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan.")
 	}
 
 	data := mapnewBorrowerStruct(borrowers)
 
 	b, err := csvutil.Marshal(data)
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "internal error")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan.")
 	}
 
 	return c.JSON(http.StatusOK, string(b))
@@ -390,7 +390,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 
 	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "error parsing borrower id")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 	type Filter struct {
 		Bank              sql.NullInt64 `json:"bank"`
@@ -408,7 +408,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		BankAccountNumber: "",
 	})
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, "borrower not found")
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan", borrowerID))
 	}
 
 	approval := c.Param("approval")
@@ -418,7 +418,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 			borrower.BankAccountNumber = accNumber
 			borrower.Approve()
 		} else {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "invalid account number")
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Nomor rekening tidak valid")
 		}
 		break
 	case "reject":
