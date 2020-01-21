@@ -382,7 +382,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -400,7 +399,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -418,7 +416,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -436,7 +433,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -454,7 +450,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -472,7 +467,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -490,7 +484,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -508,7 +501,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
@@ -526,7 +518,6 @@ func createUnitTestModels(i interface{}, model string) error {
 			switch mode {
 			default:
 				return fmt.Errorf("invalid model")
-				break
 			case "create":
 				err = x.Create()
 				break
