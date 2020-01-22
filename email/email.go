@@ -4,6 +4,7 @@ import (
 	"asira_lender/asira"
 	"flag"
 	"fmt"
+	"log"
 
 	"gopkg.in/gomail.v2"
 )
@@ -25,6 +26,7 @@ func SendMail(to string, subject, message string) error {
 	if flag.Lookup("test.v") == nil {
 		err := dialer.DialAndSend(mailer)
 		if err != nil {
+			log.Printf("Error Mailer : %v", err)
 			return err
 		}
 	}
