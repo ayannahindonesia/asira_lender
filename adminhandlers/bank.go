@@ -180,6 +180,7 @@ func BankNew(c echo.Context) error {
 		bank.Image = url
 	}
 
+	bank.Create()
 	err = middlewares.SubmitKafkaPayload(bank, "bank_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")

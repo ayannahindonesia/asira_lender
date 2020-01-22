@@ -147,6 +147,7 @@ func ProductNew(c echo.Context) error {
 	marshal, _ := json.Marshal(productPayload)
 	json.Unmarshal(marshal, &product)
 
+	product.Create()
 	err = middlewares.SubmitKafkaPayload(product, "product_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")

@@ -12,12 +12,12 @@ type LoanPurpose struct {
 }
 
 // Create func
-func (model *LoanPurpose) Create() (err error) {
+func (model *LoanPurpose) Create() error {
 	return basemodel.Create(&model)
 }
 
 // Save func
-func (model *LoanPurpose) Save() (err error) {
+func (model *LoanPurpose) Save() error {
 	return basemodel.Save(&model)
 }
 
@@ -27,22 +27,22 @@ func (model *LoanPurpose) FirstOrCreate() error {
 }
 
 // Delete func
-func (model *LoanPurpose) Delete() (err error) {
+func (model *LoanPurpose) Delete() error {
 	return basemodel.Delete(&model)
 }
 
 // FindbyID func
-func (model *LoanPurpose) FindbyID(id uint64) (err error) {
+func (model *LoanPurpose) FindbyID(id uint64) error {
 	return basemodel.FindbyID(&model, id)
 }
 
 // SingleFindFilter func
-func (model *LoanPurpose) SingleFindFilter(filter interface{}) (err error) {
+func (model *LoanPurpose) SingleFindFilter(filter interface{}) error {
 	return basemodel.SingleFindFilter(&model, filter)
 }
 
 // PagedFindFilter func
-func (model *LoanPurpose) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *LoanPurpose) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	loanpurposes := []LoanPurpose{}
 
 	return basemodel.PagedFindFilter(&loanpurposes, page, rows, orderby, sort, filter)

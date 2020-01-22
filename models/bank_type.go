@@ -37,7 +37,7 @@ func (model *BankType) FindbyID(id uint64) error {
 }
 
 // PagedFindFilter func
-func (model *BankType) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *BankType) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	banktype := []BankType{}
 
 	return basemodel.PagedFindFilter(&banktype, page, rows, orderby, sort, filter)

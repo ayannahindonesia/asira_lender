@@ -93,7 +93,8 @@ func (model *Borrower) SingleFindFilter(filter interface{}) error {
 }
 
 // PagedFindFilter func
-func (model *Borrower) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *Borrower) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	borrowers := []Borrower{}
+
 	return basemodel.PagedFindFilter(&borrowers, page, rows, orderby, sort, filter)
 }

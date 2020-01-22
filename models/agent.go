@@ -73,11 +73,10 @@ func (model *Agent) SingleFindFilter(filter interface{}) error {
 }
 
 // PagedFilterSearch search using filter and return with pagination format
-func (model *Agent) PagedFilterSearch(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *Agent) PagedFilterSearch(page int, rows int, order []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	agents := []Agent{}
-	result, err = basemodel.PagedFindFilter(&agents, page, rows, order, sort, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&agents, page, rows, order, sort, filter)
 }
 
 // SendPasswordEmail sends password to agent

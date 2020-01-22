@@ -50,11 +50,10 @@ func (model *AgentProvider) FindbyID(id uint64) error {
 }
 
 // PagedFilterSearch paged list
-func (model *AgentProvider) PagedFilterSearch(page int, rows int, order []string, sorts []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *AgentProvider) PagedFilterSearch(page int, rows int, order []string, sorts []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	agentProviders := []AgentProvider{}
-	result, err = basemodel.PagedFindFilter(&agentProviders, page, rows, order, sorts, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&agentProviders, page, rows, order, sorts, filter)
 }
 
 func deactivateAgents(providerID uint64) {

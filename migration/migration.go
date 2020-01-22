@@ -51,7 +51,7 @@ func Seed() {
 			},
 		}
 		for _, bankType := range bankTypes {
-			// bankType.Create()
+			bankType.Create()
 			middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
 		}
 
@@ -99,7 +99,7 @@ func Seed() {
 			},
 		}
 		for _, service := range services {
-			// service.Create()
+			service.Create()
 			middlewares.SubmitKafkaPayload(service, "service_create")
 		}
 
@@ -240,7 +240,7 @@ func Seed() {
 			},
 		}
 		for _, product := range products {
-			// product.Create()
+			product.Create()
 			middlewares.SubmitKafkaPayload(product, "product_create")
 		}
 
@@ -275,7 +275,7 @@ func Seed() {
 			},
 		}
 		for _, purpose := range purposes {
-			// purpose.Create()
+			purpose.Create()
 			middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 		}
 
@@ -322,7 +322,7 @@ func Seed() {
 			},
 		}
 		for _, lender := range lenders {
-			// lender.Create()
+			lender.Create()
 			middlewares.SubmitKafkaPayload(lender, "bank_create")
 		}
 
@@ -452,7 +452,7 @@ func Seed() {
 			},
 		}
 		for _, agentProvider := range agentProviders {
-			// agentProvider.Create()
+			agentProvider.Create()
 			middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
 		}
 
@@ -509,7 +509,7 @@ func Seed() {
 			},
 		}
 		for _, agent := range agents {
-			// agent.Create()
+			agent.Create()
 			middlewares.SubmitKafkaPayload(agent, "agent_create")
 		}
 	}

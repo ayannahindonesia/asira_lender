@@ -56,7 +56,7 @@ func (model *Bank) FindFilter(order []string, sort []string, limit int, offset i
 }
 
 // PagedFindFilter func
-func (model *Bank) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *Bank) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	banks := []Bank{}
 
 	return basemodel.PagedFindFilter(&banks, page, rows, order, sort, filter)

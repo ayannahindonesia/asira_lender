@@ -79,7 +79,7 @@ func (model *Loan) SingleFindFilter(filter interface{}) error {
 }
 
 // PagedFilterSearch func
-func (model *Loan) PagedFilterSearch(page int, rows int, orderby []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *Loan) PagedFilterSearch(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	loans := []Loan{}
 
 	return basemodel.PagedFindFilter(&loans, page, rows, orderby, sort, filter)

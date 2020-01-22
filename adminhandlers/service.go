@@ -109,6 +109,7 @@ func ServiceNew(c echo.Context) error {
 		Status: servicePayload.Status,
 	}
 
+	service.Create()
 	err = middlewares.SubmitKafkaPayload(service, "service_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan baru")

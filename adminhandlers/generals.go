@@ -12,14 +12,13 @@ import (
 	"github.com/thedevsaddam/govalidator"
 )
 
-type (
-	JWTclaims struct {
-		Username    string   `json:"username"`
-		Group       string   `json:"group"`
-		Permissions []string `json:"permissions"`
-		jwt.StandardClaims
-	}
-)
+// JWTclaims type
+type JWTclaims struct {
+	Username    string   `json:"username"`
+	Group       string   `json:"group"`
+	Permissions []string `json:"permissions"`
+	jwt.StandardClaims
+}
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
@@ -114,6 +113,7 @@ func createJwtToken(id string, group string) (string, error) {
 	return token, nil
 }
 
+// RandString random string alphanumeric. parameter length
 func RandString(n int) string {
 	b := make([]byte, n)
 	for i := range b {

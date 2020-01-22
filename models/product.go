@@ -49,7 +49,7 @@ func (model *Product) FindbyID(id uint64) error {
 }
 
 // PagedFindFilter func
-func (model *Product) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *Product) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	products := []Product{}
 
 	return basemodel.PagedFindFilter(&products, page, rows, order, sort, filter)

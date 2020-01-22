@@ -246,6 +246,7 @@ func AgentNew(c echo.Context) error {
 		}
 	}
 
+	agent.Create()
 	err = middlewares.SubmitKafkaPayload(agent, "agent_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
