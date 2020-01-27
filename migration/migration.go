@@ -867,6 +867,7 @@ func TestSeed() {
 				TotalLoan:        float64(6500000),
 				LayawayPlan:      500000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -879,6 +880,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -891,6 +893,7 @@ func TestSeed() {
 				TotalLoan:        float64(6500000),
 				LayawayPlan:      500000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -903,6 +906,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -915,6 +919,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -927,6 +932,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 		}
 		for _, loan := range loans {

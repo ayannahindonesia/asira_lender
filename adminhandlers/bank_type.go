@@ -76,8 +76,8 @@ func BankTypeNew(c echo.Context) error {
 	marshal, _ := json.Marshal(bankTypePayload)
 	json.Unmarshal(marshal, &bankType)
 
-	bankType.Create()
-	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
+	err = bankType.Create()
+	middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}

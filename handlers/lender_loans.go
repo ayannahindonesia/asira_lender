@@ -97,6 +97,7 @@ func LenderLoanRequestList(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("loans.otp_verified = ?", true).
 		Where("b.bank = ?", bankRep.BankID)
 
 	status := c.QueryParam("status")
@@ -248,6 +249,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("loans.otp_verified = ?", true).
 		Where("b.bank = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Find(&loan).Error
@@ -284,6 +286,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 		Select("*").
 		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Limit(1).
@@ -358,6 +361,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID)
 
 	// filters
@@ -449,6 +453,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		Select("*").
 		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Where("loans.status = ?", "approved").
@@ -494,6 +499,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 		Select("*").
 		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Where("loans.disburse_status = ?", "processing").

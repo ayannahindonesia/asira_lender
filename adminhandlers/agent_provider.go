@@ -115,8 +115,8 @@ func AgentProviderNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
-	agentProvider.Create()
-	err = middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
+	err = agentProvider.Create()
+	middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}

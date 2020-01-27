@@ -89,8 +89,8 @@ func LoanPurposeNew(c echo.Context) error {
 	marshal, _ := json.Marshal(purposePayload)
 	json.Unmarshal(marshal, &purpose)
 
-	purpose.Create()
-	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
+	err = purpose.Create()
+	middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
