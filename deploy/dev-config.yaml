@@ -32,7 +32,7 @@ development:
   mailer:
     host : smtp.gmail.com
     port : 587
-    email : infra.ayannah@gmail.com 
+    email : asira@ayannah.co.id
     password : jakarta2019
   s3:
     debug_mode: 1
