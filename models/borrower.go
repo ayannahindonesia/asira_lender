@@ -60,6 +60,7 @@ type Borrower struct {
 	Bank                 sql.NullInt64 `json:"bank" gorm:"column:bank" sql:"DEFAULT:NULL" csv:"bank"`
 	BankAccountNumber    string        `json:"bank_accountnumber" gorm:"column:bank_accountnumber" csv:"bank_accountnumber"`
 	AgentReferral        sql.NullInt64 `json:"agent_referral" gorm:"column:agent_referral"`
+	OTPverified          bool          `json:"otp_verified" gorm:"column:otp_verified;type:boolean" sql:"DEFAULT:FALSE"`
 }
 
 // Create func
