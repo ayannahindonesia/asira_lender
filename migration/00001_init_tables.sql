@@ -162,6 +162,7 @@ CREATE TABLE "borrowers" (
     "bank" bigserial,
     "bank_accountnumber" varchar(255),
     "agent_referral" bigint,
+    "otp_verified" BOOLEAN,
     FOREIGN KEY ("bank") REFERENCES banks(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
