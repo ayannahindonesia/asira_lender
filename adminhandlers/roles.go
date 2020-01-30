@@ -84,7 +84,7 @@ func RoleDetails(c echo.Context) error {
 
 	Iroles := models.Roles{}
 
-	IrolesID, _ := strconv.Atoi(c.Param("id"))
+	IrolesID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	err = Iroles.FindbyID(IrolesID)
 	if err != nil {
 		return returnInvalidResponse(http.StatusNotFound, err, "Role ID tidak ditemukan")
@@ -114,7 +114,7 @@ func RoleNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &rolePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	marshal, _ := json.Marshal(rolePayload)
@@ -136,7 +136,7 @@ func RolePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	IrolesID, _ := strconv.Atoi(c.Param("id"))
+	IrolesID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	Iroles := models.Roles{}
 	rolePayload := RolePayload{}
@@ -155,7 +155,7 @@ func RolePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &rolePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(rolePayload.Name) > 0 {

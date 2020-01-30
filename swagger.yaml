@@ -40,12 +40,13 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
-                  
-  /ping:
+          
+  # Client
+  /client/serviceinfo:
     get:
       tags:
         - Public
-      summary: to check if asira is ready for use. asira will check its own stacks if its ready or not
+      summary: to check if asira is ready for use. asira will check its own stacks if its ready or not also server time
       responses:
         '200':
           description: OK
@@ -54,11 +55,10 @@ paths:
               schema:
                 type: object
                 allOf:
-                  - $ref: '#/components/schemas/ServerReadyResponse'
+                  - $ref: '#/components/schemas/ServerInfo'
         '500':
           description: Internal Server Error
-          
-  # Client
+
   /client/lender_login:
     post:
       tags:
@@ -91,7 +91,7 @@ paths:
     post:
       tags:
         - Client
-      summary: lender user login
+      summary: admin user login
       parameters:
         - $ref: '#/components/parameters/authtoken'
       requestBody:
@@ -116,6 +116,80 @@ paths:
                   - $ref: '#/components/schemas/jwtResponse'
         '401':
           description: Unauthorized
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+          
+  # Forgot Password
+  /client/forgotpassword:
+    post:
+      tags:
+        - Client
+      summary: request reset password
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+        - in: query
+          name: system
+          schema:
+            type: string
+            example: core
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: email@dom.com
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                example: reset password instruction has been sent to email@dom.com
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+  /client/resetpassword:
+    post:
+      tags:
+        - Client
+      summary: reset password
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890
+                password:
+                  type: string
+                  example: thisisnewpass
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                example: account password changed
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
         '422':
           description: Unprocessable Entity
         '500':
@@ -161,7 +235,42 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/ModelUser'
+                  - $ref: '#/components/schemas/ModelUser'        
+  /admin/first_login:
+    post:
+      tags:
+        - Admin - Profile
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: newpassword
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                example: password anda berhasil diganti
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
                   
   /admin/client:
     post:
@@ -2212,6 +2321,227 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
+                  
+# === Loan ===
+  /admin/loan:
+    get:
+      tags:
+        - Admin - Loan
+      summary: "permission : 'core_loan_get_all'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+        - $ref: '#/components/parameters/rowsQuery'
+        - $ref: '#/components/parameters/pageQuery'
+        - $ref: '#/components/parameters/orderByQuery'
+        - $ref: '#/components/parameters/sortQuery'
+        - $ref: '#/components/parameters/searchStatus'
+        - $ref: '#/components/parameters/searchID'
+        - in: query
+          name: owner
+          schema:
+            type: string
+            example: 1
+        - in: query
+          name: owner_name
+          schema:
+            type: string
+            example: Name A
+        - in: query
+          name: disburse_status
+          schema:
+            type: string
+            example: processing
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            example: "2019-01-01"
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            example: "2019-12-12"
+        - in: query
+          name: start_disburse_date
+          schema:
+            type: string
+            example: "2019-01-01"
+        - in: query
+          name: end_disburse_date
+          schema:
+            type: string
+            example: "2019-12-12"
+        - in: query
+          name: start_approval_date
+          schema:
+            type: string
+            example: "2019-01-01"
+        - in: query
+          name: end_approval_date
+          schema:
+            type: string
+            example: "2019-12-12"
+        - in: query
+          name: category
+          schema:
+            type: string
+            example: "agent"
+        - in: query
+          name: agent_name
+          schema:
+            type: string
+            example: "agent name"
+        - in: query
+          name: agent_provider_name
+          schema:
+            type: string
+            example: "pt sukamaju"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PagedModel'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/ModelLoan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /admin/loan/:id:
+    get:
+      tags:
+        - Admin - Loan
+      summary: "permission : 'core_loan_get_details'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ModelLoan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  
+# === Custom Reports ===
+  /admin/reports/convenience_fee:
+    get:
+      tags:
+        - Admin - Reports
+      summary: "permission : 'convenience_fee_report'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+        - $ref: '#/components/parameters/rowsQuery'
+        - $ref: '#/components/parameters/pageQuery'
+        - $ref: '#/components/parameters/orderByQuery'
+        - $ref: '#/components/parameters/sortQuery'
+        - in: query
+          name: bank_name
+          schema:
+            type: string
+            example: bank a
+        - in: query
+          name: service_name
+          schema:
+            type: string
+            example: service a
+          description: search conv fee by service name
+        - in: query
+          name: product_name
+          schema:
+            type: string
+            example: product a
+          description: search conv fee by product name
+        - in: query
+          name: loan_id
+          schema:
+            type: string
+            example: 1
+        - in: query
+          name: plafond
+          schema:
+            type: number
+            example: 100000
+        - in: query
+          name: convenience_fee
+          schema:
+            type: number
+            example: 100000
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            example: "2000-01-02"
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            example: "2000-01-02"
+        - in: query
+          name: start_disburse_date
+          schema:
+            type: string
+            example: "2000-01-02"
+        - in: query
+          name: end_disburse_date
+          schema:
+            type: string
+            example: "2000-01-02"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PagedModel'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/ModelConvenienceFeeReport'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  
+# === Lender Borrower ===
   /lender/borrower_list:
     get:
       tags:
@@ -2419,35 +2749,177 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
                   
-# === Loan ===
-  /admin/loan:
+# === Lender Profile ===
+  /lender/profile:
     get:
       tags:
-        - Admin - Loan
-      summary: "permission : 'core_loan_get_all'"
+        - Lender - Profile
+      summary: "no permission"
+      description: get current user profile(lender profile)
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelLender'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags:
+        - Lender - Profile
+      summary: "permission : 'lender_profile_edit'"
+      description: edit current lender profile
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: bank name
+                type:
+                  type: number
+                  example: 1
+                address:
+                  type: string
+                  example: bank st.
+                province:
+                  type: string
+                  example: province
+                city:
+                  type: string
+                  example: city bank
+                pic:
+                  type: string
+                  example: pic
+                phone:
+                  type: string
+                  example: "081234567890"
+                services:
+                  type: string
+                  example: [1,2,3]
+                products:
+                  type: string
+                  example: [1,2,3]
+                adminfee_setup:
+                  type: string
+                  example: potong_plafon
+                convfee_setup:
+                  type: string
+                  example: potong_plafon
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelLender'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/first_login:
+    post:
+      tags:
+        - Lender - Profile
+      summary: "no permission"
+      description: edit current lender password only for first login lender
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: newpassword
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                example: password anda berhasil diganti
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  
+# === Lender Loans ===
+  /lender/loanrequest_list:
+    get:
+      tags:
+        - Lender - Loans
+      summary: "permission : 'lender_loan_request_list'"
+      description: get all loan list of current lender
       parameters:
         - $ref: '#/components/parameters/authtoken'
         - $ref: '#/components/parameters/rowsQuery'
         - $ref: '#/components/parameters/pageQuery'
         - $ref: '#/components/parameters/orderByQuery'
         - $ref: '#/components/parameters/sortQuery'
-        - $ref: '#/components/parameters/searchStatus'
+        - $ref: '#/components/parameters/searchAll'
         - $ref: '#/components/parameters/searchID'
+        - $ref: '#/components/parameters/searchStatus'
         - in: query
-          name: owner
+          name: borrower
           schema:
             type: string
             example: 1
         - in: query
-          name: owner_name
+          name: borrower_name
           schema:
             type: string
-            example: Name A
+            example: Si Bolang
+        - in: query
+          name: bank_account
+          schema:
+            type: string
+            example: "525412432"
         - in: query
           name: disburse_status
           schema:
             type: string
-            example: processing
+            example: confirmed
         - in: query
           name: start_date
           schema:
@@ -2469,20 +2941,30 @@ paths:
             type: string
             example: "2019-12-12"
         - in: query
+          name: start_approval_date
+          schema:
+            type: string
+            example: "2019-01-01"
+        - in: query
+          name: end_approval_date
+          schema:
+            type: string
+            example: "2019-12-12"
+        - in: query
           name: category
           schema:
             type: string
-            example: "agent"
+            example: confirmed
         - in: query
           name: agent_name
           schema:
             type: string
-            example: "agent name"
+            example: agentJ
         - in: query
           name: agent_provider_name
           schema:
             type: string
-            example: "pt sukamaju"
+            example: PT. Agent
       responses:
         '200':
           description: OK
@@ -2509,11 +2991,12 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
-  /admin/loan/:id:
+  /lender/loanrequest_list/:loan_id/detail:
     get:
       tags:
-        - Admin - Loan
-      summary: "permission : 'core_loan_get_details'"
+        - Lender - Loans
+      summary: "permission : 'lender_loan_request_detail'"
+      description: get all loan list of current lender
       parameters:
         - $ref: '#/components/parameters/authtoken'
       responses:
@@ -2547,11 +3030,14 @@ components:
         token:
           type: string
           example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFuZHJva2V5IiwiaXNfaWfaweiufh2198eu9128jd98wjhdQxNjgsImp0aSI6ImFuZHJva2V5In0.gCPTFIe-GnE9pduQaCfOV8hGo5ttXOalE9Egrsjb9f832hw9eijhdw98jhDVxWa1u6cWfSxMrCReviekgkqflZdA
-    ServerReadyResponse:
+    ServerInfo:
       properties:
-        message:
+        time:
           type: string
-          example: Server ready
+          example: "2006-01-02T15:04:05"
+        stacks:
+          type: boolean
+          example: true
     ErrorResponse:
       type: object
       properties:
@@ -2573,10 +3059,13 @@ components:
         id:
           type: number
           example: 1
-        created_time:
+        created_at:
           type: string
           example: "1999-12-31T00:00:00.000Z"
-        updated_time:
+        updated_at:
+          type: string
+          example: "1999-12-31T00:00:00.000Z"
+        deleted_at:
           type: string
           example: "1999-12-31T00:00:00.000Z"
     PagedModel:
@@ -2616,9 +3105,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
         - properties:
-            deleted_time:
-              type: string
-              example: "1999-12-31T00:00:00.000Z"
             name:
               type: string
               example: 
@@ -2632,9 +3118,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
         - properties:
-            deleted_time:
-              type: string
-              example: "1999-12-31T00:00:00.000Z"
             name:
               type: string
               example: Product Name
@@ -2663,9 +3146,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
         - properties:
-            deleted_time:
-              type: string
-              example: "1999-12-31T00:00:00.000Z"
             name:
               type: string
               example: bank type name
@@ -2676,9 +3156,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
         - properties:
-            deleted_time:
-              type: string
-              example: "1999-12-31T00:00:00.000Z"
             name:
               type: string
               example: bank name
@@ -2783,6 +3260,42 @@ components:
             status:
               type: string
               example: active
+              
+    ModelLender:
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - properties:
+            name:
+              type: string
+              example: Bank A
+            type:
+              type: string
+              example: BPD
+            address:
+              type: string
+              example: st. bankalogy
+            province:
+              type: string
+              example: province Bank A
+            city:
+              type: string
+              example: city A
+            services:
+              type: array
+              items:
+                type: number
+              example: [3, 5, 10]
+              description: service ids
+            pic_name:
+              type: string
+              example: Liana
+            phone:
+              type: string
+              example: "081234567890"
+            join_date:
+              type: string
+              example: "2019-06-26T16:40:33.372829+07:00"
+            
     ModelAgent:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
@@ -3099,7 +3612,29 @@ components:
             reject_reason:
               type: string
               example: "reasons"
-
+    ModelConvenienceFeeReport:
+      properties:
+        bank_name:
+          type: string
+          example: Bank A
+        service_name:
+          type: string
+          example: Pinjaman PNS
+        product_name:
+          type: string
+          example: Product A
+        loan_id:
+          type: string
+          example: "1"
+        created_at:
+          type: string
+          example: "1999-12-31T00:00:00.000Z"
+        plafond:
+          type: number
+          example: 100000
+        convenience_fee:
+          type: number
+          example: 100000
   parameters:
     clienttoken:
       required: true

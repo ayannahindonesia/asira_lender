@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/lib/pq"
@@ -15,7 +14,6 @@ import (
 // Agent main type
 type Agent struct {
 	basemodel.BaseModel
-	DeletedTime   time.Time     `json:"deleted_time" gorm:"column:deleted_time"`
 	Name          string        `json:"name" gorm:"column:name"`
 	Username      string        `json:"username" gorm:"column:username"`
 	Password      string        `json:"password" gorm:"column:password"`
@@ -68,6 +66,11 @@ func (model *Agent) Save() error {
 	return err
 }
 
+// SaveNoKafka agent without writing kafka
+func (model *Agent) SaveNoKafka() error {
+	return basemodel.Save(&model)
+}
+
 // Delete agent
 func (model *Agent) Delete() error {
 	err := basemodel.Delete(&model)
@@ -81,7 +84,7 @@ func (model *Agent) Delete() error {
 }
 
 // FindbyID find agent with id
-func (model *Agent) FindbyID(id int) error {
+func (model *Agent) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }

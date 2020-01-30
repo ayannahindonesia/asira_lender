@@ -80,12 +80,12 @@ func AgentProviderDetails(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agentProvider := models.AgentProvider{}
 	err = agentProvider.FindbyID(id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent provider %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agent provider %v tidak ditemukan", id))
 	}
 
 	return c.JSON(http.StatusOK, agentProvider)
@@ -111,7 +111,7 @@ func AgentProviderNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentProvider)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	err = agentProvider.Create()
@@ -130,12 +130,12 @@ func AgentProviderPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agentProvider := models.AgentProvider{}
 	err = agentProvider.FindbyID(id)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("agent provider %v tidak ditemukan", id))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agent provider %v tidak ditemukan", id))
 	}
 
 	payloadRules := govalidator.MapData{

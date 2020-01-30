@@ -187,8 +187,7 @@ func TestDeleteLoanPurpose(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 
-	obj := auth.GET("/admin/loan_purposes/1").
+	auth.GET("/admin/loan_purposes/1").
 		Expect().
-		Status(http.StatusOK).JSON().Object()
-	obj.ContainsKey("name").ValueNotEqual("deleted_time", "0001-01-01 00:00:00+00")
+		Status(http.StatusNotFound).JSON().Object()
 }

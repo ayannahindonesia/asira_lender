@@ -27,7 +27,7 @@ func CreateClient(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &client)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	err = client.Create()

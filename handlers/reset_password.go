@@ -110,7 +110,7 @@ func UserResetPasswordRequest(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &resetRequestPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	db := asira.App.DB
@@ -121,12 +121,12 @@ func UserResetPasswordRequest(c echo.Context) error {
 		First(&user).Error
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("email %s not found", resetRequestPayload.Email))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Email %s tidak ditemukan", resetRequestPayload.Email))
 	}
 
 	token, err := generateResetPassToken(fmt.Sprintf("%v:%v", resetRequestPayload.Email, user.ID))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
 	message := ""
@@ -141,10 +141,10 @@ func UserResetPasswordRequest(c echo.Context) error {
 
 	err = SendMail("Forgot Password Request", message, resetRequestPayload.Email)
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
-	return c.JSON(http.StatusOK, fmt.Sprintf("instruction has been sent to %v", resetRequestPayload.Email))
+	return c.JSON(http.StatusOK, fmt.Sprintf("Instruksi telah dikirimkan ke email anda %v", resetRequestPayload.Email))
 }
 
 // UserResetPasswordVerify reset pass with confirmed token
@@ -161,17 +161,17 @@ func UserResetPasswordVerify(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &resetVerifyPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	d, err := decrypt(resetVerifyPayload.Token, asira.App.Config.GetString(fmt.Sprintf("%s.passphrase", asira.App.ENV)))
 	if err != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, err, fmt.Sprintf("internal error, failed decrypt"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
 	splits := strings.Split(d, "|")
 	if len(splits) != 3 {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Token tidak valid")
 	}
 	t, _ := strconv.ParseInt(splits[0], 10, 64)
 	e, _ := strconv.ParseInt(splits[1], 10, 64)
@@ -179,20 +179,20 @@ func UserResetPasswordVerify(c echo.Context) error {
 	if time.Now().Unix() >= t && time.Now().Unix() <= e {
 		splits2 := strings.Split(splits[2], ":")
 		if len(splits2) != 2 {
-			return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
+			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Token tidak valid")
 		}
 		user := models.User{}
 		err := user.FilterSearchSingle(&Filter{
 			Email: splits2[0],
 		})
 		if err != nil {
-			return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("not found"))
+			return returnInvalidResponse(http.StatusNotFound, err, "Token tidak valid")
 		}
 		user.ChangePassword(resetVerifyPayload.Password)
 		user.Save()
 	} else {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, "", fmt.Sprintf("invalid token"))
+		return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Token tidak valid")
 	}
 
-	return c.JSON(http.StatusOK, "changed password successfully")
+	return c.JSON(http.StatusOK, "Password telah diganti")
 }
