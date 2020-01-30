@@ -47,22 +47,16 @@ func (model *Roles) FilterSearchSingle(filter interface{}) error {
 	return err
 }
 
-// PagedFilterSearch use filter to find all matching role, return using paging format
-func (model *Roles) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+// PagedFindFilter use filter to find all matching role, return using paging format
+func (model *Roles) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	role := []Roles{}
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&role, page, rows, order, sorts, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&role, page, rows, orderby, sort, filter)
 }
 
-// FilterSearch use filter to find all matching role
-func (model *Roles) FilterSearch(limit int, offset int, orderby string, sort string, filter interface{}) (result interface{}, err error) {
+// FindFilter use filter to find all matching role
+func (model *Roles) FindFilter(limit int, offset int, orderby []string, sort []string, filter interface{}) (interface{}, error) {
 	role := []Roles{}
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.FindFilter(&role, order, sorts, limit, offset, filter)
 
-	return result, err
+	return basemodel.FindFilter(&role, orderby, sort, limit, offset, filter)
 }

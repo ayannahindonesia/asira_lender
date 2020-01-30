@@ -2,6 +2,7 @@ package adminhandlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/base64"
 	"encoding/json"
@@ -180,6 +181,7 @@ func BankNew(c echo.Context) error {
 	}
 
 	err = bank.Create()
+	middlewares.SubmitKafkaPayload(bank, "bank_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
@@ -301,7 +303,7 @@ func BankPatch(c echo.Context) error {
 		bank.Image = url
 	}
 
-	err = bank.Save()
+	err = middlewares.SubmitKafkaPayload(bank, "bank_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bankID))
 	}
@@ -325,7 +327,7 @@ func BankDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
-	err = bank.Delete()
+	err = middlewares.SubmitKafkaPayload(bank, "bank_delete")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}

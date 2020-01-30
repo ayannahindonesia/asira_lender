@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/lib/pq"
@@ -34,8 +35,8 @@ func RoleList(c echo.Context) error {
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	orderby := strings.Split(c.QueryParam("orderby"), ",")
+	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	var (
 		roles  models.Roles
@@ -49,7 +50,7 @@ func RoleList(c echo.Context) error {
 			Status string `json:"status" condition:"optional"`
 		}
 		id, _ := strconv.ParseInt(searchAll, 10, 64)
-		result, err = roles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		result, err = roles.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			ID:     id,
 			Name:   searchAll,
 			Status: searchAll,
@@ -60,7 +61,7 @@ func RoleList(c echo.Context) error {
 			Name   string   `json:"name" condition:"LIKE"`
 			Status string   `json:"status"`
 		}
-		result, err = roles.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		result, err = roles.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			ID:     customSplit(c.QueryParam("id"), ","),
 			Name:   c.QueryParam("name"),
 			Status: c.QueryParam("status"),
@@ -194,8 +195,8 @@ func RoleRange(c echo.Context) error {
 	// pagination parameters
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	orderby := strings.Split(c.QueryParam("orderby"), ",")
+	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	name := c.QueryParam("name")
 	id := customSplit(c.QueryParam("id"), ",")
@@ -207,7 +208,7 @@ func RoleRange(c echo.Context) error {
 		Status string   `json:"status"`
 	}
 
-	result, err := Iroles.FilterSearch(offset, limit, orderby, sort, &Filter{
+	result, err := Iroles.FindFilter(offset, limit, orderby, sort, &Filter{
 		ID:     id,
 		Name:   name,
 		Status: status,
