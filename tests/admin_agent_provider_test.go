@@ -117,7 +117,7 @@ func TestAgentProviderNew(t *testing.T) {
 	obj.ContainsKey("name").ValueEqual("name", "Test Agent Provider")
 
 	// test invalid
-	auth.POST("/admin/banks").WithJSON(map[string]interface{}{}).
+	auth.POST("/admin/agent_providers").WithJSON(map[string]interface{}{}).
 		Expect().
 		Status(http.StatusUnprocessableEntity).JSON().Object()
 }

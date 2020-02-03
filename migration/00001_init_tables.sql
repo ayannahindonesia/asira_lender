@@ -162,6 +162,7 @@ CREATE TABLE "borrowers" (
     "bank" bigserial,
     "bank_accountnumber" varchar(255),
     "agent_referral" bigint,
+    "otp_verified" BOOLEAN,
     FOREIGN KEY ("bank") REFERENCES banks(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
@@ -179,11 +180,13 @@ CREATE TABLE "loans" (
     "fees" jsonb DEFAULT '[]',
     "interest" FLOAT NOT NULL,
     "total_loan" FLOAT NOT NULL,
+    "disburse_amount" FLOAT NOT NULL,
     "due_date" timestamptz,
     "layaway_plan" FLOAT NOT NULL,
     "loan_intention" varchar(255) NOT NULL,
     "intention_details" text NOT NULL,
     "borrower_info" jsonb DEFAULT '[]',
+    "otp_verified" BOOLEAN,
     "disburse_date" timestamptz,
     "disburse_date_changed" BOOLEAN,
     "disburse_status" varchar(255) DEFAULT ('processing'),

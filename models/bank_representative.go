@@ -6,45 +6,44 @@ import (
 	"github.com/ayannahindonesia/basemodel"
 )
 
-type (
-	BankRepresentatives struct {
-		basemodel.BaseModel
-		UserID uint64 `json:"user_id" gorm:"column:user_id"`
-		BankID uint64 `json:"bank_id" gorm:"column:bank_id"`
-	}
-)
+// BankRepresentatives main type
+type BankRepresentatives struct {
+	basemodel.BaseModel
+	UserID uint64 `json:"user_id" gorm:"column:user_id"`
+	BankID uint64 `json:"bank_id" gorm:"column:bank_id"`
+}
 
+// Create func
 func (model *BankRepresentatives) Create() error {
-	err := basemodel.Create(&model)
-	return err
+	return basemodel.Create(&model)
 }
 
+// Save func
 func (model *BankRepresentatives) Save() error {
-	err := basemodel.Save(&model)
-	return err
+	return basemodel.Save(&model)
 }
 
+// FindbyID func
 func (model *BankRepresentatives) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+	return basemodel.FindbyID(&model, id)
 }
 
+// FindbyUserID func
 func (model *BankRepresentatives) FindbyUserID(id int) error {
 	type Filter struct {
 		UserID string `json:"user_id"`
 	}
-	err := basemodel.SingleFindFilter(&model, &Filter{
+	return basemodel.SingleFindFilter(&model, &Filter{
 		UserID: fmt.Sprintf("%v", id),
 	})
-	return err
 }
 
+// FindbyBankID func
 func (model *BankRepresentatives) FindbyBankID(id int) error {
 	type Filter struct {
 		BankID string `json:"bank_id"`
 	}
-	err := basemodel.SingleFindFilter(&model, &Filter{
+	return basemodel.SingleFindFilter(&model, &Filter{
 		BankID: string(id),
 	})
-	return err
 }

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
@@ -9,6 +8,7 @@ import (
 )
 
 type (
+	// Loan main struct
 	Loan struct {
 		basemodel.BaseModel
 		Borrower            uint64         `json:"borrower" gorm:"column:borrower;foreignkey"`
@@ -18,12 +18,14 @@ type (
 		Fees                postgres.Jsonb `json:"fees" gorm:"column:fees;type:jsonb"`
 		Interest            float64        `json:"interest" gorm:"column:interest;type:int;not null"`
 		TotalLoan           float64        `json:"total_loan" gorm:"column:total_loan;type:int;not null"`
+		DisburseAmount      float64        `json:"disburse_amount" gorm:"column:disburse_amount;type:int;not null"`
 		DueDate             time.Time      `json:"due_date" gorm:"column:due_date"`
 		LayawayPlan         float64        `json:"layaway_plan" gorm:"column:layaway_plan;type:int;not null"` // how much borrower will pay per month
 		Product             uint64         `json:"product" gorm:"column:product;foreignkey"`                  // product and service is later to be discussed
 		LoanIntention       string         `json:"loan_intention" gorm:"column:loan_intention;type:varchar(255);not null"`
 		IntentionDetails    string         `json:"intention_details" gorm:"column:intention_details;type:text;not null"`
 		BorrowerInfo        postgres.Jsonb `json:"borrower_info" gorm:"column:borrower_info;type:jsonb"`
+		OTPverified         bool           `json:"otp_verified" gorm:"column:otp_verified;type:boolean" sql:"DEFAULT:FALSE"`
 		DisburseDate        time.Time      `json:"disburse_date" gorm:"column:disburse_date"`
 		DisburseDateChanged bool           `json:"disburse_date_changed" gorm:"column:disburse_date_changed"`
 		DisburseStatus      string         `json:"disburse_status" gorm:"column:disburse_status" sql:"DEFAULT:'processing'"`
@@ -31,115 +33,54 @@ type (
 		RejectReason        string         `json:"reject_reason" gorm:"column:reject_reason"`
 	}
 
+	// LoanFee for loan fee
 	LoanFee struct { // temporary hardcoded
 		Description string  `json:"description"`
 		Amount      float64 `json:"amount"`
 	}
+	// LoanFees slice of LoanFee
 	LoanFees []LoanFee
 
+	// LoanStatusUpdate type
 	LoanStatusUpdate struct {
 		ID     uint64 `json:"id"`
 		Status string `json:"status"`
 	}
 )
 
-func (l *Loan) Create() error {
-	err := basemodel.Create(&l)
-	return err
+// Create func
+func (model *Loan) Create() error {
+	return basemodel.Create(&model)
 }
 
-func (l *Loan) Save() error {
-	err := basemodel.Save(&l)
-	return err
+// Save func
+func (model *Loan) Save() error {
+	return basemodel.Save(&model)
 }
 
-func (l *Loan) Delete() error {
-	err := basemodel.Delete(&l)
-
-	return err
+// FirstOrCreate func
+func (model *Loan) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
-func (l *Loan) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&l, id)
-	return err
+// Delete func
+func (model *Loan) Delete() error {
+	return basemodel.Delete(&model)
 }
 
-func (l *Loan) FilterSearchSingle(filter interface{}) error {
-	err := basemodel.SingleFindFilter(&l, filter)
-	return err
+// FindbyID func
+func (model *Loan) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
 }
 
-func (l *Loan) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+// SingleFindFilter func
+func (model *Loan) SingleFindFilter(filter interface{}) error {
+	return basemodel.SingleFindFilter(&model, filter)
+}
+
+// PagedFilterSearch func
+func (model *Loan) PagedFilterSearch(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	loans := []Loan{}
 
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&loans, page, rows, order, sorts, filter)
-
-	return result, err
-}
-
-func (l *Loan) Approve(disburseDate time.Time) error {
-	l.Status = "approved"
-	l.DisburseDate = disburseDate
-	l.ApprovalDate = time.Now()
-	l.DueDate = disburseDate.AddDate(0, l.Installment, 0)
-
-	err := l.Save()
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan")
-
-	return err
-}
-
-func (l *Loan) Reject(reason string) error {
-	l.Status = "rejected"
-	l.RejectReason = reason
-	l.ApprovalDate = time.Now()
-
-	err := l.Save()
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(l, "loan")
-
-	return err
-}
-
-// DisburseConfirmed confirm disburse
-func (model *Loan) DisburseConfirmed() error {
-	model.DisburseStatus = "confirmed"
-
-	err := model.Save()
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "loan")
-
-	return err
-}
-
-// ChangeDisburseDate func
-func (l *Loan) ChangeDisburseDate(disburseDate time.Time) (err error) {
-	if l.DisburseDateChanged != true {
-		l.DisburseDate = disburseDate
-		l.DisburseDateChanged = true
-		l.DueDate = disburseDate.AddDate(0, l.Installment, 0)
-
-		err = l.Save()
-		if err != nil {
-			return err
-		}
-
-		err = KafkaSubmitModel(l, "loan")
-	} else {
-		err = fmt.Errorf("disburse date already changed before.")
-	}
-
-	return err
+	return basemodel.PagedFindFilter(&loans, page, rows, orderby, sort, filter)
 }

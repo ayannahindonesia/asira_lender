@@ -6,65 +6,51 @@ import (
 	"github.com/lib/pq"
 )
 
-type (
-	Product struct {
-		basemodel.BaseModel
-		Name            string         `json:"name" gorm:"column:name;type:varchar(255)"`
-		ServiceID       uint64         `json:"service_id" gorm:"column:service_id"`
-		MinTimeSpan     int            `json:"min_timespan" gorm:"column:min_timespan"`
-		MaxTimeSpan     int            `json:"max_timespan" gorm:"column:max_timespan"`
-		Interest        float64        `json:"interest" gorm:"column:interest"`
-		MinLoan         int            `json:"min_loan" gorm:"column:min_loan"`
-		MaxLoan         int            `json:"max_loan" gorm:"column:max_loan"`
-		Fees            postgres.Jsonb `json:"fees" gorm:"column:fees"`
-		Collaterals     pq.StringArray `json:"collaterals" gorm:"column:collaterals"`
-		FinancingSector pq.StringArray `json:"financing_sector" gorm:"column:financing_sector"`
-		Assurance       string         `json:"assurance" gorm:"column:assurance"`
-		Status          string         `json:"status" gorm:"column:status;type:varchar(255)"`
-	}
-)
+// Product main type
+type Product struct {
+	basemodel.BaseModel
+	Name            string         `json:"name" gorm:"column:name;type:varchar(255)"`
+	ServiceID       uint64         `json:"service_id" gorm:"column:service_id"`
+	MinTimeSpan     int            `json:"min_timespan" gorm:"column:min_timespan"`
+	MaxTimeSpan     int            `json:"max_timespan" gorm:"column:max_timespan"`
+	Interest        float64        `json:"interest" gorm:"column:interest"`
+	MinLoan         int            `json:"min_loan" gorm:"column:min_loan"`
+	MaxLoan         int            `json:"max_loan" gorm:"column:max_loan"`
+	Fees            postgres.Jsonb `json:"fees" gorm:"column:fees"`
+	Collaterals     pq.StringArray `json:"collaterals" gorm:"column:collaterals"`
+	FinancingSector pq.StringArray `json:"financing_sector" gorm:"column:financing_sector"`
+	Assurance       string         `json:"assurance" gorm:"column:assurance"`
+	Status          string         `json:"status" gorm:"column:status;type:varchar(255)"`
+}
 
+// Create func
 func (model *Product) Create() error {
-	err := basemodel.Create(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "product")
-
-	return err
+	return basemodel.Create(&model)
 }
 
+// Save func
 func (model *Product) Save() error {
-	err := basemodel.Save(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "product")
-
-	return err
+	return basemodel.Save(&model)
 }
 
+// FirstOrCreate func
+func (model *Product) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
+}
+
+// Delete func
 func (model *Product) Delete() error {
-	err := basemodel.Delete(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "product_delete")
-
-	return err
+	return basemodel.Delete(&model)
 }
 
+// FindbyID func
 func (model *Product) FindbyID(id uint64) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+	return basemodel.FindbyID(&model, id)
 }
 
-func (model *Product) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+// PagedFindFilter func
+func (model *Product) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	products := []Product{}
-	result, err = basemodel.PagedFindFilter(&products, page, rows, order, sort, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&products, page, rows, order, sort, filter)
 }
