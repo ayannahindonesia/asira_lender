@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
@@ -399,7 +400,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 	}
 
 	borrower := models.Borrower{}
-	err = borrower.FilterSearchSingle(&Filter{
+	err = borrower.SingleFindFilter(&Filter{
 		Bank: sql.NullInt64{
 			Int64: int64(bankRep.BankID),
 			Valid: true,
@@ -416,13 +417,21 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 	default:
 		if accNumber := c.QueryParam("account_number"); len(accNumber) > 0 {
 			borrower.BankAccountNumber = accNumber
-			borrower.Approve()
+			borrower.Status = "approved"
+			err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
+			if err != nil {
+				returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal approve borrower")
+			}
 		} else {
 			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Nomor rekening tidak valid")
 		}
 		break
 	case "reject":
-		borrower.Reject()
+		borrower.Status = "rejected"
+		err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
+		if err != nil {
+			returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal reject borrower")
+		}
 		break
 	}
 

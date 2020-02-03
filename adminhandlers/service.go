@@ -2,6 +2,7 @@ package adminhandlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/base64"
 	"fmt"
@@ -107,9 +108,11 @@ func ServiceNew(c echo.Context) error {
 		Image:  url,
 		Status: servicePayload.Status,
 	}
+
 	err = service.Create()
+	middlewares.SubmitKafkaPayload(service, "service_create")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan baru")
 	}
 
 	return c.JSON(http.StatusCreated, service)
@@ -178,7 +181,7 @@ func ServicePatch(c echo.Context) error {
 		service.Status = servicePayload.Status
 	}
 
-	err = service.Save()
+	err = middlewares.SubmitKafkaPayload(service, "service_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}
@@ -202,9 +205,9 @@ func ServiceDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
-	err = service.Delete()
+	err = middlewares.SubmitKafkaPayload(service, "service_delete")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", serviceID))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete layanan %v", serviceID))
 	}
 
 	return c.JSON(http.StatusOK, service)

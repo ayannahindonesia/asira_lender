@@ -1,12 +1,14 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -29,8 +31,8 @@ func BankTypeList(c echo.Context) error {
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	orderby := strings.Split(c.QueryParam("orderby"), ",")
+	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	// filters
 	name := c.QueryParam("name")
@@ -40,7 +42,7 @@ func BankTypeList(c echo.Context) error {
 	}
 
 	bankType := models.BankType{}
-	result, err := bankType.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+	result, err := bankType.PagedFindFilter(page, rows, orderby, sort, &Filter{
 		Name: name,
 	})
 	if err != nil {
@@ -75,6 +77,7 @@ func BankTypeNew(c echo.Context) error {
 	json.Unmarshal(marshal, &bankType)
 
 	err = bankType.Create()
+	middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
@@ -136,7 +139,7 @@ func BankTypePatch(c echo.Context) error {
 		bankType.Description = bankTypePayload.Description
 	}
 
-	err = bankType.Save()
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
@@ -160,7 +163,7 @@ func BankTypeDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
-	err = bankType.Delete()
+	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_delete")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
