@@ -1,6 +1,7 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
@@ -106,7 +107,7 @@ func ProductList(c echo.Context) error {
 	}
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -140,15 +141,16 @@ func ProductNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
 
 	marshal, _ := json.Marshal(productPayload)
 	json.Unmarshal(marshal, &product)
 
 	err = product.Create()
+	middlewares.SubmitKafkaPayload(product, "product_create")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")
 	}
 
 	return c.JSON(http.StatusCreated, product)
@@ -162,12 +164,12 @@ func ProductDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.Atoi(c.Param("id"))
+	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)
@@ -181,13 +183,13 @@ func ProductPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.Atoi(c.Param("id"))
+	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	product := models.Product{}
 	productPayload := ProductPayload{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
 	payloadRules := govalidator.MapData{
@@ -206,7 +208,7 @@ func ProductPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
 
 	if len(productPayload.Name) > 0 {
@@ -246,9 +248,9 @@ func ProductPatch(c echo.Context) error {
 		product.Status = productPayload.Status
 	}
 
-	err = product.Save()
+	err = middlewares.SubmitKafkaPayload(product, "product_update")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", productID))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update produk %v", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)
@@ -262,17 +264,17 @@ func ProductDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.Atoi(c.Param("id"))
+	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
-	err = product.Delete()
+	err = middlewares.SubmitKafkaPayload(product, "product_delete")
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", productID))
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete produk %v", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)

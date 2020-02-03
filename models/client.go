@@ -14,7 +14,7 @@ type Client struct {
 }
 
 // BeforeCreate callback
-func (model *Client) BeforeCreate() (err error) {
+func (model *Client) BeforeCreate() error {
 	if len(model.Secret) < 1 {
 		model.Secret = uuid.New().String()
 	}
@@ -22,31 +22,26 @@ func (model *Client) BeforeCreate() (err error) {
 }
 
 // Create func
-func (model *Client) Create() (err error) {
-	err = basemodel.Create(&model)
-	return err
+func (model *Client) Create() error {
+	return basemodel.Create(&model)
 }
 
 // Save func
-func (model *Client) Save() (err error) {
-	err = basemodel.Save(&model)
-	return err
+func (model *Client) Save() error {
+	return basemodel.Save(&model)
 }
 
 // Delete func
-func (model *Client) Delete() (err error) {
-	err = basemodel.Delete(&model)
-	return err
+func (model *Client) Delete() error {
+	return basemodel.Delete(&model)
 }
 
 // FindbyID func
-func (model *Client) FindbyID(id int) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+func (model *Client) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
 }
 
-// FilterSearchSingle func
-func (model *Client) FilterSearchSingle(filter interface{}) (err error) {
-	err = basemodel.SingleFindFilter(&model, filter)
-	return err
+// SingleFindFilter func
+func (model *Client) SingleFindFilter(filter interface{}) error {
+	return basemodel.SingleFindFilter(&model, filter)
 }

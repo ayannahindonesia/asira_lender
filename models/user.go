@@ -40,8 +40,14 @@ func (model *User) Save() error {
 	return err
 }
 
+// Delete func
+func (model *User) Delete() error {
+	err := basemodel.Delete(&model)
+	return err
+}
+
 // FindbyID func
-func (model *User) FindbyID(id int) error {
+func (model *User) FindbyID(id uint64) error {
 	err := basemodel.FindbyID(&model, id)
 	return err
 }
@@ -53,11 +59,10 @@ func (model *User) FilterSearchSingle(filter interface{}) error {
 }
 
 // PagedFilterSearch func
-func (model *User) PagedFilterSearch(page int, rows int, orderby []string, sorts []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *User) PagedFilterSearch(page int, rows int, orderby []string, sorts []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	user := []User{}
-	result, err = basemodel.PagedFindFilter(&user, page, rows, orderby, sorts, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&user, page, rows, orderby, sorts, filter)
 }
 
 // ChangePassword update password to encrypted. does not save

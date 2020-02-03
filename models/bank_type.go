@@ -1,63 +1,44 @@
 package models
 
 import (
-	"time"
-
 	"github.com/ayannahindonesia/basemodel"
 )
 
-type (
-	BankType struct {
-		basemodel.BaseModel
-		DeletedTime time.Time `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
-		Name        string    `json:"name" gorm:"name"`
-		Description string    `json:"description" gorm:"description"`
-	}
-)
-
-func (b *BankType) Create() error {
-	err := basemodel.Create(&b)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(b, "bank_type")
-
-	return err
+// BankType main type
+type BankType struct {
+	basemodel.BaseModel
+	Name        string `json:"name" gorm:"name"`
+	Description string `json:"description" gorm:"description"`
 }
 
-func (b *BankType) Save() error {
-	err := basemodel.Save(&b)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(b, "bank_type")
-
-	return err
+// Create func
+func (model *BankType) Create() error {
+	return basemodel.Create(&model)
 }
 
-func (b *BankType) Delete() error {
-	err := basemodel.Delete(&b)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(b, "bank_type_delete")
-
-	return err
+// Save func
+func (model *BankType) Save() error {
+	return basemodel.Save(&model)
 }
 
-func (b *BankType) FindbyID(id int) error {
-	err := basemodel.FindbyID(&b, id)
-	return err
+// FirstOrCreate func
+func (model *BankType) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
-func (b *BankType) PagedFilterSearch(page int, rows int, orderby string, sort string, filter interface{}) (result basemodel.PagedFindResult, err error) {
-	bank_type := []BankType{}
-	order := []string{orderby}
-	sorts := []string{sort}
-	result, err = basemodel.PagedFindFilter(&bank_type, page, rows, order, sorts, filter)
+// Delete func
+func (model *BankType) Delete() error {
+	return basemodel.Delete(&model)
+}
 
-	return result, err
+// FindbyID func
+func (model *BankType) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
+}
+
+// PagedFindFilter func
+func (model *BankType) PagedFindFilter(page int, rows int, orderby []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
+	banktype := []BankType{}
+
+	return basemodel.PagedFindFilter(&banktype, page, rows, orderby, sort, filter)
 }

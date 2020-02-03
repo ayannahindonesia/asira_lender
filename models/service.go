@@ -1,62 +1,45 @@
 package models
 
 import (
-	"time"
-
 	"github.com/ayannahindonesia/basemodel"
 )
 
-type (
-	Service struct {
-		basemodel.BaseModel
-		DeletedTime time.Time `json:"deleted_time" gorm:"column:deleted_time"`
-		Name        string    `json:"name" gorm:"column:name;type:varchar(255)"`
-		Image       string    `json:"image" gorm:"column:image"`
-		Status      string    `json:"status" gorm:"column:status;type:varchar(255)"`
-	}
-)
+// Service main type
+type Service struct {
+	basemodel.BaseModel
+	Name   string `json:"name" gorm:"column:name;type:varchar(255)"`
+	Image  string `json:"image" gorm:"column:image"`
+	Status string `json:"status" gorm:"column:status;type:varchar(255)"`
+}
 
+// Create func
 func (model *Service) Create() error {
-	err := basemodel.Create(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "service")
-
-	return err
+	return basemodel.Create(&model)
 }
 
+// Save func
 func (model *Service) Save() error {
-	err := basemodel.Save(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "service")
-
-	return err
+	return basemodel.Save(&model)
 }
 
+// FirstOrCreate func
+func (model *Service) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
+}
+
+// Delete func
 func (model *Service) Delete() error {
-	err := basemodel.Delete(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "service_delete")
-
-	return err
+	return basemodel.Delete(&model)
 }
 
-func (model *Service) FindbyID(id int) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+// FindbyID func
+func (model *Service) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
 }
 
+// PagedFindFilter func
 func (model *Service) PagedFindFilter(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
 	services := []Service{}
-	result, err = basemodel.PagedFindFilter(&services, page, rows, order, sort, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&services, page, rows, order, sort, filter)
 }

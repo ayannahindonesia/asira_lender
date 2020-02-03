@@ -1,11 +1,13 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/labstack/echo"
@@ -29,8 +31,8 @@ func LoanPurposeList(c echo.Context) error {
 	// pagination parameters
 	rows, err := strconv.Atoi(c.QueryParam("rows"))
 	page, err := strconv.Atoi(c.QueryParam("page"))
-	orderby := c.QueryParam("orderby")
-	sort := c.QueryParam("sort")
+	orderby := strings.Split(c.QueryParam("orderby"), ",")
+	sort := strings.Split(c.QueryParam("sort"), ",")
 
 	var (
 		purpose models.LoanPurpose
@@ -42,7 +44,7 @@ func LoanPurposeList(c echo.Context) error {
 			Name   string `json:"name" condition:"LIKE,optional"`
 			Status string `json:"status" condition:"optional"`
 		}
-		result, err = purpose.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		result, err = purpose.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			Name:   searchAll,
 			Status: searchAll,
 		})
@@ -51,14 +53,14 @@ func LoanPurposeList(c echo.Context) error {
 			Name   string `json:"name" condition:"LIKE"`
 			Status string `json:"status"`
 		}
-		result, err = purpose.PagedFilterSearch(page, rows, orderby, sort, &Filter{
+		result, err = purpose.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			Name:   c.QueryParam("name"),
 			Status: c.QueryParam("status"),
 		})
 	}
 
 	if err != nil {
-		return returnInvalidResponse(http.StatusInternalServerError, err, "pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
 	return c.JSON(http.StatusOK, result)
@@ -81,13 +83,14 @@ func LoanPurposeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	marshal, _ := json.Marshal(purposePayload)
 	json.Unmarshal(marshal, &purpose)
 
 	err = purpose.Create()
+	middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
@@ -103,12 +106,12 @@ func LoanPurposeDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	loanPurposeID, _ := strconv.Atoi(c.Param("loan_purpose_id"))
+	loanPurposeID, _ := strconv.ParseUint(c.Param("loan_purpose_id"), 10, 64)
 
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	return c.JSON(http.StatusOK, purpose)
@@ -122,13 +125,13 @@ func LoanPurposePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	loanPurposeID, _ := strconv.Atoi(c.Param("loan_purpose_id"))
+	loanPurposeID, _ := strconv.ParseUint(c.Param("loan_purpose_id"), 10, 64)
 
 	purpose := models.LoanPurpose{}
 	purposePayload := LoanPurposePayload{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	payloadRules := govalidator.MapData{
@@ -138,7 +141,7 @@ func LoanPurposePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	if len(purposePayload.Name) > 0 {
@@ -148,7 +151,7 @@ func LoanPurposePatch(c echo.Context) error {
 		purpose.Status = purposePayload.Status
 	}
 
-	err = purpose.Save()
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_update")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update loan purpose %v", loanPurposeID))
 	}
@@ -164,15 +167,15 @@ func LoanPurposeDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	loanPurposeID, _ := strconv.Atoi(c.Param("loan_purpose_id"))
+	loanPurposeID, _ := strconv.ParseUint(c.Param("loan_purpose_id"), 10, 64)
 
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("loan purpose %v tidak ditemukan", loanPurposeID))
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
-	err = purpose.Delete()
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_delete")
 	if err != nil {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete loan purpose %v", loanPurposeID))
 	}

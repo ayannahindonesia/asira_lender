@@ -2,7 +2,6 @@ package models
 
 import (
 	"asira_lender/asira"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 )
@@ -10,22 +9,16 @@ import (
 // AgentProvider model
 type AgentProvider struct {
 	basemodel.BaseModel
-	DeletedTime time.Time `json:"deleted_time" gorm:"column:deleted_time" sql:"DEFAULT:current_timestamp"`
-	Name        string    `json:"name" gorm:"column:name"`
-	PIC         string    `json:"pic" gorm:"column:pic"`
-	Phone       string    `json:"phone" gorm:"column:phone"`
-	Address     string    `json:"address" gorm:"column:address"`
-	Status      string    `json:"status" gorm:"column:status"`
+	Name    string `json:"name" gorm:"column:name"`
+	PIC     string `json:"pic" gorm:"column:pic"`
+	Phone   string `json:"phone" gorm:"column:phone"`
+	Address string `json:"address" gorm:"column:address"`
+	Status  string `json:"status" gorm:"column:status"`
 }
 
 // Create new
 func (model *AgentProvider) Create() error {
-	err := basemodel.Create(&model)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return basemodel.Create(&model)
 }
 
 // BeforeSave gorm callback
@@ -38,36 +31,29 @@ func (model *AgentProvider) BeforeSave() error {
 
 // Save update
 func (model *AgentProvider) Save() error {
-	err := basemodel.Save(&model)
-	if err != nil {
-		return err
-	}
+	return basemodel.Save(&model)
+}
 
-	return err
+// FirstOrCreate saves, or create if not exist
+func (model *AgentProvider) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
 // Delete model
 func (model *AgentProvider) Delete() error {
-	err := basemodel.Delete(&model)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return basemodel.Delete(&model)
 }
 
 // FindbyID func
-func (model *AgentProvider) FindbyID(id int) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+func (model *AgentProvider) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
 }
 
 // PagedFilterSearch paged list
-func (model *AgentProvider) PagedFilterSearch(page int, rows int, order []string, sorts []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *AgentProvider) PagedFilterSearch(page int, rows int, order []string, sorts []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	agentProviders := []AgentProvider{}
-	result, err = basemodel.PagedFindFilter(&agentProviders, page, rows, order, sorts, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&agentProviders, page, rows, order, sorts, filter)
 }
 
 func deactivateAgents(providerID uint64) {

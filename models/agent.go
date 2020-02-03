@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/lib/pq"
@@ -15,7 +14,6 @@ import (
 // Agent main type
 type Agent struct {
 	basemodel.BaseModel
-	DeletedTime   time.Time     `json:"deleted_time" gorm:"column:deleted_time"`
 	Name          string        `json:"name" gorm:"column:name"`
 	Username      string        `json:"username" gorm:"column:username"`
 	Password      string        `json:"password" gorm:"column:password"`
@@ -46,58 +44,39 @@ func (model *Agent) BeforeCreate() (err error) {
 
 // Create new agent
 func (model *Agent) Create() error {
-	err := basemodel.Create(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "agent")
-
-	return err
+	return basemodel.Create(&model)
 }
 
 // Save update agent
 func (model *Agent) Save() error {
-	err := basemodel.Save(&model)
-	if err != nil {
-		return err
-	}
+	return basemodel.Save(&model)
+}
 
-	err = KafkaSubmitModel(model, "agent")
-
-	return err
+// FirstOrCreate saves, or create if not exist
+func (model *Agent) FirstOrCreate() error {
+	return basemodel.FirstOrCreate(&model)
 }
 
 // Delete agent
 func (model *Agent) Delete() error {
-	err := basemodel.Delete(&model)
-	if err != nil {
-		return err
-	}
-
-	err = KafkaSubmitModel(model, "agent_delete")
-
-	return err
+	return basemodel.Delete(&model)
 }
 
 // FindbyID find agent with id
-func (model *Agent) FindbyID(id int) error {
-	err := basemodel.FindbyID(&model, id)
-	return err
+func (model *Agent) FindbyID(id uint64) error {
+	return basemodel.FindbyID(&model, id)
 }
 
-// FilterSearchSingle search using filter and return last
-func (model *Agent) FilterSearchSingle(filter interface{}) error {
-	err := basemodel.SingleFindFilter(&model, filter)
-	return err
+// SingleFindFilter search using filter and return last
+func (model *Agent) SingleFindFilter(filter interface{}) error {
+	return basemodel.SingleFindFilter(&model, filter)
 }
 
 // PagedFilterSearch search using filter and return with pagination format
-func (model *Agent) PagedFilterSearch(page int, rows int, order []string, sort []string, filter interface{}) (result basemodel.PagedFindResult, err error) {
+func (model *Agent) PagedFilterSearch(page int, rows int, order []string, sort []string, filter interface{}) (basemodel.PagedFindResult, error) {
 	agents := []Agent{}
-	result, err = basemodel.PagedFindFilter(&agents, page, rows, order, sort, filter)
 
-	return result, err
+	return basemodel.PagedFindFilter(&agents, page, rows, order, sort, filter)
 }
 
 // SendPasswordEmail sends password to agent

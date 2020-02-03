@@ -2,12 +2,11 @@ package migration
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
@@ -36,31 +35,6 @@ func Seed() {
 			client.Create()
 		}
 
-		// seed images
-		file, _ := os.Open("./image_dummy.txt")
-		defer file.Close()
-		b64image, _ := ioutil.ReadAll(file)
-		images := []models.Image{
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-		}
-		for _, image := range images {
-			image.Create()
-		}
-
 		// seed bank types
 		bankTypes := []models.BankType{
 			models.BankType{
@@ -78,6 +52,7 @@ func Seed() {
 		}
 		for _, bankType := range bankTypes {
 			bankType.Create()
+			middlewares.SubmitKafkaPayload(bankType, "bank_type_create")
 		}
 
 		// seed services
@@ -125,6 +100,7 @@ func Seed() {
 		}
 		for _, service := range services {
 			service.Create()
+			middlewares.SubmitKafkaPayload(service, "service_create")
 		}
 
 		// seed products
@@ -265,6 +241,7 @@ func Seed() {
 		}
 		for _, product := range products {
 			product.Create()
+			middlewares.SubmitKafkaPayload(product, "product_create")
 		}
 
 		purposes := []models.LoanPurpose{
@@ -299,6 +276,7 @@ func Seed() {
 		}
 		for _, purpose := range purposes {
 			purpose.Create()
+			middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 		}
 
 		// seed lenders
@@ -345,6 +323,7 @@ func Seed() {
 		}
 		for _, lender := range lenders {
 			lender.Create()
+			middlewares.SubmitKafkaPayload(lender, "bank_create")
 		}
 
 		roles := []models.Roles{
@@ -474,6 +453,7 @@ func Seed() {
 		}
 		for _, agentProvider := range agentProviders {
 			agentProvider.Create()
+			middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
 		}
 
 		agents := []models.Agent{
@@ -530,7 +510,148 @@ func Seed() {
 		}
 		for _, agent := range agents {
 			agent.Create()
+			middlewares.SubmitKafkaPayload(agent, "agent_create")
 		}
+
+		// Seeds for borrower
+		// seed borrowers
+		// borrowers := []models.Borrower{
+		// 	models.Borrower{
+		// 		Fullname:             "Full Name A",
+		// 		Gender:               "M",
+		// 		IdCardNumber:         "9876123451234567789",
+		// 		TaxIDnumber:          "0987654321234567890",
+		// 		Email:                "emaila@domain.com",
+		// 		Birthday:             time.Now(),
+		// 		Birthplace:           "a birthplace",
+		// 		LastEducation:        "a last edu",
+		// 		MotherName:           "a mom",
+		// 		Phone:                "081234567890",
+		// 		MarriedStatus:        "single",
+		// 		SpouseName:           "a spouse",
+		// 		SpouseBirthday:       time.Now(),
+		// 		SpouseLastEducation:  "master",
+		// 		Dependants:           0,
+		// 		Address:              "a street address",
+		// 		Province:             "a province",
+		// 		City:                 "a city",
+		// 		NeighbourAssociation: "a rt",
+		// 		Hamlets:              "a rw",
+		// 		HomePhoneNumber:      "021837163",
+		// 		Subdistrict:          "a camat",
+		// 		UrbanVillage:         "a lurah",
+		// 		HomeOwnership:        "privately owned",
+		// 		LivedFor:             5,
+		// 		Occupation:           "accupation",
+		// 		EmployerName:         "amployer",
+		// 		EmployerAddress:      "amployer address",
+		// 		Department:           "a department",
+		// 		BeenWorkingFor:       2,
+		// 		DirectSuperior:       "a boss",
+		// 		EmployerNumber:       "02188776655",
+		// 		MonthlyIncome:        5000000,
+		// 		OtherIncome:          2000000,
+		// 		RelatedPersonName:    "a big sis",
+		// 		RelatedPhoneNumber:   "08987654321",
+		// 		OTPverified:          true,
+		// 		BankAccountNumber:    "520384716",
+		// 		Bank: sql.NullInt64{
+		// 			Int64: 1,
+		// 			Valid: true,
+		// 		},
+		// 		AgentReferral: sql.NullInt64{
+		// 			Int64: 0,
+		// 			Valid: true,
+		// 		},
+		// 	},
+		// 	models.Borrower{
+		// 		Fullname:             "Full Name B",
+		// 		Gender:               "F",
+		// 		IdCardNumber:         "9876123451234567781",
+		// 		TaxIDnumber:          "0987654321234567891",
+		// 		Email:                "emailb@domain.com",
+		// 		Birthday:             time.Now(),
+		// 		Birthplace:           "b birthplace",
+		// 		LastEducation:        "b last edu",
+		// 		MotherName:           "b mom",
+		// 		Phone:                "081234567891",
+		// 		MarriedStatus:        "single",
+		// 		SpouseName:           "b spouse",
+		// 		SpouseBirthday:       time.Now(),
+		// 		SpouseLastEducation:  "master",
+		// 		Dependants:           0,
+		// 		Address:              "b street address",
+		// 		Province:             "b province",
+		// 		City:                 "b city",
+		// 		NeighbourAssociation: "b rt",
+		// 		Hamlets:              "b rw",
+		// 		HomePhoneNumber:      "021837163",
+		// 		Subdistrict:          "b camat",
+		// 		UrbanVillage:         "b lurah",
+		// 		HomeOwnership:        "privately owned",
+		// 		LivedFor:             5,
+		// 		Occupation:           "bccupation",
+		// 		EmployerName:         "bmployer",
+		// 		EmployerAddress:      "bmployer address",
+		// 		Department:           "b department",
+		// 		BeenWorkingFor:       2,
+		// 		DirectSuperior:       "b boss",
+		// 		EmployerNumber:       "02188776655",
+		// 		MonthlyIncome:        5000000,
+		// 		OtherIncome:          2000000,
+		// 		RelatedPersonName:    "b big sis",
+		// 		RelatedPhoneNumber:   "08987654321",
+		// 		RelatedAddress:       "big sis address",
+		// 		OTPverified:          false,
+		// 		Bank: sql.NullInt64{
+		// 			Int64: 1,
+		// 			Valid: true,
+		// 		},
+		// 		AgentReferral: sql.NullInt64{
+		// 			Int64: 0,
+		// 			Valid: true,
+		// 		},
+		// 	},
+		// }
+		// for _, borrower := range borrowers {
+		// 	borrower.Create()
+		// 	middlewares.SubmitKafkaPayload(borrower, "borrower_create")
+		// }
+
+		// loans := []models.Loan{
+		// 	models.Loan{
+		// 		Borrower:         1,
+		// 		LoanAmount:       1000000,
+		// 		Installment:      6,
+		// 		LoanIntention:    "Pendidikan",
+		// 		IntentionDetails: "a loan 1 intention details",
+		// 		Product:          1,
+		// 	},
+		// 	models.Loan{
+		// 		Borrower:         1,
+		// 		Status:           "approved",
+		// 		LoanAmount:       500000,
+		// 		Installment:      2,
+		// 		LoanIntention:    "Rumah Tangga",
+		// 		IntentionDetails: "a loan 2 intention details",
+		// 		Product:          1,
+		// 		OTPverified:      true,
+		// 	},
+		// 	models.Loan{
+		// 		Borrower:         1,
+		// 		Status:           "rejected",
+		// 		LoanAmount:       2000000,
+		// 		Installment:      8,
+		// 		LoanIntention:    "Kesehatan",
+		// 		IntentionDetails: "a loan 3 intention details",
+		// 		Product:          1,
+		// 		OTPverified:      true,
+		// 	},
+		// }
+		// for _, loan := range loans {
+		// 	loan.Create()
+		// 	middlewares.SubmitKafkaPayload(loan, "loan_create")
+		// }
 	}
 }
 
@@ -552,31 +673,6 @@ func TestSeed() {
 		}
 		for _, client := range clients {
 			client.Create()
-		}
-
-		// seed images
-		file, _ := os.Open("migration/image_dummy.txt")
-		defer file.Close()
-		b64image, _ := ioutil.ReadAll(file)
-		images := []models.Image{
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-			models.Image{
-				Image_string: string(b64image),
-			},
-		}
-		for _, image := range images {
-			image.Create()
 		}
 
 		// seed bank types
@@ -911,6 +1007,7 @@ func TestSeed() {
 				TotalLoan:        float64(6500000),
 				LayawayPlan:      500000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -923,6 +1020,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -935,6 +1033,7 @@ func TestSeed() {
 				TotalLoan:        float64(6500000),
 				LayawayPlan:      500000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -947,6 +1046,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -959,6 +1059,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 			models.Loan{
 				Borrower:         1,
@@ -971,6 +1072,7 @@ func TestSeed() {
 				TotalLoan:        float64(3000000),
 				LayawayPlan:      200000,
 				Product:          1,
+				OTPverified:      true,
 			},
 		}
 		for _, loan := range loans {
@@ -1145,7 +1247,6 @@ func Truncate(tableList []string) (err error) {
 				"bank_types",
 				"borrowers",
 				"loans",
-				"images",
 				"roles",
 				"users",
 				"bank_representatives",
