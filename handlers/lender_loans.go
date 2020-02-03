@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/middlewares"
 	"asira_lender/models"
 	"fmt"
 	"log"
@@ -96,6 +97,7 @@ func LenderLoanRequestList(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("loans.otp_verified = ?", true).
 		Where("b.bank = ?", bankRep.BankID)
 
 	status := c.QueryParam("status")
@@ -247,6 +249,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("loans.otp_verified = ?", true).
 		Where("b.bank = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Find(&loan).Error
@@ -283,6 +286,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 		Select("*").
 		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Limit(1).
@@ -304,13 +308,27 @@ func LenderLoanApproveReject(c echo.Context) error {
 		if err != nil {
 			return returnInvalidResponse(http.StatusBadRequest, "", "Terjadi kesalahan")
 		}
-		loan.Approve(disburseDate)
+		loan.Status = "approved"
+		loan.DisburseDate = disburseDate
+		loan.ApprovalDate = time.Now()
+
+		err = middlewares.SubmitKafkaPayload(loan, "loan_update")
+		if err != nil {
+			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal approve pinjaman")
+		}
 	case "reject":
 		reason := c.QueryParam("reason")
 		if len(reason) < 1 {
 			return returnInvalidResponse(http.StatusBadRequest, "", "Harap mengisi alasan menolak")
 		}
-		loan.Reject(reason)
+		loan.Status = "rejected"
+		loan.RejectReason = reason
+		loan.ApprovalDate = time.Now()
+
+		err = middlewares.SubmitKafkaPayload(loan, "loan_update")
+		if err != nil {
+			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal reject pinjaman")
+		}
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loanID, loan.Status)})
@@ -343,6 +361,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Joins("LEFT JOIN agents a ON b.agent_referral = a.id").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID)
 
 	// filters
@@ -434,6 +453,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		Select("*").
 		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Where("loans.status = ?", "approved").
@@ -448,7 +468,12 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, "", fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 
-	loan.DisburseConfirmed()
+	loan.DisburseStatus = "confirmed"
+
+	err = middlewares.SubmitKafkaPayload(loan, "loan_update")
+	if err != nil {
+		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
+	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loanID, loan.DisburseStatus)})
 }
@@ -474,6 +499,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 		Select("*").
 		Joins("INNER JOIN borrowers b ON b.id = loans.borrower").
 		Joins("INNER JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
 		Where("ba.id = ?", bankRep.BankID).
 		Where("loans.id = ?", loanID).
 		Where("loans.disburse_status = ?", "processing").
@@ -488,8 +514,13 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	if err != nil {
 		return returnInvalidResponse(http.StatusBadRequest, err, "Terjadi kesalahan")
 	}
-	if err = loan.ChangeDisburseDate(disburseDate); err != nil {
-		return returnInvalidResponse(http.StatusBadRequest, err, "Terjadi kesalahan")
+
+	loan.DisburseDate = disburseDate
+	loan.DisburseDateChanged = true
+
+	err = middlewares.SubmitKafkaPayload(loan, "loan_update")
+	if err != nil {
+		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
 
 	return c.JSON(http.StatusOK, loan)
