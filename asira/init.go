@@ -208,9 +208,9 @@ func (x *Application) S3init() (err error) {
 
 // CronInit load cron
 func (x *Application) CronInit() (err error) {
-	x.Cron.TZ = x.Config.GetString(fmt.Sprintf("%s.timezone", x.ENV))
+	x.Cron.TZ = x.Config.GetString(fmt.Sprintf("%s.database.timezone", x.ENV))
 	cron.DB = x.DB
-
+	x.Cron.Time = x.Config.GetString(fmt.Sprintf("%s.cron.time", x.ENV))
 	x.Cron.New()
 	x.Cron.Start()
 
