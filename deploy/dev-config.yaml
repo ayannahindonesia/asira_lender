@@ -41,6 +41,8 @@ development:
     secret_key: s0yHeS/eBvjmyshVckbNqVWnTKwhnaP6kYBpFBHk
     host: https://bucket.cloud.lintasarta.co.id:8082
     bucket_name: bucket-ayannah
+  cron:
+    time: "0 1 * * *"
     
 staging:
 
