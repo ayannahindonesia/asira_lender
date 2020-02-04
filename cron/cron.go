@@ -1,0 +1,41 @@
+package cron
+
+import (
+	"fmt"
+
+	"github.com/jinzhu/gorm"
+	"github.com/robfig/cron"
+)
+
+// Cron main type
+type Cron struct {
+	Cron *cron.Cron
+	TZ   string
+}
+
+// DB instance
+var DB *gorm.DB
+
+// New cron
+func (c *Cron) New() {
+	cron := cron.New()
+
+	cron.AddFunc(fmt.Sprintf("CRON_TZ=%v 00 01 * * *", c.TZ), AutoLoanDisburseConfirm())
+
+	c.Cron = cron
+}
+
+// Start cron
+func (c *Cron) Start() {
+	c.Cron.Start()
+}
+
+// Stop cron
+func (c *Cron) Stop() {
+	c.Cron.Stop()
+}
+
+// Entries returns cron entries
+func (c *Cron) Entries() []cron.Entry {
+	return c.Cron.Entries()
+}

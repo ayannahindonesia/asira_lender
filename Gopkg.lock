@@ -397,6 +397,14 @@
   revision = "cac0b30c2563378d434b5af411844adff8e32960"
 
 [[projects]]
+  digest = "1:b8a17fdcac3c9b70b7e954ff6cea876fa6c948fd0d9823488b7ce0dbf29fabcd"
+  name = "github.com/robfig/cron"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ccba498c397bb90a9c84945bbb0f7af2d72b6309"
+  version = "v3.0.1"
+
+[[projects]]
   digest = "1:3962f553b77bf6c03fc07cd687a22dd3b00fe11aa14d31194f5505f5bb65cdc8"
   name = "github.com/sergi/go-diff"
   packages = ["diffmatchpatch"]
@@ -749,6 +757,7 @@
     "github.com/labstack/echo/middleware",
     "github.com/lib/pq",
     "github.com/pressly/goose",
+    "github.com/robfig/cron",
     "github.com/spf13/viper",
     "github.com/thedevsaddam/govalidator",
     "golang.org/x/crypto/bcrypt",
