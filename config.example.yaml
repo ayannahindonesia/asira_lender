@@ -34,7 +34,8 @@ development:
     secret_key: fa3wfaq3fadesefawe43f
     host: https://s3.amazon.com:8080
     bucket_name: bucks
-
+  cron:
+    time: "0 1 * * *"
 staging:
 
 production:
