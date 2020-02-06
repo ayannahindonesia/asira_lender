@@ -42,7 +42,7 @@ development:
     host: https://bucket.cloud.lintasarta.co.id:8082
     bucket_name: bucket-ayannah
   cron:
-    time: "0 1 * * *"
+    time: "*/1 * * * *"
     
 staging:
 
