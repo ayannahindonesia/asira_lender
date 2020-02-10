@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
+
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
 	"golang.org/x/crypto/bcrypt"
@@ -40,6 +42,7 @@ func LenderLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("error validation : %v", validate)}, "log")
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
 
@@ -52,19 +55,25 @@ func LenderLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(lender.Password), []byte(credentials.Password))
 		if err != nil {
+			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("password error : %v username : %v", err, credentials.Key)}, "log")
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "users")
 		if err != nil {
+			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("error generating token : %v", err)}, "log")
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan")
 		}
 	} else {
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("not found username : %v", credentials.Key)}, "log")
 		return returnInvalidResponse(http.StatusUnauthorized, "username not found", "Login tidak valid")
 	}
 
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 	expiration := time.Duration(jwtConf["duration"].(int)) * time.Minute
+
+	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "event", Tag: "LenderLogin", Messages: fmt.Sprintf("%v login", credentials.Key)}, "log")
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token":      token,
 		"expires_in": expiration.Seconds(),

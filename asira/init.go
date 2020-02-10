@@ -213,6 +213,7 @@ func (x *Application) NorthstarInit() {
 		Host:         App.Kafka.Host,
 		Secret:       northstarconf["secret"].(string),
 		Topic:        northstarconf["topic"].(string),
+		Send:         northstarconf["send"].(bool),
 		SaramaConfig: App.Kafka.Config,
 	}
 }

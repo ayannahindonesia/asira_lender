@@ -18,7 +18,7 @@
   version = "v1.5.1"
 
 [[projects]]
-  digest = "1:5d11807f2060bbd3ca93188bcf2ca77958c8a921f406bc6d096b7e0f1b900e21"
+  digest = "1:5a81b4b31bc998aea3fb600e27b1324e597e3d46b9b220af26f1f5d7357a6540"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -63,8 +63,8 @@
     "service/sts/stsiface",
   ]
   pruneopts = ""
-  revision = "e0ed9b14a13125de945fb3a89869c93e00f7ff26"
-  version = "v1.28.12"
+  revision = "6ddc79ea5d2dd6bdb065c4d840c5759e548920d9"
+  version = "v1.28.13"
 
 [[projects]]
   branch = "master"
@@ -77,11 +77,11 @@
 
 [[projects]]
   branch = "753-activity-log"
-  digest = "1:3f5698ad784cf72d7bed6a2b82853242a87e8045eef17280422d3811abcc0a0b"
+  digest = "1:6e2d906c09180bf607782144bebe50987329bab29d929b54d8d06d03d2b27d4c"
   name = "github.com/ayannahindonesia/northstar"
   packages = ["lib/northstarlib"]
   pruneopts = ""
-  revision = "7685bfd0c54d1b32fa03015d68cdb882dbc21077"
+  revision = "0dc6eb8901a3d173f317b08a415a49f2c99301f8"
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@github.com/ayannahindonesia/northstar.git"
 
 [[projects]]
@@ -565,7 +565,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:81bf36bbc3e58b6b0e6afd215ccb8f057b52db5877c8c68f19c51c8a182ed7f7"
+  digest = "1:b1c446e8e2a315dc41bbb5009c9238a2cef3f74496b74f5ba19348b7bffd3600"
   name = "golang.org/x/crypto"
   packages = [
     "acme",
@@ -576,7 +576,7 @@
     "pbkdf2",
   ]
   pruneopts = ""
-  revision = "a0c6ece9d31a0ebfbd3ddf2d290cfb1265ba47c7"
+  revision = "ecb85df213405b7d32e4d73cb5bbaace2ec88881"
 
 [[projects]]
   branch = "master"
