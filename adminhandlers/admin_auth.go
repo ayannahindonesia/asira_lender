@@ -74,7 +74,7 @@ func AdminLogin(c echo.Context) error {
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 	expiration := time.Duration(jwtConf["duration"].(int)) * time.Minute
 
-	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "event", Tag: "AdminLogin", Messages: fmt.Sprintf("%v login", user.Username)}, "log")
+	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "event", Tag: "AdminLogin", Messages: fmt.Sprintf("%v login", user.Username), UID: fmt.Sprint(user.ID), Username: user.Username}, "log")
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token":      token,
