@@ -42,7 +42,11 @@ func AdminLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "AdminLogin", Messages: fmt.Sprintf("validation error : %v", validate)}, "log")
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AdminLogin",
+			Messages: fmt.Sprintf("validation error : %v", validate),
+		}, "log")
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
 
@@ -52,29 +56,51 @@ func AdminLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
 		if err != nil {
-			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "AdminLogin", Messages: fmt.Sprintf("password error : %v username : %v", err, credentials.Key)}, "log")
+			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+				Level:    "error",
+				Tag:      "AdminLogin",
+				Messages: fmt.Sprintf("password error : %v username : %v", err, credentials.Key),
+			}, "log")
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		if user.Status == "inactive" {
-			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "AdminLogin", Messages: fmt.Sprintf("inactive username : %v", user)}, "log")
+			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+				Level:    "error",
+				Tag:      "AdminLogin",
+				Messages: fmt.Sprintf("inactive username : %v", user),
+			}, "log")
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), "users")
 		if err != nil {
-			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "AdminLogin", Messages: fmt.Sprintf("error generating token : %v", err)}, "log")
+			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+				Level:    "error",
+				Tag:      "AdminLogin",
+				Messages: fmt.Sprintf("error generating token : %v", err),
+			}, "log")
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}
 	} else {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "AdminLogin", Messages: fmt.Sprintf("error generating token : %v", err)}, "log")
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AdminLogin",
+			Messages: fmt.Sprintf("error generating token : %v", err),
+		}, "log")
 		return returnInvalidResponse(http.StatusUnauthorized, "", "Login tidak valid")
 	}
 
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 	expiration := time.Duration(jwtConf["duration"].(int)) * time.Minute
 
-	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "event", Tag: "AdminLogin", Messages: fmt.Sprintf("%v login", user.Username), UID: fmt.Sprint(user.ID), Username: user.Username}, "log")
+	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+		Level:    "info",
+		Tag:      "AdminLogin",
+		Messages: fmt.Sprintf("%v login", user.Username),
+		UID:      fmt.Sprint(user.ID),
+		Username: user.Username,
+	}, "log")
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token":      token,

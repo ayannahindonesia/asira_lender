@@ -4,13 +4,14 @@ import (
 	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
 
@@ -143,7 +144,18 @@ func BorrowerGetAll(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
-		log.Println(err)
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "BorrowerGetAll",
+			Messages: fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err),
+			UID:      fmt.Sprint(umod.ID),
+			Username: umod.Username,
+		}, "log")
 	}
 
 	result := basemodel.PagedFindResult{
@@ -182,6 +194,19 @@ func BorrowerGetDetails(c echo.Context) error {
 		Where("borrowers.id = ?", borrowerID).
 		Find(&borrower).Error
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "BorrowerGetDetails",
+			Messages: fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err),
+			UID:      fmt.Sprint(umod.ID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Nasabah %v tidak ditemukan", borrowerID))
 	}
 

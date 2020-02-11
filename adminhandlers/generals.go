@@ -2,11 +2,14 @@ package adminhandlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/models"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -146,8 +149,27 @@ func validatePermission(c echo.Context, permission string) error {
 				}
 			}
 		}
+
+		userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "validatePermission",
+			UID:      fmt.Sprint(umod.ID),
+			Username: umod.Username,
+			Messages: fmt.Sprintf("user %v dont have permission %v", umod.ID, permission),
+		}, "log")
+
 		return fmt.Errorf("Tidak memiliki hak akses")
 	}
+
+	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+		Level:    "error",
+		Tag:      "validatePermission",
+		Messages: fmt.Sprint("invalid token. error claims"),
+	}, "log")
 
 	return fmt.Errorf("Tidak memiliki hak akses")
 }
