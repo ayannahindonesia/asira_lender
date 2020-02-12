@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/lib/pq"
 
@@ -179,6 +181,19 @@ func AgentDetails(c echo.Context) error {
 		Find(&agent).Error
 
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentDetails",
+			Messages: fmt.Sprintf("error getting agent %v : %v", id, err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
@@ -209,6 +224,19 @@ func AgentNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "warning",
+			Tag:      "AgentNew",
+			Messages: fmt.Sprintf("error creating agent : %v", validate),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -233,6 +261,19 @@ func AgentNew(c echo.Context) error {
 		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
 		url, err := asira.App.S3.UploadJPEG(unbased, filename)
 		if err != nil {
+			u := c.Get("user").(*jwt.Token)
+			userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+			umod := models.User{}
+			umod.FindbyID(userID)
+
+			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+				Level:    "error",
+				Tag:      "AgentNew",
+				Messages: fmt.Sprintf("error uploading image when creating agent : %v agent : %v", err, agent),
+				UID:      fmt.Sprint(userID),
+				Username: umod.Username,
+			}, "log")
+
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 		}
 
@@ -249,6 +290,19 @@ func AgentNew(c echo.Context) error {
 	err = agent.Create()
 	middlewares.SubmitKafkaPayload(agent, "agent_create")
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentNew",
+			Messages: fmt.Sprintf("error creating agent : %v agent : %v", err, agent),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 	}
 
@@ -269,6 +323,19 @@ func AgentPatch(c echo.Context) error {
 	agentPayload := AgentPayload{}
 	err = agent.FindbyID(id)
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentPatch",
+			Messages: fmt.Sprintf("error uploading image when creating agent : %v agent : %v", err, agent),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
@@ -285,6 +352,19 @@ func AgentPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentPatch",
+			Messages: fmt.Sprintf("error validation : %v", validate),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -343,6 +423,19 @@ func AgentPatch(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(agent, "agent_update")
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentPatch",
+			Messages: fmt.Sprintf("error kafka submit : %v agent : %v", err, agent),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
 	}
 

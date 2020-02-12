@@ -1,6 +1,7 @@
 package adminhandlers
 
 import (
+	"asira_lender/asira"
 	"asira_lender/middlewares"
 	"asira_lender/models"
 	"fmt"
@@ -9,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -67,6 +70,19 @@ func AgentProviderList(c echo.Context) error {
 	}
 
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderList",
+			Messages: fmt.Sprintf("error finding providers : %v", err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusNotFound, err, "Agent provider tidak Ditemukan")
 	}
 
@@ -86,6 +102,19 @@ func AgentProviderDetails(c echo.Context) error {
 	agentProvider := models.AgentProvider{}
 	err = agentProvider.FindbyID(id)
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderDetails",
+			Messages: fmt.Sprintf("error finding provider %v : %v", id, err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agent provider %v tidak ditemukan", id))
 	}
 
@@ -112,12 +141,38 @@ func AgentProviderNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentProvider)
 	if validate != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderNew",
+			Messages: fmt.Sprintf("error creating new provider : %v", validate),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	err = agentProvider.Create()
 	middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderNew",
+			Messages: fmt.Sprintf("error creating new provider : %v", err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
 
@@ -137,6 +192,19 @@ func AgentProviderPatch(c echo.Context) error {
 	agentProvider := models.AgentProvider{}
 	err = agentProvider.FindbyID(id)
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderPatch",
+			Messages: fmt.Sprintf("error patching provider %v : %v", id, err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agent provider %v tidak ditemukan", id))
 	}
 
@@ -150,11 +218,37 @@ func AgentProviderPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentProvider)
 	if validate != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderPatch",
+			Messages: fmt.Sprintf("error patching provider %v : %v", id, err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}
 
 	err = middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_update")
 	if err != nil {
+		u := c.Get("user").(*jwt.Token)
+		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		umod := models.User{}
+		umod.FindbyID(userID)
+
+		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    "error",
+			Tag:      "AgentProviderPatch",
+			Messages: fmt.Sprintf("error patching provider %v : %v", id, err),
+			UID:      fmt.Sprint(userID),
+			Username: umod.Username,
+		}, "log")
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
 
