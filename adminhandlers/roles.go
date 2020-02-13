@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/lib/pq"
 
 	"github.com/labstack/echo"
@@ -69,6 +70,8 @@ func RoleList(c echo.Context) error {
 	}
 
 	if err != nil {
+		NLog("error", "RoleList", fmt.Sprintf("role list error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, "Role tidak Ditemukan")
 	}
 
@@ -88,6 +91,8 @@ func RoleDetails(c echo.Context) error {
 	IrolesID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	err = Iroles.FindbyID(IrolesID)
 	if err != nil {
+		NLog("error", "RoleDetails", fmt.Sprintf("error finding role %v : %v", IrolesID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, "Role ID tidak ditemukan")
 	}
 
@@ -115,6 +120,8 @@ func RoleNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &rolePayload)
 	if validate != nil {
+		NLog("error", "RoleNew", fmt.Sprintf("validation error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -123,6 +130,8 @@ func RoleNew(c echo.Context) error {
 
 	err = Iroles.Create()
 	if err != nil {
+		NLog("error", "RoleNew", fmt.Sprintf("error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Internal Roles")
 	}
 
@@ -143,6 +152,8 @@ func RolePatch(c echo.Context) error {
 	rolePayload := RolePayload{}
 	err = Iroles.FindbyID(IrolesID)
 	if err != nil {
+		NLog("error", "RolePatch", fmt.Sprintf("error finding role %v : %v", IrolesID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Internal Role %v tidak ditemukan", IrolesID))
 	}
 
@@ -156,6 +167,8 @@ func RolePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &rolePayload)
 	if validate != nil {
+		NLog("error", "RolePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -177,6 +190,8 @@ func RolePatch(c echo.Context) error {
 
 	err = Iroles.Save()
 	if err != nil {
+		NLog("error", "RolePatch", fmt.Sprintf("error saving role : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update Internal Roles %v", IrolesID))
 	}
 
@@ -215,6 +230,8 @@ func RoleRange(c echo.Context) error {
 	})
 
 	if err != nil {
+		NLog("error", "RoleRange", fmt.Sprintf("error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, "Role tidak Ditemukan")
 	}
 

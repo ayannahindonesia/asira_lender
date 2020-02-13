@@ -225,7 +225,7 @@ func ProductPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		NLog("error", "ProductPatch", fmt.Sprintf("validation error : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("error", "ProductPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
