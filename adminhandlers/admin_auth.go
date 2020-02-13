@@ -43,11 +43,8 @@ func AdminLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "error",
-			Tag:      "AdminLogin",
-			Messages: fmt.Sprintf("validation error : %v", validate),
-		}, "log")
+		NLog("error", "AdminLogin", fmt.Sprintf("error validation : %v", err), c.Get("user").(*jwt.Token), "", true)
+
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
 

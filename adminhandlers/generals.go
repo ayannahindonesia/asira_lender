@@ -151,26 +151,12 @@ func validatePermission(c echo.Context, permission string) error {
 			}
 		}
 
-		userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
-		umod := models.User{}
-		umod.FindbyID(userID)
-
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "error",
-			Tag:      "validatePermission",
-			UID:      fmt.Sprint(umod.ID),
-			Username: umod.Username,
-			Messages: fmt.Sprintf("user %v dont have permission %v", umod.ID, permission),
-		}, "log")
+		NLog("error", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), c.Get("user").(*jwt.Token), "", false)
 
 		return fmt.Errorf("Tidak memiliki hak akses")
 	}
 
-	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-		Level:    "error",
-		Tag:      "validatePermission",
-		Messages: fmt.Sprint("invalid token. error claims"),
-	}, "log")
+	NLog("error", "validatePermission", "invalid token. error claims", c.Get("user").(*jwt.Token), "", true)
 
 	return fmt.Errorf("Tidak memiliki hak akses")
 }
