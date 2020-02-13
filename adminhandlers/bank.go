@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/lib/pq"
 	"github.com/thedevsaddam/govalidator"
@@ -119,7 +120,9 @@ func BankList(c echo.Context) error {
 	}
 	err = db.Find(&banks).Error
 	if err != nil {
-		log.Println(err)
+		NLog("error", "BankList", fmt.Sprintf("bank listing error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data bank ditemukan")
 	}
 
 	result := basemodel.PagedFindResult{
@@ -163,6 +166,8 @@ func BankNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
+		NLog("error", "BankNew", fmt.Sprintf("error validate new bank : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -174,6 +179,8 @@ func BankNew(c echo.Context) error {
 		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
 		url, err := asira.App.S3.UploadJPEG(unbased, filename)
 		if err != nil {
+			NLog("error", "BankNew", fmt.Sprintf("error upload image : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 		}
 
@@ -183,6 +190,8 @@ func BankNew(c echo.Context) error {
 	err = bank.Create()
 	middlewares.SubmitKafkaPayload(bank, "bank_create")
 	if err != nil {
+		NLog("error", "BankNew", fmt.Sprintf("error submitting kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 	}
 
@@ -209,6 +218,8 @@ func BankDetail(c echo.Context) error {
 	bank := BankSelect{}
 	err = db.Find(&bank).Error
 	if err != nil {
+		NLog("error", "BankDetail", fmt.Sprintf("%v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
@@ -229,6 +240,8 @@ func BankPatch(c echo.Context) error {
 	bankPayload := BankPayload{}
 	err = bank.FindbyID(bankID)
 	if err != nil {
+		NLog("error", "BankPatch", fmt.Sprintf("error finding bank : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank %v tidak ditemukan", bankID))
 	}
 
@@ -249,6 +262,8 @@ func BankPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankPayload)
 	if validate != nil {
+		NLog("error", "BankPatch", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -305,6 +320,8 @@ func BankPatch(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(bank, "bank_update")
 	if err != nil {
+		NLog("error", "BankPatch", fmt.Sprintf("error submitting kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank %v", bankID))
 	}
 
@@ -324,11 +341,15 @@ func BankDelete(c echo.Context) error {
 	bank := models.Bank{}
 	err = bank.FindbyID(bankID)
 	if err != nil {
+		NLog("error", "BankDelete", fmt.Sprintf("error finding bank : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
 	err = middlewares.SubmitKafkaPayload(bank, "bank_delete")
 	if err != nil {
+		NLog("error", "BankDelete", fmt.Sprintf("error submitting kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
 
