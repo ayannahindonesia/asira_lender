@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
-	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
@@ -151,18 +150,7 @@ func LoanGetAll(c echo.Context) error {
 	}
 	err = db.Find(&loans).Error
 	if err != nil {
-		u := c.Get("user").(*jwt.Token)
-		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
-		umod := models.User{}
-		umod.FindbyID(userID)
-
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "error",
-			Tag:      "LoanGetAll",
-			Messages: fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err),
-			UID:      fmt.Sprint(umod.ID),
-			Username: umod.Username,
-		}, "log")
+		NLog("error", "LoanGetAll", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprint("Pinjaman tidak ditemukan"))
 	}
@@ -204,18 +192,7 @@ func LoanGetDetails(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		u := c.Get("user").(*jwt.Token)
-		userID, _ := strconv.ParseUint(u.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
-		umod := models.User{}
-		umod.FindbyID(userID)
-
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "error",
-			Tag:      "LoanGetDetails",
-			Messages: fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err),
-			UID:      fmt.Sprint(umod.ID),
-			Username: umod.Username,
-		}, "log")
+		NLog("error", "LoanGetDetails", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}

@@ -1,13 +1,11 @@
 package adminhandlers
 
 import (
-	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -26,12 +24,8 @@ func AdminProfile(c echo.Context) error {
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "error",
-			Tag:      "AdminProfile",
-			Messages: fmt.Sprintf("user id %v profile. error : %v", userID, err),
-			UID:      fmt.Sprint(userID),
-		}, "log")
+		NLog("error", "AdminProfile", fmt.Sprintf("user id %v profile. error : %v", userID, err), c.Get("user").(*jwt.Token), "", true)
+
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
 
@@ -51,12 +45,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "error",
-			Tag:      "UserFirstLoginChangePassword",
-			Messages: fmt.Sprintf("user id %v profile. error : %v", userID, err),
-			UID:      fmt.Sprint(userID),
-		}, "log")
+		NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("user id %v profile. error : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
@@ -72,34 +61,16 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		validate := validateRequestPayload(c, payloadRules, &pass)
 		if validate != nil {
-			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-				Level:    "error",
-				Tag:      "UserFirstLoginChangePassword",
-				Messages: fmt.Sprintf("validation error : %v", validate),
-				UID:      fmt.Sprint(userID),
-				Username: userModel.Username,
-			}, "log")
+			NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-			Level:    "info",
-			Tag:      "UserFirstLoginChangePassword",
-			Messages: fmt.Sprint("changed password"),
-			UID:      fmt.Sprint(userID),
-			Username: userModel.Username,
-		}, "log")
+		NLog("info", "UserFirstLoginChangePassword", fmt.Sprint("changed password"), c.Get("user").(*jwt.Token), "", false)
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}
-	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-		Level:    "error",
-		Tag:      "UserFirstLoginChangePassword",
-		Messages: fmt.Sprint("not first login"),
-		UID:      fmt.Sprint(userID),
-		Username: userModel.Username,
-	}, "log")
+	NLog("error", "UserFirstLoginChangePassword", fmt.Sprint("changed password"), c.Get("user").(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusUnauthorized, "Akun anda bukan akun baru.")
 }
