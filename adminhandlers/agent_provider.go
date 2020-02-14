@@ -68,7 +68,7 @@ func AgentProviderList(c echo.Context) error {
 	}
 
 	if err != nil {
-		NLog("error", "AgentProviderList", fmt.Sprintf("error finding providers : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentProviderList", fmt.Sprintf("error finding providers : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Agent provider tidak Ditemukan")
 	}
@@ -89,7 +89,7 @@ func AgentProviderDetails(c echo.Context) error {
 	agentProvider := models.AgentProvider{}
 	err = agentProvider.FindbyID(id)
 	if err != nil {
-		NLog("error", "AgentProviderDetails", fmt.Sprintf("error finding provider %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentProviderDetails", fmt.Sprintf("error finding provider %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agent provider %v tidak ditemukan", id))
 	}
@@ -117,7 +117,7 @@ func AgentProviderNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentProvider)
 	if validate != nil {
-		NLog("error", "AgentProviderNew", fmt.Sprintf("error creating new provider : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentProviderNew", fmt.Sprintf("error validating create new provider : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -125,7 +125,7 @@ func AgentProviderNew(c echo.Context) error {
 	err = agentProvider.Create()
 	middlewares.SubmitKafkaPayload(agentProvider, "agent_provider_create")
 	if err != nil {
-		NLog("error", "AgentProviderNew", fmt.Sprintf("error creating new provider : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentProviderNew", fmt.Sprintf("error kafka submit create new provider : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
@@ -161,7 +161,7 @@ func AgentProviderPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentProvider)
 	if validate != nil {
-		NLog("error", "AgentProviderPatch", fmt.Sprintf("error validate patching provider %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentProviderPatch", fmt.Sprintf("error validate patching provider %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "validation error")
 	}

@@ -70,7 +70,7 @@ func ServiceList(c echo.Context) error {
 	}
 
 	if err != nil {
-		NLog("error", "ServiceList", fmt.Sprintf("error : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ServiceList", fmt.Sprintf("error : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -144,7 +144,7 @@ func ServiceDetail(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		NLog("error", "ServiceDetail", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ServiceDetail", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
@@ -165,7 +165,7 @@ func ServicePatch(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		NLog("error", "ServicePatch", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ServicePatch", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
@@ -178,7 +178,7 @@ func ServicePatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
-		NLog("error", "ServicePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ServicePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -225,7 +225,7 @@ func ServiceDelete(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		NLog("error", "ServiceDelete", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ServiceDelete", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}

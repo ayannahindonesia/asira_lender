@@ -113,7 +113,7 @@ func UserList(c echo.Context) error {
 	}
 	err = db.Find(&results).Error
 	if err != nil {
-		NLog("error", "UserList", fmt.Sprintf("error finding users : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "UserList", fmt.Sprintf("error finding users : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data user yang tersedia")
 	}
@@ -154,7 +154,7 @@ func UserDetails(c echo.Context) error {
 		Joins("LEFT JOIN banks b ON br.bank_id = b.id").
 		Where("users.id = ?", userID).Find(&user).Error
 	if err != nil {
-		NLog("error", "UserDetails", fmt.Sprintf("error finding user %v : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "UserDetails", fmt.Sprintf("error finding user %v : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
 	}
@@ -185,7 +185,7 @@ func UserNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
-		NLog("error", "UserNew", fmt.Sprintf("validation : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "UserNew", fmt.Sprintf("validation : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -198,7 +198,7 @@ func UserNew(c echo.Context) error {
 			Where("roles.system = ?", "Dashboard").Count(&count)
 
 		if len(userPayload.Roles) != count {
-			NLog("error", "UserNew", fmt.Sprintf("invalid roles given : %v", userPayload.Roles), c.Get("user").(*jwt.Token), "", false)
+			NLog("warning", "UserNew", fmt.Sprintf("invalid roles given : %v", userPayload.Roles), c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusInternalServerError, nil, "Roles tidak valid.")
 		}
@@ -267,7 +267,7 @@ func UserPatch(c echo.Context) error {
 	userPayload := UserPayload{}
 	err = userM.FindbyID(userID)
 	if err != nil {
-		NLog("error", "UserPatch", fmt.Sprintf("error finding user %v : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "UserPatch", fmt.Sprintf("error finding user %v : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
@@ -282,7 +282,7 @@ func UserPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
-		NLog("error", "UserPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "UserPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -297,7 +297,7 @@ func UserPatch(c echo.Context) error {
 			Where("roles.system = ?", "Dashboard").Count(&count)
 
 		if len(userPayload.Roles) != count {
-			NLog("error", "UserPatch", fmt.Sprintf("invalid roles : %v", userPayload.Roles), c.Get("user").(*jwt.Token), "", false)
+			NLog("warning", "UserPatch", fmt.Sprintf("invalid roles : %v", userPayload.Roles), c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusUnprocessableEntity, nil, "Roles tidak valid.")
 		}

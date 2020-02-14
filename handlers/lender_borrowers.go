@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"asira_lender/adminhandlers"
 	"asira_lender/asira"
 	"asira_lender/middlewares"
 	"asira_lender/models"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -210,7 +210,9 @@ func LenderBorrowerList(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
-		log.Println(err)
+		adminhandlers.NLog("warning", "LenderBorrowerList", fmt.Sprintf("error finding borrower list : %v", err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data nasabah yang ditemukan.")
 	}
 
 	result := basemodel.PagedFindResult{
@@ -244,6 +246,8 @@ func LenderBorrowerListDetail(c echo.Context) error {
 
 	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderBorrowerListDetail", fmt.Sprintf("error atoi borrower id : %v", err), user.(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
@@ -263,6 +267,8 @@ func LenderBorrowerListDetail(c echo.Context) error {
 		Where("borrowers.status != ?", "rejected").
 		Find(&borrower).Error
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderBorrowerListDetail", fmt.Sprintf("error finding borrower %v : %v", borrowerID, err), user.(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan.", borrowerID))
 	}
 
@@ -360,6 +366,8 @@ func LenderBorrowerListDownload(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderBorrowerListDownload", fmt.Sprintf("error finding borrower for download : %v query : %v", err, db.QueryExpr()), user.(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan.")
 	}
 
@@ -367,8 +375,11 @@ func LenderBorrowerListDownload(c echo.Context) error {
 
 	b, err := csvutil.Marshal(data)
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderBorrowerListDownload", fmt.Sprintf("error finding borrower for download : %v", err), user.(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan.")
 	}
+	adminhandlers.NLog("info", "LenderBorrowerListDownload", "download borrower list", user.(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusOK, string(b))
 }
@@ -391,6 +402,8 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 
 	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderApproveRejectProspectiveBorrower", fmt.Sprintf("atoi error : %v", err), user.(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 	type Filter struct {
@@ -409,6 +422,8 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		BankAccountNumber: "",
 	})
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderApproveRejectProspectiveBorrower", fmt.Sprintf("error finding borrower : %v", err), user.(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan", borrowerID))
 	}
 
@@ -420,9 +435,13 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 			borrower.Status = "approved"
 			err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
 			if err != nil {
+				adminhandlers.NLog("error", "LenderApproveRejectProspectiveBorrower", fmt.Sprintf("error submitting kafka : %v borrower : %v", err, borrower), user.(*jwt.Token), "", false)
+
 				returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal approve borrower")
 			}
 		} else {
+			adminhandlers.NLog("warning", "LenderApproveRejectProspectiveBorrower", "account number empty", user.(*jwt.Token), "", false)
+
 			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Nomor rekening tidak valid")
 		}
 		break
@@ -430,10 +449,13 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		borrower.Status = "rejected"
 		err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
 		if err != nil {
+			adminhandlers.NLog("error", "LenderApproveRejectProspectiveBorrower", fmt.Sprintf("error submitting kafka : %v borrower : %v", err, borrower), user.(*jwt.Token), "", false)
+
 			returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal reject borrower")
 		}
 		break
 	}
+	adminhandlers.NLog("info", "LenderApproveRejectProspectiveBorrower", fmt.Sprintf("borrower %v status %v", borrower.ID, approval), user.(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusOK, borrower)
 }

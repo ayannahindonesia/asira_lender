@@ -5,7 +5,6 @@ import (
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -47,7 +46,7 @@ func BankTypeList(c echo.Context) error {
 		Name: name,
 	})
 	if err != nil {
-		NLog("error", "BankTypeList", fmt.Sprintf("error listing bank type : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeList", fmt.Sprintf("error listing bank type : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -73,7 +72,7 @@ func BankTypeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankTypePayload)
 	if validate != nil {
-		NLog("error", "BankTypeNew", fmt.Sprintf("error validate new bank type : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeNew", fmt.Sprintf("error validate new bank type : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -103,7 +102,7 @@ func BankTypeDetail(c echo.Context) error {
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		NLog("error", "BankTypeDetail", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeDetail", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
@@ -125,7 +124,7 @@ func BankTypePatch(c echo.Context) error {
 	bankTypePayload := BankTypePayload{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		NLog("error", "BankTypePatch", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypePatch", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
@@ -136,9 +135,8 @@ func BankTypePatch(c echo.Context) error {
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bankTypePayload)
-	log.Println(bankType)
 	if validate != nil {
-		NLog("error", "BankTypePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -173,7 +171,7 @@ func BankTypeDelete(c echo.Context) error {
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		NLog("error", "BankTypePatch", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypePatch", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}

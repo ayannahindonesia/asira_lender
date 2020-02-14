@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"asira_lender/adminhandlers"
 	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
@@ -8,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ayannahindonesia/northstar/lib/northstarlib"
+	jwt "github.com/dgrijalva/jwt-go"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -42,7 +43,8 @@ func LenderLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("error validation : %v", validate)}, "log")
+		adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
+
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
 
@@ -55,24 +57,27 @@ func LenderLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(lender.Password), []byte(credentials.Password))
 		if err != nil {
-			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("password error : %v username : %v", err, credentials.Key)}, "log")
+			adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("password error : %v username : %v", err, credentials.Key), c.Get("user").(*jwt.Token), "", true)
+
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "users")
 		if err != nil {
-			asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("error generating token : %v", err)}, "log")
+			adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("error generating token : %v", err), c.Get("user").(*jwt.Token), "", true)
+
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan")
 		}
 	} else {
-		asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "error", Tag: "LenderLogin", Messages: fmt.Sprintf("not found username : %v", credentials.Key)}, "log")
+		adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("not found username : %v", credentials.Key), c.Get("user").(*jwt.Token), "", true)
+
 		return returnInvalidResponse(http.StatusUnauthorized, "username not found", "Login tidak valid")
 	}
 
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 	expiration := time.Duration(jwtConf["duration"].(int)) * time.Minute
 
-	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{Level: "info", Tag: "LenderLogin", Messages: fmt.Sprintf("%v login", credentials.Key), UID: fmt.Sprint(lender.ID), Username: lender.Username}, "log")
+	adminhandlers.NLog("info", "LenderLogin", fmt.Sprintf("%v login", credentials.Key), c.Get("user").(*jwt.Token), "", true)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token":      token,

@@ -61,7 +61,7 @@ func LoanPurposeList(c echo.Context) error {
 	}
 
 	if err != nil {
-		NLog("error", "LoanPurposeList", fmt.Sprintf("error finding loan purposes : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeList", fmt.Sprintf("error finding loan purposes : %v", err), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -86,7 +86,7 @@ func LoanPurposeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		NLog("error", "LoanPurposeNew", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeNew", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -118,7 +118,7 @@ func LoanPurposeDetail(c echo.Context) error {
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		NLog("error", "LoanPurposeDetail", fmt.Sprintf("loan purpose %v not found : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeDetail", fmt.Sprintf("loan purpose %v not found : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
@@ -140,7 +140,7 @@ func LoanPurposePatch(c echo.Context) error {
 	purposePayload := LoanPurposePayload{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		NLog("error", "LoanPurposePatch", fmt.Sprintf("loan purpose %v not found : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposePatch", fmt.Sprintf("loan purpose %v not found : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
@@ -152,7 +152,7 @@ func LoanPurposePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		NLog("error", "LoanPurposePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -187,7 +187,7 @@ func LoanPurposeDelete(c echo.Context) error {
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		NLog("error", "LoanPurposeDelete", fmt.Sprintf("delete loan purpose %v error : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeDelete", fmt.Sprintf("delete loan purpose %v error : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}

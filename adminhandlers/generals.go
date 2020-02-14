@@ -151,12 +151,12 @@ func validatePermission(c echo.Context, permission string) error {
 			}
 		}
 
-		NLog("error", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), c.Get("user").(*jwt.Token), "", false)
 
 		return fmt.Errorf("Tidak memiliki hak akses")
 	}
 
-	NLog("error", "validatePermission", "invalid token. error claims", c.Get("user").(*jwt.Token), "", true)
+	NLog("warning", "validatePermission", "invalid token. error claims", c.Get("user").(*jwt.Token), "", true)
 
 	return fmt.Errorf("Tidak memiliki hak akses")
 }

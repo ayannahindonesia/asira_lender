@@ -108,7 +108,7 @@ func ProductList(c echo.Context) error {
 	}
 
 	if err != nil {
-		NLog("error", "ProductList", fmt.Sprintf("error listing products : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ProductList", fmt.Sprintf("error listing products : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -144,7 +144,7 @@ func ProductNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		NLog("error", "ProductNew", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ProductNew", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
@@ -182,7 +182,7 @@ func ProductDetail(c echo.Context) error {
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		NLog("error", "ProductDetail", fmt.Sprintf("find product %v error : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ProductDetail", fmt.Sprintf("find product %v error : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
@@ -204,7 +204,7 @@ func ProductPatch(c echo.Context) error {
 	productPayload := ProductPayload{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		NLog("error", "ProductPatch", fmt.Sprintf("patch product %v error : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ProductPatch", fmt.Sprintf("patch product %v error : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
@@ -225,7 +225,7 @@ func ProductPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
-		NLog("error", "ProductPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ProductPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
@@ -290,7 +290,7 @@ func ProductDelete(c echo.Context) error {
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
-		NLog("error", "ProductDelete", fmt.Sprintf("error finding product %v : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "ProductDelete", fmt.Sprintf("error finding product %v : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}

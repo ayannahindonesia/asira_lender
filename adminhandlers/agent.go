@@ -142,7 +142,7 @@ func AgentList(c echo.Context) error {
 	}
 	err = db.Find(&agents).Error
 	if err != nil {
-		NLog("error", "AgentList", fmt.Sprintf("error finding agent list : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentList", fmt.Sprintf("error finding agent list : %v", err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data agent ditemukan")
 	}
@@ -181,7 +181,7 @@ func AgentDetails(c echo.Context) error {
 		Find(&agent).Error
 
 	if err != nil {
-		NLog("error", "AgentDetails", fmt.Sprintf("error getting agent %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentDetails", fmt.Sprintf("error getting agent %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
@@ -213,7 +213,7 @@ func AgentNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		NLog("error", "AgentNew", fmt.Sprintf("error validate creating agent : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentNew", fmt.Sprintf("error validate creating agent : %v", validate), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -279,7 +279,7 @@ func AgentPatch(c echo.Context) error {
 	agentPayload := AgentPayload{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		NLog("error", "AgentPatch", fmt.Sprintf("error finding agent %v error : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentPatch", fmt.Sprintf("error finding agent %v error : %v", id, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
@@ -297,7 +297,7 @@ func AgentPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		NLog("error", "AgentPatch", fmt.Sprintf("error validate patching agent : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentPatch", fmt.Sprintf("error validate patching agent : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -380,7 +380,7 @@ func AgentDelete(c echo.Context) error {
 	agent := models.Agent{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		NLog("error", "AgentDelete", fmt.Sprintf("agent %v not found : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentDelete", fmt.Sprintf("agent %v not found : %v", id, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}

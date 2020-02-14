@@ -150,7 +150,7 @@ func LoanGetAll(c echo.Context) error {
 	}
 	err = db.Find(&loans).Error
 	if err != nil {
-		NLog("error", "LoanGetAll", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "LoanGetAll", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprint("Pinjaman tidak ditemukan"))
 	}
@@ -192,7 +192,7 @@ func LoanGetDetails(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		NLog("error", "LoanGetDetails", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "LoanGetDetails", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}

@@ -43,7 +43,7 @@ func AdminLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		NLog("error", "AdminLogin", fmt.Sprintf("error validation : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "AdminLogin", fmt.Sprintf("error validation : %v", err), c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
@@ -54,13 +54,13 @@ func AdminLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
 		if err != nil {
-			NLog("error", "AdminLogin", fmt.Sprintf("password error : %v username : %v", err, credentials.Key), c.Get("user").(*jwt.Token), "", true)
+			NLog("warning", "AdminLogin", fmt.Sprintf("password error : %v username : %v", err, credentials.Key), c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		if user.Status == "inactive" {
-			NLog("error", "AdminLogin", fmt.Sprintf("inactive username : %v", user), c.Get("user").(*jwt.Token), "", true)
+			NLog("warning", "AdminLogin", fmt.Sprintf("inactive username : %v", user), c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
