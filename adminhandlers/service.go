@@ -20,9 +20,10 @@ import (
 
 // ServicePayload handles request body
 type ServicePayload struct {
-	Name   string `json:"name"`
-	Image  string `json:"image"`
-	Status string `json:"status"`
+	Name        string `json:"name"`
+	Image       string `json:"image"`
+	Status      string `json:"status"`
+	Description string `json:"description"`
 }
 
 // ServiceList gets all services
@@ -89,9 +90,10 @@ func ServiceNew(c echo.Context) error {
 	servicePayload := ServicePayload{}
 
 	payloadRules := govalidator.MapData{
-		"name":   []string{"required"},
-		"image":  []string{"required"},
-		"status": []string{"required", "active_inactive"},
+		"name":        []string{"required"},
+		"image":       []string{"required"},
+		"status":      []string{"required", "active_inactive"},
+		"description": []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
@@ -109,9 +111,10 @@ func ServiceNew(c echo.Context) error {
 	}
 
 	service := models.Service{
-		Name:   servicePayload.Name,
-		Image:  url,
-		Status: servicePayload.Status,
+		Name:        servicePayload.Name,
+		Image:       url,
+		Status:      servicePayload.Status,
+		Description: servicePayload.Description,
 	}
 
 	err = service.Create()
@@ -172,9 +175,10 @@ func ServicePatch(c echo.Context) error {
 
 	servicePayload := ServicePayload{}
 	payloadRules := govalidator.MapData{
-		"name":   []string{},
-		"image":  []string{},
-		"status": []string{"active_inactive"},
+		"name":        []string{},
+		"image":       []string{},
+		"status":      []string{"active_inactive"},
+		"description": []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
@@ -200,6 +204,10 @@ func ServicePatch(c echo.Context) error {
 	}
 	if len(servicePayload.Status) > 0 {
 		service.Status = servicePayload.Status
+	}
+
+	if len(servicePayload.Description) > 0 {
+		service.Description = servicePayload.Description
 	}
 
 	err = middlewares.SubmitKafkaPayload(service, "service_update")

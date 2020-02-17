@@ -51,6 +51,7 @@ CREATE TABLE "services" (
     "name" varchar(255),
     "image" text,
     "status" varchar(255),
+    "description" varchar(255),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
