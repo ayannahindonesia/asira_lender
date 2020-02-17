@@ -18,7 +18,7 @@
   version = "v1.5.1"
 
 [[projects]]
-  digest = "1:5a81b4b31bc998aea3fb600e27b1324e597e3d46b9b220af26f1f5d7357a6540"
+  digest = "1:a652cf6afbfa81412bbab9b7e584c48f47fc1266f4327bbb8d344c77e5aa16e0"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -40,6 +40,7 @@
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/context",
     "internal/ini",
     "internal/s3err",
     "internal/sdkio",
@@ -48,6 +49,7 @@
     "internal/sdkuri",
     "internal/shareddefaults",
     "internal/strings",
+    "internal/sync/singleflight",
     "private/protocol",
     "private/protocol/eventstream",
     "private/protocol/eventstream/eventstreamapi",
@@ -63,8 +65,8 @@
     "service/sts/stsiface",
   ]
   pruneopts = ""
-  revision = "6ddc79ea5d2dd6bdb065c4d840c5759e548920d9"
-  version = "v1.28.13"
+  revision = "45f40fbbeba8a5dee288025ce32ee24bc643ba0a"
+  version = "v1.29.3"
 
 [[projects]]
   branch = "master"
@@ -76,12 +78,12 @@
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@github.com/ayannahindonesia/basemodel.git"
 
 [[projects]]
-  branch = "753-activity-log"
-  digest = "1:2f23a42530b6fc475c96750218f29c7d8f43752396c41f095b02415a910455f0"
+  branch = "master"
+  digest = "1:bf42355ebdead4663b76d73a953c724cf2db20690b26106d6cf82103e9283404"
   name = "github.com/ayannahindonesia/northstar"
   packages = ["lib/northstarlib"]
   pruneopts = ""
-  revision = "7054772988a1b487bebfc438823f6a8773c81ecf"
+  revision = "124eb2f4a360934afeab5f682221a4d069713cbc"
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@github.com/ayannahindonesia/northstar.git"
 
 [[projects]]
@@ -270,7 +272,7 @@
   version = "v1.2.2"
 
 [[projects]]
-  digest = "1:869328e75483b90d94966c4355ef737c3f311b0627db1d37612d97d6896da405"
+  digest = "1:53cd60a70b3d8197f948620774c5ae1789f1086bd0a921f8bb0f5ec7ee12c4a7"
   name = "github.com/klauspost/compress"
   packages = [
     "flate",
@@ -283,8 +285,8 @@
     "zstd/internal/xxhash",
   ]
   pruneopts = ""
-  revision = "459b83aadb42b806aed42f0f4b3240c8834e0cc1"
-  version = "v1.9.8"
+  revision = "b9d5dc7bd435c628cb0c658ce7f556409007ea71"
+  version = "v1.10.0"
 
 [[projects]]
   digest = "1:4beb546223497fdc767dd15f2f48e271598817cecda2beaf2ad7bf43282d5bf7"
@@ -415,7 +417,7 @@
   version = "v3.0.1"
 
 [[projects]]
-  digest = "1:3962f553b77bf6c03fc07cd687a22dd3b00fe11aa14d31194f5505f5bb65cdc8"
+  digest = "1:f6f53c0657325168d1ee4b3b2cc87ec071c1c6edcef45f14d44be43d299a326a"
   name = "github.com/sergi/go-diff"
   packages = ["diffmatchpatch"]
   pruneopts = ""
@@ -573,7 +575,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b1c446e8e2a315dc41bbb5009c9238a2cef3f74496b74f5ba19348b7bffd3600"
+  digest = "1:58c4f5cde1e9820c1304cba1f284f96fd8a1dadba173695788b87aa8327f5873"
   name = "golang.org/x/crypto"
   packages = [
     "acme",
@@ -584,7 +586,7 @@
     "pbkdf2",
   ]
   pruneopts = ""
-  revision = "ecb85df213405b7d32e4d73cb5bbaace2ec88881"
+  revision = "1d94cc7ab1c630336ab82ccb9c9cda72a875c382"
 
 [[projects]]
   branch = "master"
@@ -601,11 +603,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3ea80848296554a023d21260e4511243daa5bf3aa32efbc1171541d14e7b47b2"
+  digest = "1:93f2553d13e593860d3a8f3bb9f9e19633e1bbacd0f96dfaa354ff8045175216"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "d101bd2416d505c0448a6ce8a282482678040a89"
+  revision = "12a6c2dcc1e4cb348b57847c73987099e261714b"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
