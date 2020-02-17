@@ -1,6 +1,7 @@
 package asira
 
 import (
+	"asira_lender/cron"
 	"asira_lender/custommodule"
 	"asira_lender/validator"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/fsnotify/fsnotify"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
@@ -33,7 +35,9 @@ type (
 		DB         *gorm.DB        `json:"db"`
 		Kafka      KafkaInstance   `json:"kafka"`
 		S3         custommodule.S3 `json:"s3"`
+		Cron       cron.Cron       `json:"cron"`
 		Permission viper.Viper     `json:"prog_permission"`
+		Northstar  northstarlib.NorthstarLib
 	}
 
 	// KafkaInstance stores kafka configs
@@ -63,6 +67,8 @@ func init() {
 
 	App.KafkaInit()
 	App.S3init()
+	App.CronInit()
+	App.NorthstarInit()
 
 	// apply custom validator
 	v := validator.AsiraValidator{DB: App.DB}
@@ -74,6 +80,7 @@ func (x *Application) Close() (err error) {
 	if err = x.DB.Close(); err != nil {
 		return err
 	}
+	x.Cron.Stop()
 
 	return nil
 }
@@ -106,7 +113,7 @@ func (x *Application) LoadConfigs() error {
 	conf.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	conf.AutomaticEnv()
 	conf.SetConfigName("config")
-	conf.AddConfigPath("$GOPATH/src/" + x.Name)
+	conf.AddConfigPath(os.Getenv("CONFIGPATH"))
 	conf.SetConfigType("yaml")
 	if err := conf.ReadInConfig(); err != nil {
 		return err
@@ -200,4 +207,28 @@ func (x *Application) S3init() (err error) {
 	x.S3, err = custommodule.NewS3(s3conf["access_key"].(string), s3conf["secret_key"].(string), s3conf["host"].(string), s3conf["bucket_name"].(string), s3conf["region"].(string))
 
 	return err
+}
+
+// CronInit load cron
+func (x *Application) CronInit() (err error) {
+	x.Cron.TZ = x.Config.GetString(fmt.Sprintf("%s.database.timezone", x.ENV))
+	cron.DB = x.DB
+	x.Cron.Time = x.Config.GetString(fmt.Sprintf("%s.cron.time", x.ENV))
+	x.Cron.New()
+	x.Cron.Start()
+
+	return nil
+}
+
+// NorthstarInit config for northstar logger
+func (x *Application) NorthstarInit() {
+	northstarconf := x.Config.GetStringMap(fmt.Sprintf("%s.northstar", x.ENV))
+
+	x.Northstar = northstarlib.NorthstarLib{
+		Host:         App.Kafka.Host,
+		Secret:       northstarconf["secret"].(string),
+		Topic:        northstarconf["topic"].(string),
+		Send:         northstarconf["send"].(bool),
+		SaramaConfig: App.Kafka.Config,
+	}
 }

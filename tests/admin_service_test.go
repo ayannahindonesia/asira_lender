@@ -76,9 +76,10 @@ func TestNewService(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"name":   "Test New Bank Service",
-		"image":  "base64 super long image string",
-		"status": "active",
+		"name":        "Test New Bank Service",
+		"image":       "base64 super long image string",
+		"status":      "active",
+		"description": "tenor minimum 3 bln, tenor maksimal 12 bln",
 	}
 
 	// normal scenario
@@ -160,7 +161,8 @@ func TestPatchService(t *testing.T) {
 	})
 
 	payload := map[string]interface{}{
-		"name": "Test Service Patch",
+		"name":        "Test Service Patch",
+		"description": "Test Description",
 	}
 
 	// valid response
@@ -168,6 +170,7 @@ func TestPatchService(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("name").ValueEqual("name", "Test Service Patch")
+	obj.ContainsKey("description").ValueEqual("description", "Test Description")
 
 	// invalid status
 	payload = map[string]interface{}{

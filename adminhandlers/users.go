@@ -6,12 +6,12 @@ import (
 	"asira_lender/models"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/lib/pq"
 
 	"github.com/ayannahindonesia/basemodel"
@@ -113,7 +113,9 @@ func UserList(c echo.Context) error {
 	}
 	err = db.Find(&results).Error
 	if err != nil {
-		log.Println(err)
+		NLog("warning", "UserList", fmt.Sprintf("error finding users : %v", err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data user yang tersedia")
 	}
 
 	lastPage := int(math.Ceil(float64(totalRows) / float64(rows)))
@@ -152,6 +154,8 @@ func UserDetails(c echo.Context) error {
 		Joins("LEFT JOIN banks b ON br.bank_id = b.id").
 		Where("users.id = ?", userID).Find(&user).Error
 	if err != nil {
+		NLog("warning", "UserDetails", fmt.Sprintf("error finding user %v : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, "User ID tidak ditemukan")
 	}
 
@@ -181,6 +185,8 @@ func UserNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
+		NLog("warning", "UserNew", fmt.Sprintf("validation : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -192,6 +198,8 @@ func UserNew(c echo.Context) error {
 			Where("roles.system = ?", "Dashboard").Count(&count)
 
 		if len(userPayload.Roles) != count {
+			NLog("warning", "UserNew", fmt.Sprintf("invalid roles given : %v", userPayload.Roles), c.Get("user").(*jwt.Token), "", false)
+
 			return returnInvalidResponse(http.StatusInternalServerError, nil, "Roles tidak valid.")
 		}
 
@@ -213,6 +221,8 @@ func UserNew(c echo.Context) error {
 
 	err = newUser.Create()
 	if err != nil {
+		NLog("error", "UserNew", fmt.Sprintf("error creating user : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat User")
 	}
 
@@ -223,6 +233,8 @@ func UserNew(c echo.Context) error {
 		}
 		err = bankRep.Create()
 		if err != nil {
+			NLog("error", "UserNew", fmt.Sprintf("error creating bank representative : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Bank User")
 		}
 	}
@@ -233,7 +245,9 @@ func UserNew(c echo.Context) error {
 
 	err = email.SendMail(to, subject, message)
 	if err != nil {
-		log.Println(err.Error())
+		NLog("error", "UserNew", fmt.Sprintf("error sending password to email : %v", err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengirim password ke email anda")
 	}
 
 	return c.JSON(http.StatusCreated, newUser)
@@ -253,6 +267,8 @@ func UserPatch(c echo.Context) error {
 	userPayload := UserPayload{}
 	err = userM.FindbyID(userID)
 	if err != nil {
+		NLog("warning", "UserPatch", fmt.Sprintf("error finding user %v : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
 
@@ -266,6 +282,8 @@ func UserPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &userPayload)
 	if validate != nil {
+		NLog("warning", "UserPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -279,6 +297,8 @@ func UserPatch(c echo.Context) error {
 			Where("roles.system = ?", "Dashboard").Count(&count)
 
 		if len(userPayload.Roles) != count {
+			NLog("warning", "UserPatch", fmt.Sprintf("invalid roles : %v", userPayload.Roles), c.Get("user").(*jwt.Token), "", false)
+
 			return returnInvalidResponse(http.StatusUnprocessableEntity, nil, "Roles tidak valid.")
 		}
 	}
@@ -305,6 +325,8 @@ func UserPatch(c echo.Context) error {
 
 	err = userM.Save()
 	if err != nil {
+		NLog("error", "UserPatch", fmt.Sprintf("error saving user : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update User %v", userID))
 	}
 

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -19,9 +20,10 @@ import (
 
 // ServicePayload handles request body
 type ServicePayload struct {
-	Name   string `json:"name"`
-	Image  string `json:"image"`
-	Status string `json:"status"`
+	Name        string `json:"name"`
+	Image       string `json:"image"`
+	Status      string `json:"status"`
+	Description string `json:"description"`
 }
 
 // ServiceList gets all services
@@ -69,6 +71,8 @@ func ServiceList(c echo.Context) error {
 	}
 
 	if err != nil {
+		NLog("warning", "ServiceList", fmt.Sprintf("error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
@@ -86,9 +90,10 @@ func ServiceNew(c echo.Context) error {
 	servicePayload := ServicePayload{}
 
 	payloadRules := govalidator.MapData{
-		"name":   []string{"required"},
-		"image":  []string{"required"},
-		"status": []string{"required", "active_inactive"},
+		"name":        []string{"required"},
+		"image":       []string{"required"},
+		"status":      []string{"required", "active_inactive"},
+		"description": []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
@@ -100,18 +105,29 @@ func ServiceNew(c echo.Context) error {
 	filename := "svc" + strconv.FormatInt(time.Now().Unix(), 10)
 	url, err := asira.App.S3.UploadJPEG(unbased, filename)
 	if err != nil {
+		NLog("error", "ServiceNew", fmt.Sprintf("upload image error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
 	}
 
 	service := models.Service{
-		Name:   servicePayload.Name,
-		Image:  url,
-		Status: servicePayload.Status,
+		Name:        servicePayload.Name,
+		Image:       url,
+		Status:      servicePayload.Status,
+		Description: servicePayload.Description,
 	}
 
 	err = service.Create()
+	if err != nil {
+		NLog("error", "ServiceNew", fmt.Sprintf("service create error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan baru")
+	}
+
 	middlewares.SubmitKafkaPayload(service, "service_create")
 	if err != nil {
+		NLog("error", "ServiceNew", fmt.Sprintf("kafka submit error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan baru")
 	}
 
@@ -131,6 +147,8 @@ func ServiceDetail(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
+		NLog("warning", "ServiceDetail", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
@@ -150,17 +168,22 @@ func ServicePatch(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
+		NLog("warning", "ServicePatch", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
 	servicePayload := ServicePayload{}
 	payloadRules := govalidator.MapData{
-		"name":   []string{},
-		"image":  []string{},
-		"status": []string{"active_inactive"},
+		"name":        []string{},
+		"image":       []string{},
+		"status":      []string{"active_inactive"},
+		"description": []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &servicePayload)
 	if validate != nil {
+		NLog("warning", "ServicePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -172,6 +195,8 @@ func ServicePatch(c echo.Context) error {
 		filename := "svc" + strconv.FormatInt(time.Now().Unix(), 10)
 		url, err := asira.App.S3.UploadJPEG(unbased, filename)
 		if err != nil {
+			NLog("error", "ServicePatch", fmt.Sprintf("error upload image : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan bank baru")
 		}
 
@@ -181,8 +206,14 @@ func ServicePatch(c echo.Context) error {
 		service.Status = servicePayload.Status
 	}
 
+	if len(servicePayload.Description) > 0 {
+		service.Description = servicePayload.Description
+	}
+
 	err = middlewares.SubmitKafkaPayload(service, "service_update")
 	if err != nil {
+		NLog("error", "ServicePatch", fmt.Sprintf("kafka submit error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}
 
@@ -202,11 +233,15 @@ func ServiceDelete(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
+		NLog("warning", "ServiceDelete", fmt.Sprintf("error finding service %v : %v", serviceID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
 
 	err = middlewares.SubmitKafkaPayload(service, "service_delete")
 	if err != nil {
+		NLog("error", "ServiceDelete", fmt.Sprintf("error submit kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete layanan %v", serviceID))
 	}
 

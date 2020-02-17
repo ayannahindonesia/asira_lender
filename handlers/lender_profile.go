@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"asira_lender/adminhandlers"
 	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
@@ -63,6 +64,8 @@ func LenderProfile(c echo.Context) error {
 		Where("bank_representatives.user_id = ?", lenderID).Find(&temporal).Error
 
 	if err != nil {
+		adminhandlers.NLog("warning", "LenderProfile", fmt.Sprintf("error finding profile : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
 
@@ -109,6 +112,8 @@ func LenderProfileEdit(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &lenderPayload)
 	if validate != nil {
+		adminhandlers.NLog("warning", "LenderProfileEdit", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
@@ -148,6 +153,8 @@ func LenderProfileEdit(c echo.Context) error {
 
 	err = lenderModel.Save()
 	if err != nil {
+		adminhandlers.NLog("error", "LenderProfileEdit", fmt.Sprintf("error saving profile : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
@@ -170,6 +177,8 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 	err = userModel.FindbyID(bankRep.UserID)
 	if err != nil {
+		adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("error finding profile %v : %v", lenderID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
 
@@ -187,6 +196,8 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
+
+		adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("lender %v changed password", lenderID), c.Get("user").(*jwt.Token), "", false)
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}
