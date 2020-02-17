@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"asira_lender/adminhandlers"
 	"asira_lender/asira"
 	"asira_lender/models"
 	"encoding/base64"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
 
@@ -37,11 +39,15 @@ func ClientLogin(c echo.Context) error {
 		Secret: auth[1],
 	})
 	if err != nil {
+		adminhandlers.NLog("warning", "ClientLogin", "client login failed", c.Get("user").(*jwt.Token), "", true)
+
 		return returnInvalidResponse(http.StatusUnauthorized, "", "Login tidak valid")
 	}
 
 	token, err := createJwtToken(strconv.FormatUint(client.ID, 10), "client")
 	if err != nil {
+		adminhandlers.NLog("warning", "ClientLogin", fmt.Sprintf("failed creating token for client %v : %v", client.Name, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan")
 	}
 

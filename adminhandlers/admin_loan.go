@@ -4,13 +4,13 @@ import (
 	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 )
 
@@ -150,7 +150,9 @@ func LoanGetAll(c echo.Context) error {
 	}
 	err = db.Find(&loans).Error
 	if err != nil {
-		log.Println(err)
+		NLog("warning", "LoanGetAll", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprint("Pinjaman tidak ditemukan"))
 	}
 
 	result := basemodel.PagedFindResult{
@@ -190,6 +192,8 @@ func LoanGetDetails(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
+		NLog("warning", "LoanGetDetails", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
 

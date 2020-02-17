@@ -43,6 +43,10 @@ development:
     bucket_name: bucket-ayannah
   cron:
     time: "0 1 * * *"
+  northstar:
+    secret: bGVuZGVya2V5OmxlbmRlcnNlY3JldA==
+    topic: northstar_logger
+    send: true
     
 staging:
 

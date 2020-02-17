@@ -2,11 +2,15 @@ package adminhandlers
 
 import (
 	"asira_lender/asira"
+	"asira_lender/models"
 	"fmt"
+	"log"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/thedevsaddam/govalidator"
@@ -146,8 +150,45 @@ func validatePermission(c echo.Context, permission string) error {
 				}
 			}
 		}
+
+		NLog("warning", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), c.Get("user").(*jwt.Token), "", false)
+
 		return fmt.Errorf("Tidak memiliki hak akses")
 	}
 
+	NLog("warning", "validatePermission", "invalid token. error claims", c.Get("user").(*jwt.Token), "", true)
+
 	return fmt.Errorf("Tidak memiliki hak akses")
+}
+
+// NLog send log to northstar service
+func NLog(level string, tag string, message string, jwttoken *jwt.Token, note string, nouser bool) {
+	var (
+		uid      string
+		username string
+		err      error
+	)
+
+	if !nouser {
+		jti, _ := strconv.ParseUint(jwttoken.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+		user := models.User{}
+		err = user.FindbyID(jti)
+		if err == nil {
+			uid = fmt.Sprint(user.ID)
+			username = user.Username
+		}
+	}
+
+	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+		Level:    level,
+		Tag:      tag,
+		Messages: message,
+		UID:      uid,
+		Username: username,
+		Note:     note,
+	}, "log")
+
+	if err != nil {
+		log.Printf("error northstar log : %v", err)
+	}
 }

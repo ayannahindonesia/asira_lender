@@ -12,6 +12,7 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/fsnotify/fsnotify"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
@@ -36,6 +37,7 @@ type (
 		S3         custommodule.S3 `json:"s3"`
 		Cron       cron.Cron       `json:"cron"`
 		Permission viper.Viper     `json:"prog_permission"`
+		Northstar  northstarlib.NorthstarLib
 	}
 
 	// KafkaInstance stores kafka configs
@@ -66,6 +68,7 @@ func init() {
 	App.KafkaInit()
 	App.S3init()
 	App.CronInit()
+	App.NorthstarInit()
 
 	// apply custom validator
 	v := validator.AsiraValidator{DB: App.DB}
@@ -215,4 +218,17 @@ func (x *Application) CronInit() (err error) {
 	x.Cron.Start()
 
 	return nil
+}
+
+// NorthstarInit config for northstar logger
+func (x *Application) NorthstarInit() {
+	northstarconf := x.Config.GetStringMap(fmt.Sprintf("%s.northstar", x.ENV))
+
+	x.Northstar = northstarlib.NorthstarLib{
+		Host:         App.Kafka.Host,
+		Secret:       northstarconf["secret"].(string),
+		Topic:        northstarconf["topic"].(string),
+		Send:         northstarconf["send"].(bool),
+		SaramaConfig: App.Kafka.Config,
+	}
 }

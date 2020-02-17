@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ayannahindonesia/basemodel"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo"
 	"github.com/lib/pq"
@@ -107,6 +108,8 @@ func ProductList(c echo.Context) error {
 	}
 
 	if err != nil {
+		NLog("warning", "ProductList", fmt.Sprintf("error listing products : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
 
@@ -141,6 +144,8 @@ func ProductNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
+		NLog("warning", "ProductNew", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
 
@@ -148,8 +153,16 @@ func ProductNew(c echo.Context) error {
 	json.Unmarshal(marshal, &product)
 
 	err = product.Create()
-	middlewares.SubmitKafkaPayload(product, "product_create")
 	if err != nil {
+		NLog("error", "ProductNew", fmt.Sprintf("create error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")
+	}
+
+	err = middlewares.SubmitKafkaPayload(product, "product_create")
+	if err != nil {
+		NLog("error", "ProductNew", fmt.Sprintf("kafka submit error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")
 	}
 
@@ -169,6 +182,8 @@ func ProductDetail(c echo.Context) error {
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
+		NLog("warning", "ProductDetail", fmt.Sprintf("find product %v error : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
@@ -189,6 +204,8 @@ func ProductPatch(c echo.Context) error {
 	productPayload := ProductPayload{}
 	err = product.FindbyID(productID)
 	if err != nil {
+		NLog("warning", "ProductPatch", fmt.Sprintf("patch product %v error : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
@@ -208,6 +225,8 @@ func ProductPatch(c echo.Context) error {
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
+		NLog("warning", "ProductPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi.")
 	}
 
@@ -250,6 +269,8 @@ func ProductPatch(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(product, "product_update")
 	if err != nil {
+		NLog("error", "ProductPatch", fmt.Sprintf("kafka submit error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update produk %v", productID))
 	}
 
@@ -269,11 +290,15 @@ func ProductDelete(c echo.Context) error {
 	product := models.Product{}
 	err = product.FindbyID(productID)
 	if err != nil {
+		NLog("warning", "ProductDelete", fmt.Sprintf("error finding product %v : %v", productID, err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
 
 	err = middlewares.SubmitKafkaPayload(product, "product_delete")
 	if err != nil {
+		NLog("error", "ProductDelete", fmt.Sprintf("kafka submit error : %v", err), c.Get("user").(*jwt.Token), "", false)
+
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete produk %v", productID))
 	}
 
