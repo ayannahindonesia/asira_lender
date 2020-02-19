@@ -86,6 +86,8 @@ func BankTypeNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
 
+	NAudittrail(models.BankType{}, bankType, c.Get("user").(*jwt.Token), "bank type", fmt.Sprint(bankType.ID), "create")
+
 	return c.JSON(http.StatusCreated, bankType)
 }
 
@@ -128,6 +130,7 @@ func BankTypePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
+	origin := bankType
 
 	payloadRules := govalidator.MapData{
 		"name":        []string{},
@@ -154,6 +157,8 @@ func BankTypePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
+
+	NAudittrail(origin, bankType, c.Get("user").(*jwt.Token), "bank type", fmt.Sprint(bankType.ID), "update")
 
 	return c.JSON(http.StatusOK, bankType)
 }
@@ -182,6 +187,8 @@ func BankTypeDelete(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
+
+	NAudittrail(bankType, models.BankType{}, c.Get("user").(*jwt.Token), "bank type", fmt.Sprint(bankType.ID), "delete")
 
 	return c.JSON(http.StatusOK, bankType)
 }

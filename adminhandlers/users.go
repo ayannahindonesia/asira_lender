@@ -250,6 +250,8 @@ func UserNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengirim password ke email anda")
 	}
 
+	NAudittrail(models.User{}, newUser, c.Get("user").(*jwt.Token), "user", fmt.Sprint(newUser.ID), "create")
+
 	return c.JSON(http.StatusCreated, newUser)
 }
 
@@ -271,6 +273,7 @@ func UserPatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("User %v tidak ditemukan", userID))
 	}
+	origin := userM
 
 	payloadRules := govalidator.MapData{
 		"username": []string{},
@@ -329,6 +332,8 @@ func UserPatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update User %v", userID))
 	}
+
+	NAudittrail(origin, userM, c.Get("user").(*jwt.Token), "user", fmt.Sprint(userM.ID), "update")
 
 	return c.JSON(http.StatusOK, userM)
 }

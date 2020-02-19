@@ -95,6 +95,7 @@ func LenderProfileEdit(c echo.Context) error {
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
+	origin := lenderModel
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
@@ -158,6 +159,8 @@ func LenderProfileEdit(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
+	adminhandlers.NAudittrail(origin, lenderModel, c.Get("user").(*jwt.Token), "user", fmt.Sprint(lenderModel.ID), "update")
+
 	return c.JSON(http.StatusOK, lenderModel)
 }
 
@@ -181,6 +184,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
+	origin := userModel
 
 	if userModel.FirstLogin {
 		type Password struct {
@@ -201,6 +205,8 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}
+
+	adminhandlers.NAudittrail(origin, userModel, c.Get("user").(*jwt.Token), "user", fmt.Sprint(userModel.ID), "first login change password")
 
 	return c.JSON(http.StatusUnauthorized, "Akun anda bukan akun baru.")
 }

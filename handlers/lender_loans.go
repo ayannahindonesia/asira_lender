@@ -301,6 +301,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+	origin := loan
 	if loan.ID == 0 {
 		adminhandlers.NLog("warning", "LenderLoanApproveReject", "loan id is 0", c.Get("user").(*jwt.Token), "", false)
 
@@ -346,6 +347,8 @@ func LenderLoanApproveReject(c echo.Context) error {
 			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal reject pinjaman")
 		}
 	}
+
+	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "approve borrower")
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loanID, loan.Status)})
 }
@@ -485,6 +488,7 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+	origin := loan
 	if loan.ID == 0 {
 		adminhandlers.NLog("warning", "LenderLoanConfirmDisbursement", "loan id is 0", c.Get("user").(*jwt.Token), "", false)
 
@@ -500,6 +504,8 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
 	adminhandlers.NLog("info", "LenderLoanConfirmDisbursement", fmt.Sprintf("confirmed loan %v", loan.ID), c.Get("user").(*jwt.Token), "", false)
+
+	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "confirm loan")
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loanID, loan.DisburseStatus)})
 }
@@ -537,6 +543,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+	origin := loan
 
 	disburseDate, err := time.Parse("2006-01-02", c.QueryParam("disburse_date"))
 	if err != nil {
@@ -555,6 +562,8 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
 	adminhandlers.NLog("info", "LenderLoanChangeDisburseDate", fmt.Sprintf("loan %v disburse date changed", loan.ID), c.Get("user").(*jwt.Token), "", false)
+
+	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "change loan disburse date")
 
 	return c.JSON(http.StatusOK, loan)
 }

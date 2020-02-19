@@ -135,6 +135,8 @@ func RoleNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Internal Roles")
 	}
 
+	NAudittrail(models.Roles{}, Iroles, c.Get("user").(*jwt.Token), "role", fmt.Sprint(Iroles.ID), "create")
+
 	return c.JSON(http.StatusCreated, Iroles)
 }
 
@@ -156,6 +158,7 @@ func RolePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Internal Role %v tidak ditemukan", IrolesID))
 	}
+	origin := Iroles
 
 	payloadRules := govalidator.MapData{
 		"name":        []string{},
@@ -194,6 +197,8 @@ func RolePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update Internal Roles %v", IrolesID))
 	}
+
+	NAudittrail(origin, Iroles, c.Get("user").(*jwt.Token), "role", fmt.Sprint(Iroles.ID), "update")
 
 	return c.JSON(http.StatusOK, Iroles)
 }

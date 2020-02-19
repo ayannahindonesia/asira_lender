@@ -41,6 +41,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 	claims := token.Claims.(jwt.MapClaims)
 
 	userModel := models.User{}
+	origin := models.User{}
 
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
@@ -49,6 +50,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
+	origin = userModel
 
 	if userModel.FirstLogin {
 		type Password struct {
@@ -67,6 +69,8 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
 		NLog("info", "UserFirstLoginChangePassword", fmt.Sprint("changed password"), c.Get("user").(*jwt.Token), "", false)
+
+		NAudittrail(origin, userModel, token, "user", fmt.Sprint(userModel.ID), "user first login change password")
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}

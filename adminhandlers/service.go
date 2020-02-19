@@ -131,6 +131,8 @@ func ServiceNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat layanan baru")
 	}
 
+	NAudittrail(models.Service{}, service, c.Get("user").(*jwt.Token), "service", fmt.Sprint(service.ID), "create")
+
 	return c.JSON(http.StatusCreated, service)
 }
 
@@ -172,6 +174,7 @@ func ServicePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
+	origin := service
 
 	servicePayload := ServicePayload{}
 	payloadRules := govalidator.MapData{
@@ -217,6 +220,8 @@ func ServicePatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update layanan %v", serviceID))
 	}
 
+	NAudittrail(origin, service, c.Get("user").(*jwt.Token), "service", fmt.Sprint(service.ID), "update")
+
 	return c.JSON(http.StatusOK, service)
 }
 
@@ -244,6 +249,8 @@ func ServiceDelete(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete layanan %v", serviceID))
 	}
+
+	NAudittrail(service, models.Service{}, c.Get("user").(*jwt.Token), "service", fmt.Sprint(service.ID), "delete")
 
 	return c.JSON(http.StatusOK, service)
 }

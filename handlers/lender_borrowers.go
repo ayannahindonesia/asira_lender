@@ -426,6 +426,7 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan", borrowerID))
 	}
+	origin := borrower
 
 	approval := c.Param("approval")
 	switch approval {
@@ -456,6 +457,8 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 		break
 	}
 	adminhandlers.NLog("info", "LenderApproveRejectProspectiveBorrower", fmt.Sprintf("borrower %v status %v", borrower.ID, approval), user.(*jwt.Token), "", false)
+
+	adminhandlers.NAudittrail(origin, borrower, c.Get("user").(*jwt.Token), "borrower", fmt.Sprint(borrower.ID), "update")
 
 	return c.JSON(http.StatusOK, borrower)
 }
