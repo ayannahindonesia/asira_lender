@@ -262,6 +262,8 @@ func AgentNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 	}
 
+	NAudittrail(models.Agent{}, agent, c.Get("user").(*jwt.Token), "agent", fmt.Sprint(agent.ID), "create")
+
 	return c.JSON(http.StatusCreated, agent)
 }
 
@@ -283,6 +285,7 @@ func AgentPatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
+	origin := agent
 
 	payloadRules := govalidator.MapData{
 		"name":           []string{},
@@ -364,6 +367,8 @@ func AgentPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
 	}
 
+	NAudittrail(origin, agent, c.Get("user").(*jwt.Token), "agent", fmt.Sprint(agent.ID), "update")
+
 	return c.JSON(http.StatusOK, agent)
 }
 
@@ -391,6 +396,8 @@ func AgentDelete(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agen baru")
 	}
+
+	NAudittrail(agent, models.Agent{}, c.Get("user").(*jwt.Token), "agent", fmt.Sprint(agent.ID), "update")
 
 	return c.JSON(http.StatusOK, agent)
 }

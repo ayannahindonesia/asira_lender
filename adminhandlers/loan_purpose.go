@@ -102,6 +102,8 @@ func LoanPurposeNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
 
+	NAudittrail(models.LoanPurpose{}, purpose, c.Get("user").(*jwt.Token), "loan purpose", fmt.Sprint(purpose.ID), "create")
+
 	return c.JSON(http.StatusCreated, purpose)
 }
 
@@ -144,6 +146,7 @@ func LoanPurposePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
+	origin := purpose
 
 	payloadRules := govalidator.MapData{
 		"name":   []string{},
@@ -170,6 +173,8 @@ func LoanPurposePatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update loan purpose %v", loanPurposeID))
 	}
+
+	NAudittrail(origin, purpose, c.Get("user").(*jwt.Token), "loan purpose", fmt.Sprint(purpose.ID), "update")
 
 	return c.JSON(http.StatusOK, purpose)
 }
@@ -198,6 +203,8 @@ func LoanPurposeDelete(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete loan purpose %v", loanPurposeID))
 	}
+
+	NAudittrail(purpose, models.LoanPurpose{}, c.Get("user").(*jwt.Token), "loan purpose", fmt.Sprint(purpose.ID), "delete")
 
 	return c.JSON(http.StatusOK, purpose)
 }

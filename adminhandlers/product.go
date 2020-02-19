@@ -166,6 +166,8 @@ func ProductNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat produk baru")
 	}
 
+	NAudittrail(models.Product{}, product, c.Get("user").(*jwt.Token), "product", fmt.Sprint(product.ID), "create")
+
 	return c.JSON(http.StatusCreated, product)
 }
 
@@ -208,6 +210,7 @@ func ProductPatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
 	}
+	origin := product
 
 	payloadRules := govalidator.MapData{
 		"name":             []string{},
@@ -274,6 +277,8 @@ func ProductPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update produk %v", productID))
 	}
 
+	NAudittrail(origin, product, c.Get("user").(*jwt.Token), "product", fmt.Sprint(product.ID), "update")
+
 	return c.JSON(http.StatusOK, product)
 }
 
@@ -301,6 +306,8 @@ func ProductDelete(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete produk %v", productID))
 	}
+
+	NAudittrail(product, models.Product{}, c.Get("user").(*jwt.Token), "product", fmt.Sprint(product.ID), "delete")
 
 	return c.JSON(http.StatusOK, product)
 }

@@ -130,6 +130,8 @@ func AgentProviderNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
 
+	NAudittrail(models.AgentProvider{}, agentProvider, c.Get("user").(*jwt.Token), "agent provider", fmt.Sprint(agentProvider.ID), "create")
+
 	return c.JSON(http.StatusCreated, agentProvider)
 }
 
@@ -144,12 +146,14 @@ func AgentProviderPatch(c echo.Context) error {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	agentProvider := models.AgentProvider{}
+	origin := models.AgentProvider{}
 	err = agentProvider.FindbyID(id)
 	if err != nil {
 		NLog("error", "AgentProviderPatch", fmt.Sprintf("error not found patching provider %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agent provider %v tidak ditemukan", id))
 	}
+	origin = agentProvider
 
 	payloadRules := govalidator.MapData{
 		"name":    []string{},
@@ -172,6 +176,8 @@ func AgentProviderPatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat tipe bank baru")
 	}
+
+	NAudittrail(origin, agentProvider, c.Get("user").(*jwt.Token), "agent provider", fmt.Sprint(agentProvider.ID), "update")
 
 	return c.JSON(http.StatusOK, agentProvider)
 }

@@ -40,5 +40,7 @@ func CreateClient(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Client Config")
 	}
 
+	NAudittrail(models.Client{}, client, c.Get("user").(*jwt.Token), "client", fmt.Sprint(client.ID), "create")
+
 	return c.JSON(http.StatusCreated, client)
 }

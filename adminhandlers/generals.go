@@ -192,3 +192,39 @@ func NLog(level string, tag string, message string, jwttoken *jwt.Token, note st
 		log.Printf("error northstar log : %v", err)
 	}
 }
+
+// NAudittrail send audit trail log to northstar service
+func NAudittrail(ori interface{}, new interface{}, jwttoken *jwt.Token, entity string, entityID string, action string) {
+	var (
+		uid      string
+		username string
+		err      error
+	)
+
+	jti, _ := strconv.ParseUint(jwttoken.Claims.(jwt.MapClaims)["jti"].(string), 10, 64)
+	user := models.User{}
+	err = user.FindbyID(jti)
+	if err == nil {
+		uid = fmt.Sprint(user.ID)
+		username = user.Username
+	} else {
+		uid = "0"
+		username = "not found"
+	}
+
+	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Audittrail{
+		Client:   asira.App.Northstar.Secret,
+		UserID:   uid,
+		Username: username,
+		Roles:    fmt.Sprint(user.Roles),
+		Entity:   entity,
+		EntityID: entityID,
+		Action:   action,
+		Original: fmt.Sprintf("%+v\n", ori),
+		New:      fmt.Sprintf("%+v\n", new),
+	}, "audittrail")
+
+	if err != nil {
+		log.Printf("error northstar log : %v", err)
+	}
+}
