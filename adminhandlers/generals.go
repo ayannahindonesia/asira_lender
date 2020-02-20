@@ -3,6 +3,7 @@ package adminhandlers
 import (
 	"asira_lender/asira"
 	"asira_lender/models"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -212,6 +213,9 @@ func NAudittrail(ori interface{}, new interface{}, jwttoken *jwt.Token, entity s
 		username = "not found"
 	}
 
+	oriMarshal, _ := json.Marshal(ori)
+	newMarshal, _ := json.Marshal(new)
+
 	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Audittrail{
 		Client:   asira.App.Northstar.Secret,
 		UserID:   uid,
@@ -220,8 +224,8 @@ func NAudittrail(ori interface{}, new interface{}, jwttoken *jwt.Token, entity s
 		Entity:   entity,
 		EntityID: entityID,
 		Action:   action,
-		Original: fmt.Sprintf("%+v\n", ori),
-		New:      fmt.Sprintf("%+v\n", new),
+		Original: fmt.Sprintf(`%s`, string(oriMarshal)),
+		New:      fmt.Sprintf(`%s`, string(newMarshal)),
 	}, "audittrail")
 
 	if err != nil {
