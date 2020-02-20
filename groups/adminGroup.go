@@ -95,4 +95,7 @@ func AdminGroup(e *echo.Echo) {
 
 	// Reports
 	g.GET("/reports/convenience_fee", reports.ConvenienceFeeReport)
+
+	// Agent Provider
+	g.GET("/faq", adminhandlers.FAQList)
 }

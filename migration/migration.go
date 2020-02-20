@@ -652,6 +652,66 @@ func Seed() {
 		// 	loan.Create()
 		// 	middlewares.SubmitKafkaPayload(loan, "loan_create")
 		// }
+
+		faqs := []models.FAQ{
+			models.FAQ{
+				Title: "How to register",
+				Description: `
+				<style>
+				.panel {
+				  padding: 0 18px;
+				  background-color: white;
+				  max-height: 0;
+				  overflow: hidden;
+				  transition: max-height 0.2s ease-out;
+				}
+				</style>
+				<button class="accordion">Section 1</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 2</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 3</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>`,
+			},
+			models.FAQ{
+				Title: "How to applying loan",
+				Description: `
+				<style>
+				.panel {
+				  padding: 0 18px;
+				  background-color: white;
+				  max-height: 0;
+				  overflow: hidden;
+				  transition: max-height 0.2s ease-out;
+				}
+				</style>
+				<button class="accordion">Section 1</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 2</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 3</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>`,
+			},
+		}
+		for _, faq := range faqs {
+			faq.Create()
+		}
 	}
 }
 
@@ -1232,6 +1292,67 @@ func TestSeed() {
 		for _, agent := range agents {
 			agent.Create()
 		}
+
+		faqs := []models.FAQ{
+			models.FAQ{
+				Title: "How to register",
+				Description: `
+				<style>
+				.panel {
+				  padding: 0 18px;
+				  background-color: white;
+				  max-height: 0;
+				  overflow: hidden;
+				  transition: max-height 0.2s ease-out;
+				}
+				</style>
+				<button class="accordion">Section 1</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 2</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 3</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>`,
+			},
+			models.FAQ{
+				Title: "How to applying loan",
+				Description: `
+				<style>
+				.panel {
+				  padding: 0 18px;
+				  background-color: white;
+				  max-height: 0;
+				  overflow: hidden;
+				  transition: max-height 0.2s ease-out;
+				}
+				</style>
+				<button class="accordion">Section 1</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 2</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>
+				
+				<button class="accordion">Section 3</button>
+				<div class="panel">
+				  <p>Lorem ipsum...</p>
+				</div>`,
+			},
+		}
+		for _, faq := range faqs {
+			faq.Create()
+		}
+
 	}
 }
 
@@ -1252,6 +1373,7 @@ func Truncate(tableList []string) (err error) {
 				"bank_representatives",
 				"loan_purposes",
 				"agent_providers",
+				"faqs",
 			}
 		}
 

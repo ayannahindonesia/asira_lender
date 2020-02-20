@@ -59,3 +59,4 @@ permissions:
   core_agent_patch: core_agent_patch
   core_agent_delete: core_agent_delete
   convenience_fee_report: convenience_fee_report
+  core_faq_list: core_faq_list
