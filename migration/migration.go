@@ -657,56 +657,46 @@ func Seed() {
 			models.FAQ{
 				Title: "How to register",
 				Description: `
-				<style>
-				.panel {
-				  padding: 0 18px;
-				  background-color: white;
-				  max-height: 0;
-				  overflow: hidden;
-				  transition: max-height 0.2s ease-out;
-				}
-				</style>
-				<button class="accordion">Section 1</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<html>
+				<head>
+				</head>
+				<body>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 1</strong>
+				<p>Lorem ipsum...1</p>
 				</div>
-				
-				<button class="accordion">Section 2</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 2</strong>
+				<p>Lorem ipsum...2</p>
 				</div>
-				
-				<button class="accordion">Section 3</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
-				</div>`,
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 3</strong>
+				<p>Lorem ipsum...3</p>
+				</div>
+				</body>
+				</html>`,
 			},
 			models.FAQ{
 				Title: "How to applying loan",
 				Description: `
-				<style>
-				.panel {
-				  padding: 0 18px;
-				  background-color: white;
-				  max-height: 0;
-				  overflow: hidden;
-				  transition: max-height 0.2s ease-out;
-				}
-				</style>
-				<button class="accordion">Section 1</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<html>
+				<head>
+				</head>
+				<body>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 1</strong>
+				<p>Lorem ipsum...1</p>
 				</div>
-				
-				<button class="accordion">Section 2</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 2</strong>
+				<p>Lorem ipsum...2</p>
 				</div>
-				
-				<button class="accordion">Section 3</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
-				</div>`,
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 3</strong>
+				<p>Lorem ipsum...3</p>
+				</div>
+				</body>
+				</html>`,
 			},
 		}
 		for _, faq := range faqs {
@@ -1297,56 +1287,46 @@ func TestSeed() {
 			models.FAQ{
 				Title: "How to register",
 				Description: `
-				<style>
-				.panel {
-				  padding: 0 18px;
-				  background-color: white;
-				  max-height: 0;
-				  overflow: hidden;
-				  transition: max-height 0.2s ease-out;
-				}
-				</style>
-				<button class="accordion">Section 1</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<html>
+				<head>
+				</head>
+				<body>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 1</strong>
+				<p>Lorem ipsum...1</p>
 				</div>
-				
-				<button class="accordion">Section 2</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 2</strong>
+				<p>Lorem ipsum...2</p>
 				</div>
-				
-				<button class="accordion">Section 3</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
-				</div>`,
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 3</strong>
+				<p>Lorem ipsum...3</p>
+				</div>
+				</body>
+				</html>`,
 			},
 			models.FAQ{
 				Title: "How to applying loan",
 				Description: `
-				<style>
-				.panel {
-				  padding: 0 18px;
-				  background-color: white;
-				  max-height: 0;
-				  overflow: hidden;
-				  transition: max-height 0.2s ease-out;
-				}
-				</style>
-				<button class="accordion">Section 1</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<html>
+				<head>
+				</head>
+				<body>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 1</strong>
+				<p>Lorem ipsum...1</p>
 				</div>
-				
-				<button class="accordion">Section 2</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 2</strong>
+				<p>Lorem ipsum...2</p>
 				</div>
-				
-				<button class="accordion">Section 3</button>
-				<div class="panel">
-				  <p>Lorem ipsum...</p>
-				</div>`,
+				<div class="panel" style="background-color:white; max-height:0; padding:20px 20px; transition:max-height 0.2s ease-out;margin-bottom:50px" >
+				<strong class="accordion">Section 3</strong>
+				<p>Lorem ipsum...3</p>
+				</div>
+				</body>
+				</html>`,
 			},
 		}
 		for _, faq := range faqs {
