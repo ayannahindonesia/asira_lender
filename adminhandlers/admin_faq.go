@@ -1,7 +1,9 @@
 package adminhandlers
 
 import (
+	"asira_lender/middlewares"
 	"asira_lender/models"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,6 +12,7 @@ import (
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	"github.com/thedevsaddam/govalidator"
 )
 
 //FAQPayload payload
@@ -66,4 +69,40 @@ func FAQList(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, result)
+}
+
+// LoanPurposeNew create new loan purpose
+func FAQNew(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_faq_new")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	faq := models.FAQ{}
+	faqPayload := FAQPayload{}
+	payloadRules := govalidator.MapData{
+		"title":       []string{"required"},
+		"description": []string{"required"},
+	}
+
+	validate := validateRequestPayload(c, payloadRules, &faqPayload)
+	if validate != nil {
+		NLog("warning", "FAQNew", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
+	}
+
+	marshal, _ := json.Marshal(faqPayload)
+	json.Unmarshal(marshal, &faq)
+
+	err = faq.Create()
+	middlewares.SubmitKafkaPayload(faq, "faq_create")
+	if err != nil {
+		NLog("error", "FAQNew", fmt.Sprintf("error create : %v", err), c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
+	}
+
+	return c.JSON(http.StatusCreated, faq)
 }

@@ -98,4 +98,5 @@ func AdminGroup(e *echo.Echo) {
 
 	// Agent Provider
 	g.GET("/faq", adminhandlers.FAQList)
+	g.POST("/faq", adminhandlers.FAQNew)
 }
