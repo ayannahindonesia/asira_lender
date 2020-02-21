@@ -550,6 +550,22 @@ func createUnitTestModels(i interface{}, model string) error {
 			}
 		}
 		break
+	case "faq":
+		if x, ok := i.(models.FAQ); ok {
+			switch mode {
+			default:
+				return fmt.Errorf("invalid model")
+			case "create":
+				err = x.Create()
+				break
+			case "update":
+				err = x.Save()
+				break
+			case "delete":
+				err = x.Delete()
+				break
+			}
+		}
 	}
 
 	return err
