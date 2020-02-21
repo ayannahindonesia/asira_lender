@@ -71,7 +71,7 @@ func FAQList(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-// LoanPurposeNew create new loan purpose
+//FAQNew create new FAQ
 func FAQNew(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "core_faq_new")
@@ -90,7 +90,7 @@ func FAQNew(c echo.Context) error {
 	if validate != nil {
 		NLog("warning", "FAQNew", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
 
-		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Kesalahan validasi")
 	}
 
 	marshal, _ := json.Marshal(faqPayload)
@@ -101,8 +101,105 @@ func FAQNew(c echo.Context) error {
 	if err != nil {
 		NLog("error", "FAQNew", fmt.Sprintf("error create : %v", err), c.Get("user").(*jwt.Token), "", true)
 
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat FAQ baru")
 	}
 
 	return c.JSON(http.StatusCreated, faq)
+}
+
+// FAQDetail get FAQ detail by id
+func FAQDetail(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_faq_detail")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	faqID, _ := strconv.ParseUint(c.Param("faq_id"), 10, 64)
+
+	faq := models.FAQ{}
+	err = faq.FindbyID(faqID)
+	if err != nil {
+		NLog("warning", "FAQDetail", fmt.Sprintf("FAQ %v not found : %v", faqID, err), c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
+	}
+
+	return c.JSON(http.StatusOK, faq)
+}
+
+// FAQPatch edit FAQ by id
+func FAQPatch(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_faq_patch")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	faqID, _ := strconv.ParseUint(c.Param("faq_id"), 10, 64)
+
+	faq := models.FAQ{}
+	faqPayload := FAQPayload{}
+	err = faq.FindbyID(faqID)
+	if err != nil {
+		NLog("warning", "FAQPatch", fmt.Sprintf("FAQ %v not found : %v", faqID, err), c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
+	}
+
+	payloadRules := govalidator.MapData{
+		"title":       []string{},
+		"description": []string{},
+	}
+
+	validate := validateRequestPayload(c, payloadRules, &faqPayload)
+	if validate != nil {
+		NLog("warning", "FAQPatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Kesalahan validasi")
+	}
+
+	if len(faqPayload.Title) > 0 {
+		faq.Title = faqPayload.Title
+	}
+	if len(faqPayload.Description) > 0 {
+		faq.Description = faqPayload.Description
+	}
+
+	err = middlewares.SubmitKafkaPayload(faq, "faq_update")
+	if err != nil {
+		NLog("error", "FAQPatch", fmt.Sprintf("kafka error : %v", err), c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update FAQ %v", faqID))
+	}
+
+	return c.JSON(http.StatusOK, faq)
+}
+
+// FAQDelete delete FAQ
+func FAQDelete(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "core_faq_delete")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	faqID, _ := strconv.ParseUint(c.Param("faq_id"), 10, 64)
+
+	faq := models.FAQ{}
+	err = faq.FindbyID(faqID)
+	if err != nil {
+		NLog("warning", "FAQDelete", fmt.Sprintf("delete FAQ %v error : %v", faqID, err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
+	}
+
+	err = middlewares.SubmitKafkaPayload(faq, "faq_delete")
+	if err != nil {
+		NLog("error", "FAQDelete", fmt.Sprintf("delete FAQ %v error : %v", faqID, err), c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete FAQ %v", faqID))
+	}
+
+	return c.JSON(http.StatusOK, faq)
 }

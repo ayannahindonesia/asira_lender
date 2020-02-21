@@ -21,7 +21,7 @@ func (model *FAQ) Save() error {
 	return basemodel.Save(&model)
 }
 
-// FirstOrCreate func
+// FirstOrCreate create if not exist, or skip if exist
 func (model *FAQ) FirstOrCreate() error {
 	return basemodel.FirstOrCreate(&model)
 }

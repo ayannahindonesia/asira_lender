@@ -127,84 +127,84 @@ func TestGetFAQByID(t *testing.T) {
 	})
 
 	// valid response
-	obj := auth.GET("/admin/loan_purposes/1").
+	obj := auth.GET("/admin/faq/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 	obj.ContainsKey("id").ValueEqual("id", 1)
 
 	// not found
-	auth.GET("/admin/loan_purposes/9999").
+	auth.GET("/admin/faq/9999").
 		Expect().
 		Status(http.StatusNotFound).JSON().Object()
 }
 
-// func TestFAQPatch(t *testing.T) {
-// 	RebuildData()
+func TestFAQPatch(t *testing.T) {
+	RebuildData()
 
-// 	api := router.NewRouter()
+	api := router.NewRouter()
 
-// 	server := httptest.NewServer(api)
+	server := httptest.NewServer(api)
 
-// 	defer server.Close()
+	defer server.Close()
 
-// 	e := httpexpect.New(t, server.URL)
+	e := httpexpect.New(t, server.URL)
 
-// 	auth := e.Builder(func(req *httpexpect.Request) {
-// 		req.WithHeader("Authorization", "Basic "+clientBasicToken)
-// 	})
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
 
-// 	adminToken := getAdminLoginToken(e, auth, "1")
+	adminToken := getAdminLoginToken(e, auth, "1")
 
-// 	auth = e.Builder(func(req *httpexpect.Request) {
-// 		req.WithHeader("Authorization", "Bearer "+adminToken)
-// 	})
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+adminToken)
+	})
 
-// 	payload := map[string]interface{}{
-// 		"name": "Test Patch",
-// 	}
+	payload := map[string]interface{}{
+		"title": "Test Patch",
+	}
 
-// 	// valid response
-// 	obj := auth.PATCH("/admin/loan_purposes/1").WithJSON(payload).
-// 		Expect().
-// 		Status(http.StatusOK).JSON().Object()
-// 	obj.ContainsKey("name").ValueEqual("name", "Test Patch")
+	// valid response
+	obj := auth.PATCH("/admin/faq/1").WithJSON(payload).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+	obj.ContainsKey("title").ValueEqual("title", "Test Patch")
 
-// 	// test invalid token
-// 	auth = e.Builder(func(req *httpexpect.Request) {
-// 		req.WithHeader("Authorization", "Bearer wrong token")
-// 	})
-// 	auth.PATCH("/admin/loan_purposes/1").WithJSON(payload).
-// 		Expect().
-// 		Status(http.StatusUnauthorized).JSON().Object()
-// }
+	// test invalid token
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer wrong token")
+	})
+	auth.PATCH("/admin/faq/1").WithJSON(payload).
+		Expect().
+		Status(http.StatusUnauthorized).JSON().Object()
+}
 
-// func TestDeleteFAQ(t *testing.T) {
-// 	RebuildData()
+func TestDeleteFAQ(t *testing.T) {
+	RebuildData()
 
-// 	api := router.NewRouter()
+	api := router.NewRouter()
 
-// 	server := httptest.NewServer(api)
+	server := httptest.NewServer(api)
 
-// 	defer server.Close()
+	defer server.Close()
 
-// 	e := httpexpect.New(t, server.URL)
+	e := httpexpect.New(t, server.URL)
 
-// 	auth := e.Builder(func(req *httpexpect.Request) {
-// 		req.WithHeader("Authorization", "Basic "+clientBasicToken)
-// 	})
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
 
-// 	adminToken := getAdminLoginToken(e, auth, "1")
+	adminToken := getAdminLoginToken(e, auth, "1")
 
-// 	auth = e.Builder(func(req *httpexpect.Request) {
-// 		req.WithHeader("Authorization", "Bearer "+adminToken)
-// 	})
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+adminToken)
+	})
 
-// 	// valid response
-// 	auth.DELETE("/admin/loan_purposes/1").
-// 		Expect().
-// 		Status(http.StatusOK).JSON().Object()
+	// valid response
+	auth.DELETE("/admin/faq/1").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
 
-// 	auth.GET("/admin/loan_purposes/1").
-// 		Expect().
-// 		Status(http.StatusNotFound).JSON().Object()
-// }
+	auth.GET("/admin/faq/1").
+		Expect().
+		Status(http.StatusNotFound).JSON().Object()
+}
