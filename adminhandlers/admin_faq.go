@@ -54,7 +54,7 @@ func FAQList(c echo.Context) error {
 	} else {
 		type Filter struct {
 			Title       string `json:"title" condition:"LIKE"`
-			Description string `json:"description"`
+			Description string `json:"description" condition:"LIKE"`
 		}
 		result, err = faq.PagedFindFilter(page, rows, orderby, sort, &Filter{
 			Title:       c.QueryParam("title"),
