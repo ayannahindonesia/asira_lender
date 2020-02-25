@@ -184,7 +184,7 @@ func BorrowerGetDetails(c echo.Context) error {
 		Where("borrowers.id = ?", borrowerID).
 		Find(&borrower).Error
 	if err != nil {
-		NLog("warning", "BorrowerGetDetails", map[string]interface{}{"message": "query not found : '%v' error : %v", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BorrowerGetDetails", map[string]interface{}{"message": fmt.Sprintf("query not found borrower %v", borrowerID), "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Nasabah %v tidak ditemukan", borrowerID))
 	}
