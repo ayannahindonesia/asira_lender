@@ -24,7 +24,7 @@ func AdminProfile(c echo.Context) error {
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
-		NLog("warning", "AdminProfile", fmt.Sprintf("user id %v profile. error : %v", userID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "AdminProfile", map[string]interface{}{"message": fmt.Sprintf("user id %v profile not found", userID), "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
@@ -46,7 +46,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 	userID, _ := strconv.ParseUint(claims["jti"].(string), 10, 64)
 	err := userModel.FindbyID(userID)
 	if err != nil {
-		NLog("warning", "UserFirstLoginChangePassword", fmt.Sprintf("user id %v profile. error : %v", userID, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "UserFirstLoginChangePassword", map[string]interface{}{"message": fmt.Sprintf("user id %v profile not found", userID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki akses.")
 	}
@@ -63,18 +63,18 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 		validate := validateRequestPayload(c, payloadRules, &pass)
 		if validate != nil {
-			NLog("warning", "UserFirstLoginChangePassword", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+			NLog("warning", "UserFirstLoginChangePassword", map[string]interface{}{"message": "validation error", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
-		NLog("info", "UserFirstLoginChangePassword", fmt.Sprint("changed password"), c.Get("user").(*jwt.Token), "", false)
+		NLog("info", "UserFirstLoginChangePassword", map[string]interface{}{"message": "changed password"}, c.Get("user").(*jwt.Token), "", false)
 
 		NAudittrail(origin, userModel, token, "user", fmt.Sprint(userModel.ID), "user first login change password")
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}
-	NLog("warning", "UserFirstLoginChangePassword", fmt.Sprint("cant change password, not first login"), c.Get("user").(*jwt.Token), "", false)
+	NLog("warning", "UserFirstLoginChangePassword", map[string]interface{}{"message": "cant change password, not first login"}, c.Get("user").(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusUnauthorized, "Akun anda bukan akun baru.")
 }

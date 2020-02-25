@@ -163,7 +163,7 @@ func validatePermission(c echo.Context, permission string) error {
 }
 
 // NLog send log to northstar service
-func NLog(level string, tag string, message string, jwttoken *jwt.Token, note string, nouser bool) {
+func NLog(level string, tag string, message interface{}, jwttoken *jwt.Token, note string, nouser bool) {
 	var (
 		uid      string
 		username string
@@ -180,10 +180,12 @@ func NLog(level string, tag string, message string, jwttoken *jwt.Token, note st
 		}
 	}
 
+	jMarshal, _ := json.Marshal(message)
+
 	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
 		Level:    level,
 		Tag:      tag,
-		Messages: message,
+		Messages: string(jMarshal),
 		UID:      uid,
 		Username: username,
 		Note:     note,

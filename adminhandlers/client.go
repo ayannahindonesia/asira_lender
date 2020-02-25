@@ -28,14 +28,14 @@ func CreateClient(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &client)
 	if validate != nil {
-		NLog("warning", "CreateClient", fmt.Sprintf("validation create client error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "CreateClient", map[string]interface{}{"message": "validation create client error", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	err = client.Create()
 	if err != nil {
-		NLog("warning", "CreateClient", fmt.Sprintf("error create client : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "CreateClient", map[string]interface{}{"message": "error create client", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat Client Config")
 	}

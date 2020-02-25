@@ -143,7 +143,7 @@ func BorrowerGetAll(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
-		NLog("warning", "BorrowerGetAll", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BorrowerGetAll", map[string]interface{}{"message": "query not found ", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data yang ditemukan")
 	}
@@ -184,7 +184,7 @@ func BorrowerGetDetails(c echo.Context) error {
 		Where("borrowers.id = ?", borrowerID).
 		Find(&borrower).Error
 	if err != nil {
-		NLog("warning", "BorrowerGetDetails", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BorrowerGetDetails", map[string]interface{}{"message": "query not found : '%v' error : %v", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Nasabah %v tidak ditemukan", borrowerID))
 	}

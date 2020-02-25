@@ -201,12 +201,14 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
 
-		adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("lender %v changed password", lenderID), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("info", "UserFirstLoginChangePassword", fmt.Sprintf("lender %v changed password", lenderID), c.Get("user").(*jwt.Token), "", false)
+
+		adminhandlers.NAudittrail(origin, userModel, c.Get("user").(*jwt.Token), "user", fmt.Sprint(userModel.ID), "first login change password")
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}
 
-	adminhandlers.NAudittrail(origin, userModel, c.Get("user").(*jwt.Token), "user", fmt.Sprint(userModel.ID), "first login change password")
+	adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("lender %v is not new account, therefore cant change password", lenderID), c.Get("user").(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusUnauthorized, "Akun anda bukan akun baru.")
 }
