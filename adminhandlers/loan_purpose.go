@@ -61,7 +61,7 @@ func LoanPurposeList(c echo.Context) error {
 	}
 
 	if err != nil {
-		NLog("warning", "LoanPurposeList", fmt.Sprintf("error finding loan purposes : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeList", map[string]interface{}{"message": "error listing loan purposes", "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -86,7 +86,7 @@ func LoanPurposeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		NLog("warning", "LoanPurposeNew", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeNew", map[string]interface{}{"message": "error validation", "error": validate}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -95,9 +95,14 @@ func LoanPurposeNew(c echo.Context) error {
 	json.Unmarshal(marshal, &purpose)
 
 	err = purpose.Create()
-	middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
 	if err != nil {
-		NLog("error", "LoanPurposeNew", fmt.Sprintf("error create : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("error", "LoanPurposeNew", map[string]interface{}{"message": "error create loan purpose", "error": err}, c.Get("user").(*jwt.Token), "", true)
+
+		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
+	}
+	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_create")
+	if err != nil {
+		NLog("error", "LoanPurposeNew", map[string]interface{}{"message": "error create loan purpose", "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat loan purpose baru")
 	}
@@ -120,7 +125,7 @@ func LoanPurposeDetail(c echo.Context) error {
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		NLog("warning", "LoanPurposeDetail", fmt.Sprintf("loan purpose %v not found : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeDetail", map[string]interface{}{"message": fmt.Sprintf("loan purpose %v not found ", loanPurposeID), "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
@@ -142,7 +147,7 @@ func LoanPurposePatch(c echo.Context) error {
 	purposePayload := LoanPurposePayload{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		NLog("warning", "LoanPurposePatch", fmt.Sprintf("loan purpose %v not found : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeDetail", map[string]interface{}{"message": fmt.Sprintf("loan purpose %v not found ", loanPurposeID), "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
@@ -155,7 +160,7 @@ func LoanPurposePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &purposePayload)
 	if validate != nil {
-		NLog("warning", "LoanPurposePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposePatch", map[string]interface{}{"message": "validation error", "error": validate}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -169,7 +174,7 @@ func LoanPurposePatch(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_update")
 	if err != nil {
-		NLog("error", "LoanPurposePatch", fmt.Sprintf("kafka error : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("error", "LoanPurposePatch", map[string]interface{}{"message": fmt.Sprintf("kafka error on loan purpose %v", loanPurposeID), "loan purpose": purpose, "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update loan purpose %v", loanPurposeID))
 	}
@@ -192,14 +197,14 @@ func LoanPurposeDelete(c echo.Context) error {
 	purpose := models.LoanPurpose{}
 	err = purpose.FindbyID(loanPurposeID)
 	if err != nil {
-		NLog("warning", "LoanPurposeDelete", fmt.Sprintf("delete loan purpose %v error : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "LoanPurposeDelete", map[string]interface{}{"message": fmt.Sprintf("delete loan purpose %v error", loanPurposeID), "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
 	err = middlewares.SubmitKafkaPayload(purpose, "loan_purpose_delete")
 	if err != nil {
-		NLog("error", "LoanPurposeDelete", fmt.Sprintf("delete loan purpose %v error : %v", loanPurposeID, err), c.Get("user").(*jwt.Token), "", true)
+		NLog("error", "LoanPurposeDelete", map[string]interface{}{"message": fmt.Sprintf("delete loan purpose %v error", loanPurposeID), "error": err, "loan purpose": purpose}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete loan purpose %v", loanPurposeID))
 	}

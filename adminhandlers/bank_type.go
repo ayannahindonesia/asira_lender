@@ -46,7 +46,7 @@ func BankTypeList(c echo.Context) error {
 		Name: name,
 	})
 	if err != nil {
-		NLog("warning", "BankTypeList", fmt.Sprintf("error listing bank type : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeList", map[string]interface{}{"message": "error listing bank type", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -72,7 +72,7 @@ func BankTypeNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankTypePayload)
 	if validate != nil {
-		NLog("warning", "BankTypeNew", fmt.Sprintf("error validate new bank type : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeNew", map[string]interface{}{"message": "error validate new bank type", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -104,7 +104,7 @@ func BankTypeDetail(c echo.Context) error {
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		NLog("warning", "BankTypeDetail", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeDetail", map[string]interface{}{"message": fmt.Sprintf("bank type %v not found", bankID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
@@ -126,7 +126,7 @@ func BankTypePatch(c echo.Context) error {
 	bankTypePayload := BankTypePayload{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		NLog("warning", "BankTypePatch", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypePatch", map[string]interface{}{"message": fmt.Sprintf("bank type %v not found", bankID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
@@ -139,7 +139,7 @@ func BankTypePatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &bankTypePayload)
 	if validate != nil {
-		NLog("warning", "BankTypePatch", fmt.Sprintf("validation error : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypePatch", map[string]interface{}{"message": "validation error", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -153,7 +153,7 @@ func BankTypePatch(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_update")
 	if err != nil {
-		NLog("error", "BankTypePatch", fmt.Sprintf("error submit kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("error", "BankTypePatch", map[string]interface{}{"message": fmt.Sprintf("error submit kafka for bank type %v", bankType.ID), "error": err, "bank type": bankType}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}
@@ -176,14 +176,14 @@ func BankTypeDelete(c echo.Context) error {
 	bankType := models.BankType{}
 	err = bankType.FindbyID(bankID)
 	if err != nil {
-		NLog("warning", "BankTypePatch", fmt.Sprintf("bank type %v not found", bankID), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BankTypeDelete", map[string]interface{}{"message": fmt.Sprintf("bank type %v not found", bankID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Bank type %v tidak ditemukan", bankID))
 	}
 
 	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_delete")
 	if err != nil {
-		NLog("error", "BankTypePatch", fmt.Sprintf("error submit kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("error", "BankTypeDelete", map[string]interface{}{"message": fmt.Sprintf("error submit kafka bank type %v", bankID), "error": err, "bank type": bankType}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update bank tipe %v", bankID))
 	}

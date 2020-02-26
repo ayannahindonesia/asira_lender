@@ -152,18 +152,18 @@ func validatePermission(c echo.Context, permission string) error {
 			}
 		}
 
-		NLog("warning", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "validatePermission", map[string]interface{}{"message": fmt.Sprintf("user dont have permission %v", permission)}, c.Get("user").(*jwt.Token), "", false)
 
 		return fmt.Errorf("Tidak memiliki hak akses")
 	}
 
-	NLog("warning", "validatePermission", "invalid token. error claims", c.Get("user").(*jwt.Token), "", true)
+	NLog("warning", "validatePermission", map[string]interface{}{"message": "invalid token. error claims"}, c.Get("user").(*jwt.Token), "", true)
 
 	return fmt.Errorf("Tidak memiliki hak akses")
 }
 
 // NLog send log to northstar service
-func NLog(level string, tag string, message string, jwttoken *jwt.Token, note string, nouser bool) {
+func NLog(level string, tag string, message interface{}, jwttoken *jwt.Token, note string, nouser bool) {
 	var (
 		uid      string
 		username string
@@ -180,10 +180,12 @@ func NLog(level string, tag string, message string, jwttoken *jwt.Token, note st
 		}
 	}
 
+	jMarshal, _ := json.Marshal(message)
+
 	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
 		Level:    level,
 		Tag:      tag,
-		Messages: message,
+		Messages: string(jMarshal),
 		UID:      uid,
 		Username: username,
 		Note:     note,

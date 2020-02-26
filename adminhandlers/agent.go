@@ -142,7 +142,7 @@ func AgentList(c echo.Context) error {
 	}
 	err = db.Find(&agents).Error
 	if err != nil {
-		NLog("warning", "AgentList", fmt.Sprintf("error finding agent list : %v", err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentList", map[string]interface{}{"message": "error listing agent list", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data agent ditemukan")
 	}
@@ -181,7 +181,7 @@ func AgentDetails(c echo.Context) error {
 		Find(&agent).Error
 
 	if err != nil {
-		NLog("warning", "AgentDetails", fmt.Sprintf("error getting agent %v : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentDetails", map[string]interface{}{"message": fmt.Sprintf("error getting agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
@@ -213,7 +213,7 @@ func AgentNew(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		NLog("warning", "AgentNew", fmt.Sprintf("error validate creating agent : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentNew", map[string]interface{}{"message": "error validate creating agent", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -239,7 +239,7 @@ func AgentNew(c echo.Context) error {
 		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
 		url, err := asira.App.S3.UploadJPEG(unbased, filename)
 		if err != nil {
-			NLog("error", "AgentNew", fmt.Sprintf("error uploading image when creating agent : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
+			NLog("error", "AgentNew", map[string]interface{}{"message": fmt.Sprintf("error uploading image when creating agent : %v", agent.ID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 		}
@@ -257,7 +257,7 @@ func AgentNew(c echo.Context) error {
 	err = agent.Create()
 	middlewares.SubmitKafkaPayload(agent, "agent_create")
 	if err != nil {
-		NLog("error", "AgentNew", fmt.Sprintf("error submitting to kafka after creating agent : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
+		NLog("error", "AgentNew", map[string]interface{}{"message": fmt.Sprintf("error submitting to kafka after creating agent : %v", agent.ID), "agent": agent, "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 	}
@@ -281,7 +281,7 @@ func AgentPatch(c echo.Context) error {
 	agentPayload := AgentPayload{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		NLog("warning", "AgentPatch", fmt.Sprintf("error finding agent %v error : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error finding agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
@@ -300,7 +300,7 @@ func AgentPatch(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &agentPayload)
 	if validate != nil {
-		NLog("warning", "AgentPatch", fmt.Sprintf("error validate patching agent : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error validate patching agent : %v", agent.ID), "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -345,7 +345,7 @@ func AgentPatch(c echo.Context) error {
 		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
 		url, err := asira.App.S3.UploadJPEG(unbased, filename)
 		if err != nil {
-			NLog("error", "AgentPatch", fmt.Sprintf("error uploading image : %v", err), c.Get("user").(*jwt.Token), "", false)
+			NLog("error", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error uploading image to agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 		}
@@ -354,7 +354,7 @@ func AgentPatch(c echo.Context) error {
 		delImage := i[len(i)-1]
 		err = asira.App.S3.DeleteObject(delImage)
 		if err != nil {
-			NLog("error", "AgentPatch", fmt.Sprintf("error deleting old image %v : %v", delImage, err), c.Get("user").(*jwt.Token), "", false)
+			NLog("error", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error deleting old image of agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
 		}
 
 		agent.Image = url
@@ -362,7 +362,7 @@ func AgentPatch(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(agent, "agent_update")
 	if err != nil {
-		NLog("error", "AgentPatch", fmt.Sprintf("error kafka submit : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
+		NLog("error", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error kafka submit agent %v", agent.ID), "error": err, "agent": agent}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agent baru")
 	}
@@ -385,14 +385,14 @@ func AgentDelete(c echo.Context) error {
 	agent := models.Agent{}
 	err = agent.FindbyID(id)
 	if err != nil {
-		NLog("warning", "AgentDelete", fmt.Sprintf("agent %v not found : %v", id, err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "AgentDelete", map[string]interface{}{"message": fmt.Sprintf("agent %v not found", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Agen %v tidak ditemukan", id))
 	}
 
 	err = middlewares.SubmitKafkaPayload(agent, "agent_delete")
 	if err != nil {
-		NLog("error", "AgentDelete", fmt.Sprintf("error submit kafka : %v agent : %v", err, agent), c.Get("user").(*jwt.Token), "", false)
+		NLog("error", "AgentDelete", map[string]interface{}{"message": fmt.Sprintf("error submit kafka agent : %v", agent.ID), "error": err, "agent": agent}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal mengubah agen baru")
 	}

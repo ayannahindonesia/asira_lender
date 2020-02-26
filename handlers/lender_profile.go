@@ -64,7 +64,7 @@ func LenderProfile(c echo.Context) error {
 		Where("bank_representatives.user_id = ?", lenderID).Find(&temporal).Error
 
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderProfile", fmt.Sprintf("error finding profile : %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderProfile", map[string]interface{}{"message": "error finding profile", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
@@ -113,7 +113,7 @@ func LenderProfileEdit(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &lenderPayload)
 	if validate != nil {
-		adminhandlers.NLog("warning", "LenderProfileEdit", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderProfileEdit", map[string]interface{}{"message": "error validation", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -154,7 +154,7 @@ func LenderProfileEdit(c echo.Context) error {
 
 	err = lenderModel.Save()
 	if err != nil {
-		adminhandlers.NLog("error", "LenderProfileEdit", fmt.Sprintf("error saving profile : %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("error", "LenderProfileEdit", map[string]interface{}{"message": "error saving profile", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
@@ -180,7 +180,7 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 
 	err = userModel.FindbyID(bankRep.UserID)
 	if err != nil {
-		adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("error finding profile %v : %v", lenderID, err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("error", "UserFirstLoginChangePassword", map[string]interface{}{"message": fmt.Sprintf("error finding profile %v", lenderID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusForbidden, err, "Tidak memiliki hak akses")
 	}
@@ -201,12 +201,14 @@ func UserFirstLoginChangePassword(c echo.Context) error {
 		}
 		userModel.FirstLoginChangePassword(pass.Pass)
 
-		adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("lender %v changed password", lenderID), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("info", "UserFirstLoginChangePassword", map[string]interface{}{"message": fmt.Sprintf("lender %v changed password", lenderID)}, c.Get("user").(*jwt.Token), "", false)
+
+		adminhandlers.NAudittrail(origin, userModel, c.Get("user").(*jwt.Token), "user", fmt.Sprint(userModel.ID), "first login change password")
 
 		return c.JSON(http.StatusOK, "Password anda telah diganti.")
 	}
 
-	adminhandlers.NAudittrail(origin, userModel, c.Get("user").(*jwt.Token), "user", fmt.Sprint(userModel.ID), "first login change password")
+	adminhandlers.NLog("error", "UserFirstLoginChangePassword", map[string]interface{}{"message": fmt.Sprintf("lender %v is not new account, therefore cant change password", lenderID)}, c.Get("user").(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusUnauthorized, "Akun anda bukan akun baru.")
 }

@@ -43,7 +43,7 @@ func AdminLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		NLog("warning", "AdminLogin", fmt.Sprintf("error validation : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("warning", "AdminLogin", map[string]interface{}{"message": "error validation", "detail": validate}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
@@ -54,25 +54,25 @@ func AdminLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
 		if err != nil {
-			NLog("warning", "AdminLogin", fmt.Sprintf("password error : %v username : %v", err, credentials.Key), c.Get("user").(*jwt.Token), "", true)
+			NLog("warning", "AdminLogin", map[string]interface{}{"message": "password error", "detail": err}, c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		if user.Status == "inactive" {
-			NLog("warning", "AdminLogin", fmt.Sprintf("inactive username : %v", user), c.Get("user").(*jwt.Token), "", true)
+			NLog("warning", "AdminLogin", map[string]interface{}{"message": "inactive username", "detail": user}, c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(user.ID, 10), "users")
 		if err != nil {
-			NLog("error", "AdminLogin", fmt.Sprintf("error generating token : %v", err), c.Get("user").(*jwt.Token), "", true)
+			NLog("error", "AdminLogin", map[string]interface{}{"message": "error generating token", "detail": err}, c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusInternalServerError, err, "error creating token")
 		}
 	} else {
-		NLog("error", "AdminLogin", fmt.Sprintf("error generating token : %v", err), c.Get("user").(*jwt.Token), "", true)
+		NLog("error", "AdminLogin", map[string]interface{}{"message": "error generating token", "detail": err}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnauthorized, "", "Login tidak valid")
 	}
