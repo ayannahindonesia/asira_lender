@@ -112,7 +112,7 @@ func UserResetPasswordRequest(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &resetRequestPayload)
 	if validate != nil {
-		adminhandlers.NLog("warning", "UserResetPasswordRequest", fmt.Sprintf("error validation %+v", validate), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "UserResetPasswordRequest", map[string]interface{}{"message": "error validation", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
@@ -125,14 +125,14 @@ func UserResetPasswordRequest(c echo.Context) error {
 		First(&user).Error
 
 	if err != nil {
-		adminhandlers.NLog("warning", "UserResetPasswordRequest", fmt.Sprintf("email not found %+v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "UserResetPasswordRequest", map[string]interface{}{"message": fmt.Sprintf("email not found %v", resetRequestPayload.Email), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Email %s tidak ditemukan", resetRequestPayload.Email))
 	}
 
 	token, err := generateResetPassToken(fmt.Sprintf("%v:%v", resetRequestPayload.Email, user.ID))
 	if err != nil {
-		adminhandlers.NLog("warning", "UserResetPasswordRequest", fmt.Sprintf("error generating token for reset password %+v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "UserResetPasswordRequest", map[string]interface{}{"message": "error generating token for reset password", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
@@ -149,7 +149,7 @@ func UserResetPasswordRequest(c echo.Context) error {
 
 	err = SendMail("Forgot Password Request", message, resetRequestPayload.Email)
 	if err != nil {
-		adminhandlers.NLog("error", "UserFirstLoginChangePassword", fmt.Sprintf("fail sending email %+v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("error", "UserFirstLoginChangePassword", map[string]interface{}{"message": fmt.Sprintf("fail sending email to %v", resetRequestPayload.Email)}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
@@ -174,21 +174,21 @@ func UserResetPasswordVerify(c echo.Context) error {
 
 	validate := validateRequestPayload(c, payloadRules, &resetVerifyPayload)
 	if validate != nil {
-		adminhandlers.NLog("warning", "UserResetPasswordVerify", fmt.Sprintf("validation error : %+v", validate), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "UserResetPasswordVerify", map[string]interface{}{"message": "validation error", "error": validate}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
 	d, err := decrypt(resetVerifyPayload.Token, asira.App.Config.GetString(fmt.Sprintf("%s.passphrase", asira.App.ENV)))
 	if err != nil {
-		adminhandlers.NLog("warning", "UserResetPasswordVerify", fmt.Sprintf("decrypting token error : %+v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "UserResetPasswordVerify", map[string]interface{}{"message": "decrypting token error", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
 	}
 
 	splits := strings.Split(d, "|")
 	if len(splits) != 3 {
-		adminhandlers.NLog("warning", "UserResetPasswordVerify", fmt.Sprintf("token tidak valid. len split = %v", len(splits)), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "UserResetPasswordVerify", map[string]interface{}{"message": fmt.Sprintf("token tidak valid. len split = %v", len(splits))}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Token tidak valid")
 	}
@@ -198,7 +198,7 @@ func UserResetPasswordVerify(c echo.Context) error {
 	if time.Now().Unix() >= t && time.Now().Unix() <= e {
 		splits2 := strings.Split(splits[2], ":")
 		if len(splits2) != 2 {
-			adminhandlers.NLog("warning", "UserResetPasswordVerify", fmt.Sprintf("token tidak valid. len split = %v", len(splits2)), c.Get("user").(*jwt.Token), "", false)
+			adminhandlers.NLog("warning", "UserResetPasswordVerify", map[string]interface{}{"message": fmt.Sprintf("token tidak valid. len split = %v", len(splits2))}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Token tidak valid")
 		}
@@ -207,7 +207,7 @@ func UserResetPasswordVerify(c echo.Context) error {
 			Email: splits2[0],
 		})
 		if err != nil {
-			adminhandlers.NLog("warning", "UserResetPasswordVerify", fmt.Sprintf("user not found = %v", splits2[0]), c.Get("user").(*jwt.Token), "", false)
+			adminhandlers.NLog("warning", "UserResetPasswordVerify", map[string]interface{}{"message": fmt.Sprintf("user not found = %v", splits2[0])}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusNotFound, err, "Token tidak valid")
 		}
@@ -217,7 +217,7 @@ func UserResetPasswordVerify(c echo.Context) error {
 	} else {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, "", "Token tidak valid")
 	}
-	adminhandlers.NLog("info", "UserResetPasswordVerify", "reset password success", c.Get("user").(*jwt.Token), "", false)
+	adminhandlers.NLog("info", "UserResetPasswordVerify", map[string]interface{}{"message": "reset password success"}, c.Get("user").(*jwt.Token), "", false)
 
 	adminhandlers.NAudittrail(origin, user, c.Get("user").(*jwt.Token), "user", fmt.Sprint(user.ID), "reset password verify")
 

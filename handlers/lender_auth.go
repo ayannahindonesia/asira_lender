@@ -43,7 +43,7 @@ func LenderLogin(c echo.Context) error {
 
 	validate := validateRequestPayload(c, rules, &credentials)
 	if validate != nil {
-		adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("error validation : %v", validate), c.Get("user").(*jwt.Token), "", true)
+		adminhandlers.NLog("warning", "LenderLogin", map[string]interface{}{"message": "validation error", "error": validate}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusBadRequest, validate, "Login tidak valid")
 	}
@@ -57,19 +57,19 @@ func LenderLogin(c echo.Context) error {
 	if !validKey { // check the password
 		err = bcrypt.CompareHashAndPassword([]byte(lender.Password), []byte(credentials.Password))
 		if err != nil {
-			adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("password error : %v username : %v", err, credentials.Key), c.Get("user").(*jwt.Token), "", true)
+			adminhandlers.NLog("warning", "LenderLogin", map[string]interface{}{"message": fmt.Sprintf("password error on user %v", credentials.Key), "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusUnauthorized, err, "Login tidak valid")
 		}
 
 		token, err = createJwtToken(strconv.FormatUint(lender.ID, 10), "users")
 		if err != nil {
-			adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("error generating token : %v", err), c.Get("user").(*jwt.Token), "", true)
+			adminhandlers.NLog("warning", "LenderLogin", map[string]interface{}{"message": "error generating token", "error": err}, c.Get("user").(*jwt.Token), "", true)
 
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan")
 		}
 	} else {
-		adminhandlers.NLog("warning", "LenderLogin", fmt.Sprintf("not found username : %v", credentials.Key), c.Get("user").(*jwt.Token), "", true)
+		adminhandlers.NLog("warning", "LenderLogin", map[string]interface{}{"message": fmt.Sprintf("user not found %v", credentials.Key)}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnauthorized, "username not found", "Login tidak valid")
 	}
@@ -77,7 +77,7 @@ func LenderLogin(c echo.Context) error {
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 	expiration := time.Duration(jwtConf["duration"].(int)) * time.Minute
 
-	adminhandlers.NLog("info", "LenderLogin", fmt.Sprintf("%v login", credentials.Key), c.Get("user").(*jwt.Token), "", true)
+	adminhandlers.NLog("info", "LenderLogin", map[string]interface{}{"message": fmt.Sprintf("%v login", credentials.Key)}, c.Get("user").(*jwt.Token), "", true)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token":      token,
