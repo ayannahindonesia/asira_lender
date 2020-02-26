@@ -4,6 +4,7 @@ import (
 	"asira_lender/asira"
 	"asira_lender/models"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -182,14 +183,16 @@ func NLog(level string, tag string, message interface{}, jwttoken *jwt.Token, no
 
 	jMarshal, _ := json.Marshal(message)
 
-	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-		Level:    level,
-		Tag:      tag,
-		Messages: string(jMarshal),
-		UID:      uid,
-		Username: username,
-		Note:     note,
-	}, "log")
+	if flag.Lookup("test.v") == nil {
+		err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
+			Level:    level,
+			Tag:      tag,
+			Messages: string(jMarshal),
+			UID:      uid,
+			Username: username,
+			Note:     note,
+		}, "log")
+	}
 
 	if err != nil {
 		log.Printf("error northstar log : %v", err)
@@ -218,17 +221,19 @@ func NAudittrail(ori interface{}, new interface{}, jwttoken *jwt.Token, entity s
 	oriMarshal, _ := json.Marshal(ori)
 	newMarshal, _ := json.Marshal(new)
 
-	err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Audittrail{
-		Client:   asira.App.Northstar.Secret,
-		UserID:   uid,
-		Username: username,
-		Roles:    fmt.Sprint(user.Roles),
-		Entity:   entity,
-		EntityID: entityID,
-		Action:   action,
-		Original: fmt.Sprintf(`%s`, string(oriMarshal)),
-		New:      fmt.Sprintf(`%s`, string(newMarshal)),
-	}, "audittrail")
+	if flag.Lookup("test.v") == nil {
+		err = asira.App.Northstar.SubmitKafkaLog(northstarlib.Audittrail{
+			Client:   asira.App.Northstar.Secret,
+			UserID:   uid,
+			Username: username,
+			Roles:    fmt.Sprint(user.Roles),
+			Entity:   entity,
+			EntityID: entityID,
+			Action:   action,
+			Original: fmt.Sprintf(`%s`, string(oriMarshal)),
+			New:      fmt.Sprintf(`%s`, string(newMarshal)),
+		}, "audittrail")
+	}
 
 	if err != nil {
 		log.Printf("error northstar log : %v", err)
