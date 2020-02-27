@@ -135,6 +135,8 @@ func BorrowerGetAll(c echo.Context) error {
 				db = db.Where("borrowers.bank = ?", 0)
 			} else if bankID == "not null" {
 				db = db.Where("borrowers.bank != ?", 0)
+			} else {
+				db = db.Where("borrowers.bank = ?", bankID)
 			}
 		}
 	}
