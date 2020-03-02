@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ayannahindonesia/northstar/lib/northstarlib"
 	"github.com/dgrijalva/jwt-go"
 
 	"github.com/labstack/echo"
@@ -80,13 +79,7 @@ func AdminLogin(c echo.Context) error {
 	jwtConf := asira.App.Config.GetStringMap(fmt.Sprintf("%s.jwt", asira.App.ENV))
 	expiration := time.Duration(jwtConf["duration"].(int)) * time.Minute
 
-	asira.App.Northstar.SubmitKafkaLog(northstarlib.Log{
-		Level:    "info",
-		Tag:      "AdminLogin",
-		Messages: fmt.Sprintf("%v login", user.Username),
-		UID:      fmt.Sprint(user.ID),
-		Username: user.Username,
-	}, "log")
+	NLog("info", "AdminLogin", map[string]interface{}{"message": fmt.Sprintf("%v login", user.Username)}, c.Get("user").(*jwt.Token), "", true)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token":      token,
