@@ -138,11 +138,11 @@ func validatePermission(c echo.Context, permission string) error {
 				}
 			}
 		}
-		adminhandlers.NLog("warning", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), user.(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "validatePermission", map[string]interface{}{"message": fmt.Sprintf("user dont have permission %v", permission)}, user.(*jwt.Token), "", false)
 
 		return fmt.Errorf("Permission Denied")
 	}
-	adminhandlers.NLog("warning", "validatePermission", fmt.Sprintf("user dont have permission %v", permission), user.(*jwt.Token), "", false)
+	adminhandlers.NLog("warning", "validatePermission", map[string]interface{}{"message": fmt.Sprintf("user dont have permission %v", permission)}, user.(*jwt.Token), "", false)
 
 	return fmt.Errorf("Permission Denied")
 }

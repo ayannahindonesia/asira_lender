@@ -205,7 +205,7 @@ func LenderLoanRequestList(c echo.Context) error {
 	}
 	err = db.Find(&loans).Error
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanRequestList", fmt.Sprintf("error while finding loans : %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanRequestList", map[string]interface{}{"message": "error listing loans", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada loan yang ditemukan.")
 	}
@@ -257,7 +257,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanRequestListDetail", fmt.Sprintf("error while finding loan %v : %v", loanID, err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanRequestListDetail", map[string]interface{}{"message": fmt.Sprintf("error while finding loan %v", loanID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
@@ -297,12 +297,13 @@ func LenderLoanApproveReject(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanApproveReject", fmt.Sprintf("error while finding loan %v : %v", loanID, err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanApproveReject", map[string]interface{}{"message": fmt.Sprintf("error while finding loan %v", loanID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+	origin := loan
 	if loan.ID == 0 {
-		adminhandlers.NLog("warning", "LenderLoanApproveReject", "loan id is 0", c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanApproveReject", map[string]interface{}{"message": "loan id is 0"}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, "", fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
@@ -310,13 +311,13 @@ func LenderLoanApproveReject(c echo.Context) error {
 	status := c.Param("approve_reject")
 	switch status {
 	default:
-		adminhandlers.NLog("warning", "LenderLoanApproveReject", fmt.Sprintf("status %v is not allowed", status), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanApproveReject", map[string]interface{}{"message": fmt.Sprintf("status %v is not allowed", status)}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusBadRequest, "", fmt.Sprintf("Status %v tidak dapat digunakan", status))
 	case "approve":
 		disburseDate, err := time.Parse("2006-01-02", c.QueryParam("disburse_date"))
 		if err != nil {
-			adminhandlers.NLog("warning", "LenderLoanApproveReject", fmt.Sprintf("error parsing disburse date %v", c.QueryParam("disburse_date")), c.Get("user").(*jwt.Token), "", false)
+			adminhandlers.NLog("warning", "LenderLoanApproveReject", map[string]interface{}{"message": fmt.Sprintf("error parsing disburse date %v", c.QueryParam("disburse_date")), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusBadRequest, "", "Terjadi kesalahan")
 		}
@@ -326,7 +327,7 @@ func LenderLoanApproveReject(c echo.Context) error {
 
 		err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 		if err != nil {
-			adminhandlers.NLog("error", "LenderLoanApproveReject", fmt.Sprintf("error submitting kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+			adminhandlers.NLog("error", "LenderLoanApproveReject", map[string]interface{}{"message": "error submitting kafka", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal approve pinjaman")
 		}
@@ -341,11 +342,13 @@ func LenderLoanApproveReject(c echo.Context) error {
 
 		err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 		if err != nil {
-			adminhandlers.NLog("error", "LenderLoanApproveReject", fmt.Sprintf("error submitting kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+			adminhandlers.NLog("error", "LenderLoanApproveReject", map[string]interface{}{"message": "error submitting kafka", "error": err, "loan": loan}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusBadRequest, err, "Gagal reject pinjaman")
 		}
 	}
+
+	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "approve borrower")
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v is %v", loanID, loan.Status)})
 }
@@ -442,11 +445,11 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 
 	// b, err := csvutil.Marshal(results)
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanRequestListDownload", fmt.Sprintf("error finding loan download : %v query : %v", err, db.QueryExpr()), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanRequestListDownload", map[string]interface{}{"message": "query error", "error": err, "query": db.QueryExpr()}, c.Get("user").(*jwt.Token), "", false)
 
 		return err
 	}
-	adminhandlers.NLog("info", "LenderLoanRequestListDownload", "loan download", c.Get("user").(*jwt.Token), "", false)
+	adminhandlers.NLog("info", "LenderLoanRequestListDownload", map[string]interface{}{"message": "loan download"}, c.Get("user").(*jwt.Token), "", false)
 
 	return c.JSON(http.StatusOK, results)
 }
@@ -481,12 +484,13 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanConfirmDisbursement", fmt.Sprintf("error confirm disburse %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanConfirmDisbursement", map[string]interface{}{"message": "error confirm disburse", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+	origin := loan
 	if loan.ID == 0 {
-		adminhandlers.NLog("warning", "LenderLoanConfirmDisbursement", "loan id is 0", c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanConfirmDisbursement", map[string]interface{}{"message": "loan id is 0"}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, "", fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
@@ -495,11 +499,13 @@ func LenderLoanConfirmDisbursement(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 	if err != nil {
-		adminhandlers.NLog("error", "LenderLoanConfirmDisbursement", fmt.Sprintf("error submitting kafka %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("error", "LenderLoanConfirmDisbursement", map[string]interface{}{"message": "error submitting kafka", "error": err, "loan": loan}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
-	adminhandlers.NLog("info", "LenderLoanConfirmDisbursement", fmt.Sprintf("confirmed loan %v", loan.ID), c.Get("user").(*jwt.Token), "", false)
+	adminhandlers.NLog("info", "LenderLoanConfirmDisbursement", map[string]interface{}{"message": fmt.Sprintf("confirmed loan %v", loan.ID)}, c.Get("user").(*jwt.Token), "", false)
+
+	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "confirm loan")
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": fmt.Sprintf("loan %v disbursement is %v", loanID, loan.DisburseStatus)})
 }
@@ -533,14 +539,15 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 		Find(&loan).Error
 
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanChangeDisburseDate", fmt.Sprintf("error finding loan to change disburse date %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanChangeDisburseDate", map[string]interface{}{"message": "error finding loan to change disburse date", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+	origin := loan
 
 	disburseDate, err := time.Parse("2006-01-02", c.QueryParam("disburse_date"))
 	if err != nil {
-		adminhandlers.NLog("warning", "LenderLoanChangeDisburseDate", fmt.Sprintf("error parsing disburse date %v error : %v", c.QueryParam("disburse_date"), err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderLoanChangeDisburseDate", map[string]interface{}{"message": fmt.Sprintf("error parsing disburse date %v", c.QueryParam("disburse_date")), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusBadRequest, err, "Terjadi kesalahan")
 	}
@@ -550,11 +557,13 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(loan, "loan_update")
 	if err != nil {
-		adminhandlers.NLog("error", "LenderLoanChangeDisburseDate", fmt.Sprintf("error submitting kafka : %v", err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("error", "LenderLoanChangeDisburseDate", map[string]interface{}{"message": "error submitting kafka", "error": err, "loan": loan}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusBadRequest, err, "Gagal confirm disbursement pinjaman")
 	}
-	adminhandlers.NLog("info", "LenderLoanChangeDisburseDate", fmt.Sprintf("loan %v disburse date changed", loan.ID), c.Get("user").(*jwt.Token), "", false)
+	adminhandlers.NLog("info", "LenderLoanChangeDisburseDate", map[string]interface{}{"message": fmt.Sprintf("loan %v disburse date changed", loan.ID)}, c.Get("user").(*jwt.Token), "", false)
+
+	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "change loan disburse date")
 
 	return c.JSON(http.StatusOK, loan)
 }

@@ -39,14 +39,14 @@ func ClientLogin(c echo.Context) error {
 		Secret: auth[1],
 	})
 	if err != nil {
-		adminhandlers.NLog("warning", "ClientLogin", "client login failed", c.Get("user").(*jwt.Token), "", true)
+		adminhandlers.NLog("warning", "ClientLogin", map[string]interface{}{"message": "client login failed"}, c.Get("user").(*jwt.Token), "", true)
 
 		return returnInvalidResponse(http.StatusUnauthorized, "", "Login tidak valid")
 	}
 
 	token, err := createJwtToken(strconv.FormatUint(client.ID, 10), "client")
 	if err != nil {
-		adminhandlers.NLog("warning", "ClientLogin", fmt.Sprintf("failed creating token for client %v : %v", client.Name, err), c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "ClientLogin", map[string]interface{}{"message": "fail creating client token"}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Terjadi kesalahan")
 	}
