@@ -104,6 +104,8 @@ func FAQNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat FAQ baru")
 	}
 
+	NAudittrail(models.FAQ{}, faq, c.Get("user").(*jwt.Token), "faq", fmt.Sprint(faq.ID), "create")
+
 	return c.JSON(http.StatusCreated, faq)
 }
 
@@ -147,6 +149,8 @@ func FAQPatch(c echo.Context) error {
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak memiliki hak akses")
 	}
 
+	origin := faq
+
 	payloadRules := govalidator.MapData{
 		"title":       []string{},
 		"description": []string{},
@@ -172,6 +176,8 @@ func FAQPatch(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal update FAQ %v", faqID))
 	}
+
+	NAudittrail(origin, faq, c.Get("user").(*jwt.Token), "faq", fmt.Sprint(faq.ID), "update")
 
 	return c.JSON(http.StatusOK, faq)
 }
@@ -201,5 +207,6 @@ func FAQDelete(c echo.Context) error {
 		return returnInvalidResponse(http.StatusInternalServerError, err, fmt.Sprintf("Gagal delete FAQ %v", faqID))
 	}
 
+	NAudittrail(faq, models.FAQ{}, c.Get("user").(*jwt.Token), "faq", fmt.Sprint(faq.ID), "delete")
 	return c.JSON(http.StatusOK, faq)
 }
