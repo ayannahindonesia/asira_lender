@@ -63,7 +63,9 @@ func BorrowerGetAll(c echo.Context) error {
 		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id")
 
+	bankID := c.QueryParam("bank_id")
 	accountNumber := c.QueryParam("account_number")
+
 	if status := c.QueryParam("status"); len(status) > 0 {
 		db = db.Where("borrowers.status = ?", strings.ToLower(status))
 	} else {
@@ -85,6 +87,15 @@ func BorrowerGetAll(c echo.Context) error {
 				db = db.Where("borrowers.bank_accountnumber = ?", "")
 			} else if accountNumber == "not null" {
 				db = db.Where("borrowers.bank_accountnumber != ?", "")
+			}
+		}
+
+		//filter bank id for boorrwers mobile if bankID == null
+		if len(bankID) > 0 {
+			if bankID == "null" {
+				db = db.Where("borrowers.bank = ?", 0)
+			} else if bankID == "not null" {
+				db = db.Where("borrowers.bank != ?", 0)
 			}
 		}
 
@@ -117,6 +128,17 @@ func BorrowerGetAll(c echo.Context) error {
 				db = db.Where("borrowers.bank_accountnumber LIKE ?", "%"+strings.ToLower(accountNumber)+"%")
 			}
 		}
+
+		//filter bank id for boorrwers mobile if bankID == null
+		if len(bankID) > 0 {
+			if bankID == "null" {
+				db = db.Where("borrowers.bank = ?", 0)
+			} else if bankID == "not null" {
+				db = db.Where("borrowers.bank != ?", 0)
+			} else {
+				db = db.Where("borrowers.bank = ?", bankID)
+			}
+		}
 	}
 
 	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
@@ -143,7 +165,7 @@ func BorrowerGetAll(c echo.Context) error {
 	}
 	err = db.Find(&borrowers).Error
 	if err != nil {
-		NLog("warning", "BorrowerGetAll", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BorrowerGetAll", map[string]interface{}{"message": "query not found ", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada data yang ditemukan")
 	}
@@ -184,7 +206,7 @@ func BorrowerGetDetails(c echo.Context) error {
 		Where("borrowers.id = ?", borrowerID).
 		Find(&borrower).Error
 	if err != nil {
-		NLog("warning", "BorrowerGetDetails", fmt.Sprintf("query not found : '%v' error : %v", db.QueryExpr(), err), c.Get("user").(*jwt.Token), "", false)
+		NLog("warning", "BorrowerGetDetails", map[string]interface{}{"message": fmt.Sprintf("query not found borrower %v", borrowerID), "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Nasabah %v tidak ditemukan", borrowerID))
 	}

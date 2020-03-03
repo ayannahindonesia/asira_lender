@@ -18,7 +18,7 @@
   version = "v1.5.1"
 
 [[projects]]
-  digest = "1:a652cf6afbfa81412bbab9b7e584c48f47fc1266f4327bbb8d344c77e5aa16e0"
+  digest = "1:64c07d5c86aeecdfed2025f317f6bae41060072c91a96ce6bff214c0bfb26797"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -65,8 +65,8 @@
     "service/sts/stsiface",
   ]
   pruneopts = ""
-  revision = "45f40fbbeba8a5dee288025ce32ee24bc643ba0a"
-  version = "v1.29.3"
+  revision = "b99c3c7ad11c0e093384dbe7c33310f134e3257c"
+  version = "v1.29.14"
 
 [[projects]]
   branch = "master"
@@ -78,12 +78,12 @@
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@github.com/ayannahindonesia/basemodel.git"
 
 [[projects]]
-  branch = "master"
-  digest = "1:bf42355ebdead4663b76d73a953c724cf2db20690b26106d6cf82103e9283404"
+  branch = "755-audittrail"
+  digest = "1:148e5b6a9de992f7ff83ac90a3bee2c4feef8cb4d8f03ef2ecca7c1a6b91ace1"
   name = "github.com/ayannahindonesia/northstar"
   packages = ["lib/northstarlib"]
   pruneopts = ""
-  revision = "124eb2f4a360934afeab5f682221a4d069713cbc"
+  revision = "54874ecf40e079dcba24701dd6aafd6c4b2f527d"
   source = "https://asira:Uo9Jt_2rPGAzc7vzBri_@github.com/ayannahindonesia/northstar.git"
 
 [[projects]]
@@ -264,15 +264,15 @@
   revision = "c2b33e84"
 
 [[projects]]
-  digest = "1:28d03d4196d942a023af19dce0afc6a82a8062af1b7cb779476b44af17cdffed"
+  digest = "1:45a706f12f52502fcab8dad565ce047c8586cb5ec461d4c569294fc8ce4882a0"
   name = "github.com/jszwec/csvutil"
   packages = ["."]
   pruneopts = ""
-  revision = "a43483909e877d2d8084b5c42e2d3538bd06d58f"
-  version = "v1.2.2"
+  revision = "d42e876eba4300228c39e9323c1df5043c77be98"
+  version = "v1.3.0"
 
 [[projects]]
-  digest = "1:53cd60a70b3d8197f948620774c5ae1789f1086bd0a921f8bb0f5ec7ee12c4a7"
+  digest = "1:930165280db462b755f06c70934971c6dd262bbca5f1942783239f1b8f3c8c18"
   name = "github.com/klauspost/compress"
   packages = [
     "flate",
@@ -285,8 +285,8 @@
     "zstd/internal/xxhash",
   ]
   pruneopts = ""
-  revision = "b9d5dc7bd435c628cb0c658ce7f556409007ea71"
-  version = "v1.10.0"
+  revision = "d4b3bb13d45b000ac3a915d4f32069a9284540bb"
+  version = "v1.10.2"
 
 [[projects]]
   digest = "1:4beb546223497fdc767dd15f2f48e271598817cecda2beaf2ad7bf43282d5bf7"
@@ -334,12 +334,12 @@
   version = "v1.8.1"
 
 [[projects]]
-  digest = "1:9b58ad18b38cf0d44b1d006fce319e45f200eafa406fe7f65fe0d0194b9f7a9f"
+  digest = "1:eab986cd0513d271bb1fd9c9d12acd7eb4cfd57cb604122c65bd0914e4637619"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   pruneopts = ""
-  revision = "98ec13f34aabf44cc914c65a1cfb7b9bc815aef1"
-  version = "v0.1.4"
+  revision = "68e95eba382c972aafde02ead2cd2426a8a92480"
+  version = "v0.1.6"
 
 [[projects]]
   digest = "1:87fecb4f5564bd9bc810e4c83d4ac434fd17599edc7b35e27580c2cfc48cdb7c"
@@ -468,15 +468,15 @@
   version = "v1.6.2"
 
 [[projects]]
-  digest = "1:f7b541897bcde05a04a044c342ddc7425aab7e331f37b47fbb486cd16324b48e"
+  digest = "1:cc4eb6813da8d08694e557fcafae8fcc24f47f61a0717f952da130ca9a486dfc"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
     "require",
   ]
   pruneopts = ""
-  revision = "221dbe5ed46703ee255b1da0dec05086f5035f62"
-  version = "v1.4.0"
+  revision = "3ebf1ddaeb260c4b1ae502a01c7844fa8c1fa0e9"
+  version = "v1.5.1"
 
 [[projects]]
   digest = "1:e818a738c880c5571b3817e9173add5c598a90f8615fa7a9bafc23fea774a603"
@@ -575,7 +575,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:58c4f5cde1e9820c1304cba1f284f96fd8a1dadba173695788b87aa8327f5873"
+  digest = "1:2eda274020f8dfe2b4e66c55e0f86e17b9545fb0bad431b2ea520668b7c77f7b"
   name = "golang.org/x/crypto"
   packages = [
     "acme",
@@ -586,11 +586,11 @@
     "pbkdf2",
   ]
   pruneopts = ""
-  revision = "1d94cc7ab1c630336ab82ccb9c9cda72a875c382"
+  revision = "2aa609cf4a9d7d1126360de73b55b6002f9e052a"
 
 [[projects]]
   branch = "master"
-  digest = "1:a6b4c0203496549bdd9eb7a34a9c34aa428851951f3bdea48fc3332b3633d8fe"
+  digest = "1:9ac4dae84a6c14d4d0458d27a8c46fca553cfba156fe0c87f99c50d22034c7e3"
   name = "golang.org/x/net"
   packages = [
     "idna",
@@ -599,15 +599,15 @@
     "publicsuffix",
   ]
   pruneopts = ""
-  revision = "16171245cfb220d5317888b716d69c1fb4e7992b"
+  revision = "244492dfa37ae2ce87222fd06250a03160745faa"
 
 [[projects]]
   branch = "master"
-  digest = "1:93f2553d13e593860d3a8f3bb9f9e19633e1bbacd0f96dfaa354ff8045175216"
+  digest = "1:4003f52ee7e2f3b9c5bb2fdbdf88a68c245fbff7c5ab6566406bf4184deb4076"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "12a6c2dcc1e4cb348b57847c73987099e261714b"
+  revision = "5d559ad92b82f3696a2a2f23108ac03758aabedb"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -733,12 +733,12 @@
   version = "v2.2.8"
 
 [[projects]]
-  digest = "1:a007311f74ec15ad1c56672245793e98e67566e78a0bee8b575f9856a8d5299a"
+  digest = "1:bd635888b3909b1399ad52c84ddc8bf8614da1e0d7c6e536d12fbbc669abf82b"
   name = "moul.io/http2curl"
   packages = ["."]
   pruneopts = ""
-  revision = "5cd742060b0e0de91f875277b77dd7d7e68b23ca"
-  version = "v2"
+  revision = "9280a7ca1854f93dfee71d5e7d448627123efaf5"
+  version = "v2.2.0"
 
 [solve-meta]
   analyzer-name = "dep"
