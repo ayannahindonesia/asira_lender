@@ -31,6 +31,7 @@ type (
 		DisburseStatus      string         `json:"disburse_status" gorm:"column:disburse_status" sql:"DEFAULT:'processing'"`
 		ApprovalDate        time.Time      `json:"approval_date" gorm:"column:approval_date"`
 		RejectReason        string         `json:"reject_reason" gorm:"column:reject_reason"`
+		FormInfo            postgres.Jsonb `json:"form_info" gorm:"column:form_info;type:jsonb"`
 	}
 
 	// LoanFee for loan fee

@@ -32,6 +32,7 @@ type ProductPayload struct {
 	FinancingSector pq.StringArray `json:"financing_sector"`
 	Assurance       string         `json:"assurance"`
 	Status          string         `json:"status"`
+	Form            postgres.Jsonb `json:"form"`
 }
 
 // ProductList get all product list
@@ -146,6 +147,7 @@ func ProductNew(c echo.Context) error {
 		"financing_sector": []string{},
 		"assurance":        []string{},
 		"status":           []string{"required", "active_inactive"},
+		"form":             []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
