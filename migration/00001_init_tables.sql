@@ -66,6 +66,7 @@ CREATE TABLE "products" (
     "min_timespan" int,
     "max_timespan" int,
     "interest" int,
+    "interest_type" varchar(255),
     "min_loan" int,
     "max_loan" int,
     "fees" jsonb DEFAULT '[]',
