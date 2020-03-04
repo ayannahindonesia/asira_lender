@@ -227,6 +227,7 @@ func ProductPatch(c echo.Context) error {
 		"financing_sector": []string{},
 		"assurance":        []string{},
 		"status":           []string{"active_inactive"},
+		"form":             []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
@@ -270,6 +271,9 @@ func ProductPatch(c echo.Context) error {
 	}
 	if len(productPayload.Status) > 0 {
 		product.Status = productPayload.Status
+	}
+	if len(string(productPayload.Form.RawMessage)) > 2 {
+		product.Form = productPayload.Form
 	}
 
 	err = middlewares.SubmitKafkaPayload(product, "product_update")
