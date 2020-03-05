@@ -17,17 +17,15 @@ import (
 
 // LenderProfilePayload type
 type LenderProfilePayload struct {
-	Name                string  `json:"name"`
-	Type                uint64  `json:"type"`
-	Address             string  `json:"address"`
-	Province            string  `json:"province"`
-	City                string  `json:"city"`
-	PIC                 string  `json:"pic"`
-	Phone               string  `json:"phone"`
-	Services            []int64 `json:"services"`
-	Products            []int64 `json:"products"`
-	AdminFeeSetup       string  `json:"adminfee_setup"`
-	ConvenienceFeeSetup string  `json:"convfee_setup"`
+	Name     string  `json:"name"`
+	Type     uint64  `json:"type"`
+	Address  string  `json:"address"`
+	Province string  `json:"province"`
+	City     string  `json:"city"`
+	PIC      string  `json:"pic"`
+	Phone    string  `json:"phone"`
+	Services []int64 `json:"services"`
+	Products []int64 `json:"products"`
 }
 
 // TemporalSelect select sementara karena harusnya disini yang d select user bukan bank
@@ -144,12 +142,6 @@ func LenderProfileEdit(c echo.Context) error {
 	}
 	if len(lenderPayload.Phone) > 0 {
 		lenderModel.Phone = lenderPayload.Phone
-	}
-	if len(lenderPayload.AdminFeeSetup) > 0 {
-		lenderModel.AdminFeeSetup = lenderPayload.AdminFeeSetup
-	}
-	if len(lenderPayload.ConvenienceFeeSetup) > 0 {
-		lenderModel.ConvenienceFeeSetup = lenderPayload.ConvenienceFeeSetup
 	}
 
 	err = lenderModel.Save()

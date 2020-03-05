@@ -29,18 +29,16 @@ type (
 	}
 	// BankPayload request body container
 	BankPayload struct {
-		Name                string  `json:"name"`
-		Image               string  `json:"image"`
-		Type                uint64  `json:"type"`
-		Address             string  `json:"address"`
-		Province            string  `json:"province"`
-		City                string  `json:"city"`
-		PIC                 string  `json:"pic"`
-		Phone               string  `json:"phone"`
-		Services            []int64 `json:"services"`
-		Products            []int64 `json:"products"`
-		AdminFeeSetup       string  `json:"adminfee_setup"`
-		ConvenienceFeeSetup string  `json:"convfee_setup"`
+		Name     string  `json:"name"`
+		Image    string  `json:"image"`
+		Type     uint64  `json:"type"`
+		Address  string  `json:"address"`
+		Province string  `json:"province"`
+		City     string  `json:"city"`
+		PIC      string  `json:"pic"`
+		Phone    string  `json:"phone"`
+		Services []int64 `json:"services"`
+		Products []int64 `json:"products"`
 	}
 )
 
@@ -150,18 +148,16 @@ func BankNew(c echo.Context) error {
 	bankPayload := BankPayload{}
 
 	payloadRules := govalidator.MapData{
-		"name":           []string{"required"},
-		"image":          []string{},
-		"type":           []string{"required", "valid_id:bank_types"},
-		"address":        []string{"required"},
-		"province":       []string{"required"},
-		"city":           []string{"required"},
-		"services":       []string{"required", "valid_id:services"},
-		"products":       []string{"required", "valid_id:products"},
-		"pic":            []string{"required"},
-		"phone":          []string{"required"},
-		"adminfee_setup": []string{"required"},
-		"convfee_setup":  []string{"required"},
+		"name":     []string{"required"},
+		"image":    []string{},
+		"type":     []string{"required", "valid_id:bank_types"},
+		"address":  []string{"required"},
+		"province": []string{"required"},
+		"city":     []string{"required"},
+		"services": []string{"required", "valid_id:services"},
+		"products": []string{"required", "valid_id:products"},
+		"pic":      []string{"required"},
+		"phone":    []string{"required"},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bankPayload)
@@ -249,18 +245,16 @@ func BankPatch(c echo.Context) error {
 	origin := bank
 
 	payloadRules := govalidator.MapData{
-		"name":           []string{},
-		"image":          []string{},
-		"type":           []string{"valid_id:bank_types"},
-		"address":        []string{},
-		"province":       []string{},
-		"city":           []string{},
-		"services":       []string{"valid_id:services"},
-		"products":       []string{"valid_id:products"},
-		"pic":            []string{},
-		"phone":          []string{},
-		"adminfee_setup": []string{},
-		"convfee_setup":  []string{},
+		"name":     []string{},
+		"image":    []string{},
+		"type":     []string{"valid_id:bank_types"},
+		"address":  []string{},
+		"province": []string{},
+		"city":     []string{},
+		"services": []string{"valid_id:services"},
+		"products": []string{"valid_id:products"},
+		"pic":      []string{},
+		"phone":    []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &bankPayload)
@@ -296,12 +290,6 @@ func BankPatch(c echo.Context) error {
 	}
 	if len(bankPayload.Phone) > 0 {
 		bank.Phone = bankPayload.Phone
-	}
-	if len(bankPayload.AdminFeeSetup) > 0 {
-		bank.AdminFeeSetup = bankPayload.AdminFeeSetup
-	}
-	if len(bankPayload.ConvenienceFeeSetup) > 0 {
-		bank.ConvenienceFeeSetup = bankPayload.ConvenienceFeeSetup
 	}
 	if len(bankPayload.Image) > 0 {
 		unbased, _ := base64.StdEncoding.DecodeString(bankPayload.Image)
