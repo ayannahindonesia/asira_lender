@@ -9,6 +9,8 @@ permissions:
   lender_borrower_list_detail: lender_borrower_list_detail
   lender_borrower_list_download: lender_borrower_list_download
   lender_prospective_borrower_approval: lender_prospective_borrower_approval
+  lender_service_list: lender_service_list
+  lender_service_list_detail: lender_service_list_detail
   core_create_client: core_create_client
   core_view_image: core_view_image
   core_borrower_get_all: core_borrower_get_all
@@ -64,3 +66,4 @@ permissions:
   core_faq_detail: core_faq_detail
   core_faq_patch: core_faq_patch
   core_faq_delete: core_faq_delete
+  
