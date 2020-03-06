@@ -77,35 +77,25 @@ func LenderServiceList(c echo.Context) error {
 		Joins("INNER JOIN banks b ON services.id IN (SELECT UNNEST(b.services)) ").
 		Where("b.id = ?", bankRep.BankID)
 
-	status := c.QueryParam("status")
-	if len(status) > 0 {
-		db = db.Where("banks.status = ?", strings.ToLower(status))
-	}
+	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+		//all value for all params
+		extraquery := fmt.Sprintf("CAST(services.id as varchar(255)) = ?") + // use searchAll #1
+			fmt.Sprintf(" OR LOWER(services.name) LIKE ?") + // use searchLike #2
+			fmt.Sprintf(" OR LOWER(services.status) LIKE ?") // use searchLike #3
 
-	// if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-	// 	type Filter struct {
-	// 		ID     int64  `json:"id" condition:"optional"`
-	// 		Name   string `json:"name" condition:"LIKE,optional"`
-	// 		Status string `json:"status" condition:"optional"`
-	// 	}
-	// 	id, _ := strconv.ParseInt(searchAll, 10, 64)
-	// 	result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
-	// 		ID:     id,
-	// 		Name:   searchAll,
-	// 		Status: searchAll,
-	// 	})
-	// } else {
-	// 	type Filter struct {
-	// 		ID     []string `json:"id"`
-	// 		Name   string   `json:"name" condition:"LIKE"`
-	// 		Status string   `json:"status"`
-	// 	}
-	// 	result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
-	// 		ID:     customSplit(c.QueryParam("id"), ","),
-	// 		Name:   c.QueryParam("name"),
-	// 		Status: c.QueryParam("status"),
-	// 	})
-	// }
+		db = db.Where(extraquery, searchAll, "%"+searchAll+"%", "%"+searchAll+"%")
+
+	} else {
+		if id := c.QueryParam("id"); len(id) > 0 {
+			db = db.Where("services.id IN (?)", id)
+		}
+		if name := c.QueryParam("name"); len(name) > 0 {
+			db = db.Where("LOWER(services.name) LIKE ?", "%"+strings.ToLower(name)+"%")
+		}
+		if status := c.QueryParam("status"); len(status) > 0 {
+			db = db.Where("LOWER(services.status) LIKE ?", "%"+strings.ToLower(status)+"%")
+		}
+	}
 
 	if len(order) > 0 {
 		if len(sort) > 0 {
