@@ -147,10 +147,31 @@ func LenderServiceLListDetail(c echo.Context) error {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	serviceID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	serviceID, _ := strconv.ParseUint(c.Param("service_id"), 10, 64)
 
-	service := models.Service{}
-	err = service.FindbyID(serviceID)
+	jti := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["jti"].(string)
+	lenderID, _ := strconv.ParseUint(jti, 10, 64)
+	bankRep := models.BankRepresentatives{}
+
+	//get bank representatives
+	err = bankRep.FindbyUserID(int(lenderID))
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderServiceList", map[string]interface{}{"message": "error listing services", "error": err}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	db := asira.App.DB
+
+	db = db.Table("services").
+		Select("*").
+		Joins("INNER JOIN banks b ON services.id IN (SELECT UNNEST(b.services)) ").
+		Where("b.id = ?", bankRep.BankID).
+		Where("services.id = ?", serviceID)
+
+	var service models.Service
+
+	err = db.Find(&service).Error
 	if err != nil {
 		adminhandlers.NLog("warning", "ServiceDetail", map[string]interface{}{"message": fmt.Sprintf("error finding service %v", serviceID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
