@@ -1,8 +1,11 @@
-package adminhandlers
+package handlers
 
 import (
+	"asira_lender/adminhandlers"
+	"asira_lender/asira"
 	"asira_lender/models"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,61 +24,133 @@ type ServicePayload struct {
 	Description string `json:"description"`
 }
 
-// ServiceList gets all services
-func ServiceList(c echo.Context) error {
+// LenderServiceList gets all services
+func LenderServiceList(c echo.Context) error {
 	defer c.Request().Body.Close()
+
+	var (
+		// service   models.Service
+		result    basemodel.PagedFindResult
+		totalRows int
+		offset    int
+		rows      int
+		page      int
+		lastPage  int
+		services  []models.Service
+	)
+
 	err := validatePermission(c, "lender_service_list")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
+	jti := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["jti"].(string)
+	lenderID, _ := strconv.ParseUint(jti, 10, 64)
+	bankRep := models.BankRepresentatives{}
+
+	//get bank representatives
+	err = bankRep.FindbyUserID(int(lenderID))
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderServiceList", map[string]interface{}{"message": "error listing services", "error": err}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
 	// pagination parameters
-	rows, err := strconv.Atoi(c.QueryParam("rows"))
-	page, err := strconv.Atoi(c.QueryParam("page"))
+	rows, err = strconv.Atoi(c.QueryParam("rows"))
+	page, err = strconv.Atoi(c.QueryParam("page"))
 	order := strings.Split(c.QueryParam("orderby"), ",")
 	sort := strings.Split(c.QueryParam("sort"), ",")
 
-	var (
-		service models.Service
-		result  basemodel.PagedFindResult
-	)
+	db := asira.App.DB
 
-	if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
-		type Filter struct {
-			ID     int64  `json:"id" condition:"optional"`
-			Name   string `json:"name" condition:"LIKE,optional"`
-			Status string `json:"status" condition:"optional"`
+	// pagination parameters
+	if rows > 0 {
+		if page <= 0 {
+			page = 1
 		}
-		id, _ := strconv.ParseInt(searchAll, 10, 64)
-		result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
-			ID:     id,
-			Name:   searchAll,
-			Status: searchAll,
-		})
-	} else {
-		type Filter struct {
-			ID     []string `json:"id"`
-			Name   string   `json:"name" condition:"LIKE"`
-			Status string   `json:"status"`
-		}
-		result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
-			ID:     customSplit(c.QueryParam("id"), ","),
-			Name:   c.QueryParam("name"),
-			Status: c.QueryParam("status"),
-		})
+		offset = (page * rows) - rows
 	}
 
+	db = db.Table("services").
+		Select("*").
+		Joins("INNER JOIN banks b ON services.id IN (SELECT UNNEST(b.services)) ").
+		Where("b.id = ?", bankRep.BankID)
+
+	status := c.QueryParam("status")
+	if len(status) > 0 {
+		db = db.Where("banks.status = ?", strings.ToLower(status))
+	}
+
+	// if searchAll := c.QueryParam("search_all"); len(searchAll) > 0 {
+	// 	type Filter struct {
+	// 		ID     int64  `json:"id" condition:"optional"`
+	// 		Name   string `json:"name" condition:"LIKE,optional"`
+	// 		Status string `json:"status" condition:"optional"`
+	// 	}
+	// 	id, _ := strconv.ParseInt(searchAll, 10, 64)
+	// 	result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
+	// 		ID:     id,
+	// 		Name:   searchAll,
+	// 		Status: searchAll,
+	// 	})
+	// } else {
+	// 	type Filter struct {
+	// 		ID     []string `json:"id"`
+	// 		Name   string   `json:"name" condition:"LIKE"`
+	// 		Status string   `json:"status"`
+	// 	}
+	// 	result, err = service.PagedFindFilter(page, rows, order, sort, &Filter{
+	// 		ID:     customSplit(c.QueryParam("id"), ","),
+	// 		Name:   c.QueryParam("name"),
+	// 		Status: c.QueryParam("status"),
+	// 	})
+	// }
+
+	if len(order) > 0 {
+		if len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
+	}
+
+	// tempDB := db
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
+	}
+
+	err = db.Find(&services).Error
 	if err != nil {
-		NLog("warning", "ServiceList", map[string]interface{}{"message": "error listing services", "error": err}, c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "LenderServiceList", map[string]interface{}{"message": "error listing services", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
+	}
+
+	result = basemodel.PagedFindResult{
+		TotalData:   totalRows,
+		Rows:        rows,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		From:        offset + 1,
+		To:          offset + rows,
+		Data:        services,
 	}
 
 	return c.JSON(http.StatusOK, result)
 }
 
-// ServiceDetail get service by id
-func ServiceDetail(c echo.Context) error {
+// LenderServiceLListDetail get service by id
+func LenderServiceLListDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_service_list_detail")
 	if err != nil {
@@ -87,7 +162,7 @@ func ServiceDetail(c echo.Context) error {
 	service := models.Service{}
 	err = service.FindbyID(serviceID)
 	if err != nil {
-		NLog("warning", "ServiceDetail", map[string]interface{}{"message": fmt.Sprintf("error finding service %v", serviceID), "error": err}, c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", "ServiceDetail", map[string]interface{}{"message": fmt.Sprintf("error finding service %v", serviceID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", serviceID))
 	}
