@@ -73,7 +73,7 @@ func LenderServiceList(c echo.Context) error {
 	}
 
 	db = db.Table("services").
-		Select("*").
+		Select("services.*").
 		Joins("INNER JOIN banks b ON services.id IN (SELECT UNNEST(b.services)) ").
 		Where("b.id = ?", bankRep.BankID)
 
@@ -112,7 +112,8 @@ func LenderServiceList(c echo.Context) error {
 		}
 	}
 
-	// tempDB := db
+	tempDB := db
+	tempDB.Count(&totalRows)
 
 	if rows > 0 {
 		db = db.Limit(rows).Offset(offset)
