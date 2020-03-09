@@ -61,7 +61,6 @@ func TestLenderServiceList(t *testing.T) {
 }
 
 func TestLenderGetServicebyID(t *testing.T) {
-	RebuildData()
 
 	api := router.NewRouter()
 
