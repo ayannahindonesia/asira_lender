@@ -48,6 +48,7 @@ development:
     topic: northstar_logger
     send: true
     
+##test ignore please"
 staging:
 
 production:
