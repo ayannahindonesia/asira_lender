@@ -1,7 +1,9 @@
 package modules
 
 import (
+	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -94,4 +96,49 @@ func (mod *QueryPaged) GetPage(data interface{}) basemodel.PagedFindResult {
 	}
 
 	return result
+}
+
+//GenerateFilters generate parameters filter
+func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableName string) (*gorm.DB, error) {
+
+	//get reflect data
+	val := reflect.ValueOf(filter)
+
+	//loop over fields
+	for i := 0; i < val.Type().NumField(); i++ {
+		t := val.Type().Field(i)
+		fieldName := t.Name
+
+		//if not empty json
+		if jsonTag := t.Tag.Get("json"); jsonTag != "" && jsonTag != "-" {
+			//explode by comma
+			if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
+				fieldName = jsonTag[:commaIdx]
+			} else {
+				fieldName = jsonTag
+			}
+
+			//cek datatype per field
+			switch val.Type().Field(i).Type.Kind() {
+			case reflect.String:
+				if field := mod.c.QueryParam(fieldName); len(field) > 0 {
+					db = db.Where("LOWER("+tableName+"."+fieldName+") LIKE ?", "%"+strings.ToLower(field)+"%")
+				}
+				break
+			case reflect.Int64:
+				if field := mod.c.QueryParam(fieldName); len(field) > 0 {
+					db = db.Where(tableName+"."+fieldName+" IN (?)", field)
+				}
+				break
+			}
+		}
+
+		// fmt.Println(fieldName + " : " + val.Type().Field(i).Type.String())
+		// fmt.Printf("%+v\n\n", val.Type().Field(i))
+		fmt.Printf("+ %+v\n\n", fieldName)
+	}
+
+	fmt.Printf(">>>>>>>>> %+v\n\n", db.QueryExpr())
+
+	return db, nil
 }
