@@ -22,8 +22,10 @@ type QueryPaged struct {
 	c         echo.Context
 }
 
+//QueryFunc user defined func must implement before call Exec
 type QueryFunc func(*gorm.DB, interface{}) error
 
+//Init all atribute
 func (mod *QueryPaged) Init(c echo.Context) error {
 
 	//store context
@@ -46,8 +48,10 @@ func (mod *QueryPaged) Init(c echo.Context) error {
 	return nil
 }
 
+//Exec custom query
 func (mod *QueryPaged) Exec(db *gorm.DB, data interface{}, qFunc QueryFunc) error {
 
+	//generate query sorting
 	if len(mod.Order) > 0 {
 		if len(mod.Sort) > 0 {
 			for k, v := range mod.Order {
@@ -63,6 +67,7 @@ func (mod *QueryPaged) Exec(db *gorm.DB, data interface{}, qFunc QueryFunc) erro
 		}
 	}
 
+	//new instance
 	tempDB := db
 	tempDB.Count(&mod.TotalRows)
 
@@ -71,9 +76,11 @@ func (mod *QueryPaged) Exec(db *gorm.DB, data interface{}, qFunc QueryFunc) erro
 		mod.LastPage = int(math.Ceil(float64(mod.TotalRows) / float64(mod.Rows)))
 	}
 
+	//call user defined function
 	return qFunc(db, data)
 }
 
+//GetPage result
 func (mod *QueryPaged) GetPage(data interface{}) basemodel.PagedFindResult {
 
 	result := basemodel.PagedFindResult{
@@ -88,13 +95,3 @@ func (mod *QueryPaged) GetPage(data interface{}) basemodel.PagedFindResult {
 
 	return result
 }
-
-// func (mod *QueryPaged) AppendPayload(key string, rules []string) govalidator.MapData {
-// 	mod.PayloadRules[key] = rules
-// 	return mod.PayloadRules
-// }
-
-// func (mod *QueryPaged) CheckLoan() {
-// 	// LoanModel.BorrowerInfo = "testKTP"
-// 	mod.Create()
-// }
