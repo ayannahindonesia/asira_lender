@@ -147,9 +147,8 @@ func BankTypePatch(c echo.Context) error {
 	if len(bankTypePayload.Name) > 0 {
 		bankType.Name = bankTypePayload.Name
 	}
-	if len(bankTypePayload.Description) > 0 {
-		bankType.Description = bankTypePayload.Description
-	}
+
+	bankType.Description = bankTypePayload.Description
 
 	err = middlewares.SubmitKafkaPayload(bankType, "bank_type_update")
 	if err != nil {
