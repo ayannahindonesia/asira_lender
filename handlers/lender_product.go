@@ -43,9 +43,9 @@ func LenderProductList(c echo.Context) error {
 	//get bank representatives
 	err = bankRep.FindbyUserID(int(lenderID))
 	if err != nil {
-		// adminhandlers.NLog("error", LogTag, map[string]interface{}{
-		// 	"message": "invalid lender id",
-		// 	"error":   err}, token, "", false)
+		adminhandlers.NLog("error", LogTag, map[string]interface{}{
+			"message": "invalid lender id",
+			"error":   err}, token, "", false)
 
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
@@ -65,16 +65,15 @@ func LenderProductList(c echo.Context) error {
 	//generate filter, return db and error
 	db, err = QPaged.GenerateFilters(db, ProductFilter{}, "products")
 	if err != nil {
-		// adminhandlers.NLog("warning", LogTag, map[string]interface{}{
-		// 	"message": "error listing services",
-		// 	"error":   err}, token, "", false)
+		adminhandlers.NLog("warning", LogTag, map[string]interface{}{
+			"message": "error listing services",
+			"error":   err}, token, "", false)
 
-		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
+		return returnInvalidResponse(http.StatusInternalServerError, err, "kesalahan dalam filters")
 	}
 
 	//execute anonymous function pass db and data pass by reference (services)
 	err = QPaged.Exec(db, &services, func(DB *gorm.DB, rows interface{}) error {
-
 		//manual type casting :)
 		err := DB.Find(rows.(*[]models.Service)).Error
 		if err != nil {
@@ -83,9 +82,9 @@ func LenderProductList(c echo.Context) error {
 		return nil
 	})
 	if err != nil {
-		// adminhandlers.NLog("error", LogTag, map[string]interface{}{
-		// 	"message": "error listing services",
-		// 	"error":   err}, token, "", false)
+		adminhandlers.NLog("error", LogTag, map[string]interface{}{
+			"message": "error listing services",
+			"error":   err}, token, "", false)
 
 		return returnInvalidResponse(http.StatusInternalServerError, err, "Pencarian tidak ditemukan")
 	}
@@ -97,7 +96,7 @@ func LenderProductList(c echo.Context) error {
 
 }
 
-// ProductDetail get product detail by id
+//LenderProductDetail get product detail by id
 func LenderProductDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
 	err := validatePermission(c, "lender_product_list_detail")
