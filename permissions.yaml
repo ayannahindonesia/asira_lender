@@ -9,6 +9,8 @@ permissions:
   lender_borrower_list_detail: lender_borrower_list_detail
   lender_borrower_list_download: lender_borrower_list_download
   lender_prospective_borrower_approval: lender_prospective_borrower_approval
+  lender_product_list: lender_product_list
+  lender_product_list_detail: lender_product_list_detail
   core_create_client: core_create_client
   core_view_image: core_view_image
   core_borrower_get_all: core_borrower_get_all
