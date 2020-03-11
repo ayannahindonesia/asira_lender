@@ -11,28 +11,30 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo"
+	"github.com/lib/pq"
 )
 
 //ProductFilter for generate parameter filter
 type ProductFilter struct {
-	ID              int64  `json:"id" condition:"optional"`
-	Name            string `json:"name" condition:"LIKE,optional"`
-	Interest        string `json:"interest" condition:"LIKE,optional"`
-	Fees            string `json:"fees" condition:"LIKE,optional"`
-	Collaterals     string `json:"collaterals" condition:"LIKE,optional"`
-	FinancingSector string `json:"financing_sector" condition:"LIKE,optional"`
-	Assurance       string `json:"assurance" condition:"LIKE,optional"`
-	Status          string `json:"status" condition:"LIKE,optional"`
+	ID              int64          `json:"id" condition:"optional"`
+	Name            string         `json:"name" condition:"LIKE,optional"`
+	Interest        float64        `json:"interest" condition:"LIKE,optional"`
+	Fees            postgres.Jsonb `json:"fees" condition:"LIKE,optional"`
+	Collaterals     pq.StringArray `json:"collaterals" condition:"LIKE,optional"`
+	FinancingSector pq.StringArray `json:"financing_sector" condition:"LIKE,optional"`
+	Assurance       string         `json:"assurance" condition:"LIKE,optional"`
+	Status          string         `json:"status" condition:"LIKE,optional"`
 }
 
-// ProductList get all product list
+//LenderProductList  get all product list
 func LenderProductList(c echo.Context) error {
 	defer c.Request().Body.Close()
 
 	const LogTag = "LenderProductList"
 
-	var services []models.Service
+	var products []models.Product
 
 	//get token & jti
 	token := c.Get("user").(*jwt.Token)
@@ -73,9 +75,9 @@ func LenderProductList(c echo.Context) error {
 	}
 
 	//execute anonymous function pass db and data pass by reference (services)
-	err = QPaged.Exec(db, &services, func(DB *gorm.DB, rows interface{}) error {
+	err = QPaged.Exec(db, &products, func(DB *gorm.DB, rows interface{}) error {
 		//manual type casting :)
-		err := DB.Find(rows.(*[]models.Service)).Error
+		err := DB.Find(rows.(*[]models.Product)).Error
 		if err != nil {
 			return err
 		}
@@ -90,7 +92,7 @@ func LenderProductList(c echo.Context) error {
 	}
 
 	//get result format
-	result := QPaged.GetPage(services)
+	result := QPaged.GetPage(products)
 
 	return c.JSON(http.StatusOK, result)
 

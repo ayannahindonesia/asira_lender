@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo"
 )
 
+//QueryPaged custom query fields
 type QueryPaged struct {
 	Result    basemodel.PagedFindResult
 	TotalRows int
@@ -104,38 +105,123 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 	//get reflect data
 	val := reflect.ValueOf(filter)
 
-	//loop over fields
-	for i := 0; i < val.Type().NumField(); i++ {
-		t := val.Type().Field(i)
-		fieldName := t.Name
+	//searchAll one value for all field filter
+	searchAll := mod.c.QueryParam("search_all")
+	if len(searchAll) > 0 {
+		fmt.Println("searchAll = ", searchAll)
 
-		//if not empty json
-		if jsonTag := t.Tag.Get("json"); jsonTag != "" && jsonTag != "-" {
-			//explode by comma
-			if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
-				fieldName = jsonTag[:commaIdx]
-			} else {
-				fieldName = jsonTag
+		//hold array of values (searchAll converted to right tipe data)
+		var values []interface{}
+		extraQuery := ""
+
+		//loop over fields
+		for i := 0; i < val.Type().NumField(); i++ {
+			t := val.Type().Field(i)
+			// fieldName := t.Name
+			fieldName := ""
+
+			//if not empty json
+			if jsonTag := t.Tag.Get("json"); jsonTag != "" && jsonTag != "-" {
+
+				//explode by comma
+				if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
+					fieldName = jsonTag[:commaIdx]
+				} else {
+					fieldName = jsonTag
+				}
+
+				//cek datatype per field
+				switch val.Type().Field(i).Type.String() {
+				case "string":
+					extraQuery = extraQuery + " LOWER(" + tableName + "." + fieldName + ") LIKE ?"
+					values = append(values, "%"+strings.ToLower(searchAll)+"%")
+					break
+				case "int64":
+					extraQuery = extraQuery + " " + "CAST(" + tableName + "." + fieldName + " AS varchar(255)) = ?"
+					values = append(values, searchAll)
+					break
+				case "postgres.Jsonb":
+					extraQuery = extraQuery + " " + tableName + "." + fieldName + "::text LIKE ?"
+					values = append(values, "%"+strings.ToLower(searchAll)+"%")
+					break
+				case "float64":
+					floated, err := strconv.ParseFloat(searchAll, 64)
+					if err != nil {
+						//skip for float64 if not valid number
+						continue
+					}
+					extraQuery = extraQuery + " CAST(" + tableName + "." + fieldName + "AS varchar(255)) = ?"
+					values = append(values, math.Trunc(floated))
+
+					break
+				case "pq.StringArray":
+					extraQuery = extraQuery + " array_to_string(" + fieldName + ", ',') LIKE ?"
+					values = append(values, "%"+strings.ToLower(searchAll)+"%")
+					break
+				}
+
+				//conditional
+				if i < (val.Type().NumField() - 1) {
+					extraQuery = extraQuery + " OR "
+				}
+
+				fmt.Println(fieldName + " : " + val.Type().Field(i).Type.String())
+				fmt.Printf("+ %+v\n\n", fieldName)
 			}
 
-			//cek datatype per field
-			switch val.Type().Field(i).Type.Kind() {
-			case reflect.String:
-				if field := mod.c.QueryParam(fieldName); len(field) > 0 {
-					db = db.Where("LOWER("+tableName+"."+fieldName+") LIKE ?", "%"+strings.ToLower(field)+"%")
-				}
-				break
-			case reflect.Int64:
-				if field := mod.c.QueryParam(fieldName); len(field) > 0 {
-					db = db.Where(tableName+"."+fieldName+" IN (?)", field)
-				}
-				break
-			}
 		}
 
-		// fmt.Println(fieldName + " : " + val.Type().Field(i).Type.String())
-		// fmt.Printf("%+v\n\n", val.Type().Field(i))
-		fmt.Printf("+ %+v\n\n", fieldName)
+		//update gorm custom query
+		db = db.Where(extraQuery, values...)
+		fmt.Printf("extraQuery = %+v\n", extraQuery)
+		fmt.Printf("values = %+v\n\n", values)
+
+	} else { //not searchAll
+
+		//loop over fields
+		for i := 0; i < val.Type().NumField(); i++ {
+			t := val.Type().Field(i)
+			fieldName := ""
+
+			//if not empty json
+			if jsonTag := t.Tag.Get("json"); jsonTag != "" && jsonTag != "-" {
+
+				//explode by comma
+				if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
+					fieldName = jsonTag[:commaIdx]
+				} else {
+					fieldName = jsonTag
+				}
+				//cek datatype per field
+				switch val.Type().Field(i).Type.String() {
+				case "string":
+					db = db.Where("LOWER("+tableName+"."+fieldName+") LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+					break
+				case "int64":
+					db = db.Where("CAST("+tableName+"."+fieldName+" AS varchar(255)) = ?", searchAll)
+					break
+				case "postgres.Jsonb":
+					db = db.Where(tableName+"."+fieldName+"::text LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+					break
+				case "float64":
+					floated, err := strconv.ParseFloat(searchAll, 64)
+					if err != nil {
+						//skip for float64 if not valid number
+						continue
+					}
+					db = db.Where("CAST("+tableName+"."+fieldName+"AS varchar(255)) = ?", math.Trunc(floated))
+					break
+				case "pq.StringArray":
+					db = db.Where("array_to_string("+fieldName+", ',') LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+					break
+				}
+			}
+
+			// fmt.Println(fieldName + " : " + val.Type().Field(i).Type.String())
+			// fmt.Printf("%+v\n\n", val.Type().Field(i))
+			// fmt.Printf("+ %+v\n\n", fieldName)
+		}
+
 	}
 
 	fmt.Printf(">>>>>>>>> %+v\n\n", db.QueryExpr())
