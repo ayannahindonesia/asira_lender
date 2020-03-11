@@ -33,8 +33,12 @@ func LenderProductList(c echo.Context) error {
 	defer c.Request().Body.Close()
 
 	const LogTag = "LenderProductList"
-
 	var products []models.Product
+
+	err := validatePermission(c, "lender_product_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
 
 	//get token & jti
 	token := c.Get("user").(*jwt.Token)
@@ -101,19 +105,42 @@ func LenderProductList(c echo.Context) error {
 //LenderProductDetail get product detail by id
 func LenderProductDetail(c echo.Context) error {
 	defer c.Request().Body.Close()
+
+	const LogTag = "LenderProductDetail"
+
 	err := validatePermission(c, "lender_product_list_detail")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
 
-	productID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	productID, _ := strconv.ParseUint(c.Param("product_id"), 10, 64)
 
-	product := models.Product{}
-	err = product.FindbyID(productID)
+	jti := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["jti"].(string)
+	lenderID, _ := strconv.ParseUint(jti, 10, 64)
+	bankRep := models.BankRepresentatives{}
+
+	//get bank representatives
+	err = bankRep.FindbyUserID(int(lenderID))
 	if err != nil {
-		adminhandlers.NLog("warning", "ProductDetail", map[string]interface{}{"message": fmt.Sprintf("find product %v error", productID), "error": err}, c.Get("user").(*jwt.Token), "", false)
+		adminhandlers.NLog("warning", LogTag, map[string]interface{}{"message": "error listing services", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
-		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Product %v tidak ditemukan", productID))
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	db := asira.App.DB
+	db = db.Table("products").
+		Select("products.*").
+		Joins("INNER JOIN banks b ON products.id IN (SELECT UNNEST(b.products)) ").
+		Where("b.id = ?", bankRep.BankID).
+		Where("products.id = ?", productID)
+
+	var product models.Product
+
+	err = db.Find(&product).Error
+	if err != nil {
+		adminhandlers.NLog("warning", LogTag, map[string]interface{}{"message": fmt.Sprintf("error finding Product %v", productID), "error": err}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Layanan %v tidak ditemukan", productID))
 	}
 
 	return c.JSON(http.StatusOK, product)
