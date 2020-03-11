@@ -106,8 +106,7 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 	val := reflect.ValueOf(filter)
 
 	//searchAll one value for all field filter
-	searchAll := mod.c.QueryParam("search_all")
-	if len(searchAll) > 0 {
+	if searchAll := mod.c.QueryParam("search_all"); len(searchAll) > 0 {
 		fmt.Println("searchAll = ", searchAll)
 
 		//hold array of values (searchAll converted to right tipe data)
@@ -133,15 +132,15 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 				//cek datatype per field
 				switch val.Type().Field(i).Type.String() {
 				case "string":
-					extraQuery = extraQuery + " LOWER(" + tableName + "." + fieldName + ") LIKE ?"
+					extraQuery = extraQuery + " LOWER(" + tableName + "." + fieldName + ") LIKE ? "
 					values = append(values, "%"+strings.ToLower(searchAll)+"%")
 					break
 				case "int64":
-					extraQuery = extraQuery + " " + "CAST(" + tableName + "." + fieldName + " AS varchar(255)) = ?"
+					extraQuery = extraQuery + " " + "CAST(" + tableName + "." + fieldName + " AS varchar(255)) = ? "
 					values = append(values, searchAll)
 					break
 				case "postgres.Jsonb":
-					extraQuery = extraQuery + " " + tableName + "." + fieldName + "::text LIKE ?"
+					extraQuery = extraQuery + "  LOWER(" + tableName + "." + fieldName + "::text) LIKE ? "
 					values = append(values, "%"+strings.ToLower(searchAll)+"%")
 					break
 				case "float64":
@@ -150,12 +149,12 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 						//skip for float64 if not valid number
 						continue
 					}
-					extraQuery = extraQuery + " CAST(" + tableName + "." + fieldName + "AS varchar(255)) = ?"
+					extraQuery = extraQuery + " CAST(" + tableName + "." + fieldName + " AS varchar(255)) = ? "
 					values = append(values, math.Trunc(floated))
 
 					break
 				case "pq.StringArray":
-					extraQuery = extraQuery + " array_to_string(" + fieldName + ", ',') LIKE ?"
+					extraQuery = extraQuery + "  LOWER(array_to_string(" + fieldName + ", ',')) LIKE ?"
 					values = append(values, "%"+strings.ToLower(searchAll)+"%")
 					break
 				}
@@ -171,10 +170,8 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 
 		}
 
-		//update gorm custom query
+		// update gorm custom query
 		db = db.Where(extraQuery, values...)
-		fmt.Printf("extraQuery = %+v\n", extraQuery)
-		fmt.Printf("values = %+v\n\n", values)
 
 	} else { //not searchAll
 
@@ -192,27 +189,34 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 				} else {
 					fieldName = jsonTag
 				}
+
+				//get value from query parameter
+				values := mod.c.QueryParam(fieldName)
+				if len(values) <= 0 {
+					continue
+				}
+
 				//cek datatype per field
 				switch val.Type().Field(i).Type.String() {
 				case "string":
-					db = db.Where("LOWER("+tableName+"."+fieldName+") LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+					db = db.Where("LOWER("+tableName+"."+fieldName+") LIKE ? ", "%"+strings.ToLower(values)+"%")
 					break
 				case "int64":
-					db = db.Where("CAST("+tableName+"."+fieldName+" AS varchar(255)) = ?", searchAll)
+					db = db.Where("CAST("+tableName+"."+fieldName+" AS varchar(255)) = ? ", values)
 					break
 				case "postgres.Jsonb":
-					db = db.Where(tableName+"."+fieldName+"::text LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+					db = db.Where(" LOWER("+tableName+"."+fieldName+"::text) LIKE ? ", "%"+strings.ToLower(values)+"%")
 					break
 				case "float64":
-					floated, err := strconv.ParseFloat(searchAll, 64)
+					floated, err := strconv.ParseFloat(values, 64)
 					if err != nil {
 						//skip for float64 if not valid number
 						continue
 					}
-					db = db.Where("CAST("+tableName+"."+fieldName+"AS varchar(255)) = ?", math.Trunc(floated))
+					db = db.Where("CAST("+tableName+"."+fieldName+" AS varchar(255)) = ? ", math.Trunc(floated))
 					break
 				case "pq.StringArray":
-					db = db.Where("array_to_string("+fieldName+", ',') LIKE ?", "%"+strings.ToLower(searchAll)+"%")
+					db = db.Where("LOWER(array_to_string("+fieldName+", ',')) LIKE ? ", "%"+strings.ToLower(values)+"%")
 					break
 				}
 			}
@@ -223,6 +227,8 @@ func (mod *QueryPaged) GenerateFilters(db *gorm.DB, filter interface{}, tableNam
 		}
 
 	}
+
+	fmt.Printf("<<<<<<<<< %+v\n\n", mod.c.QueryParam("search_all"))
 
 	fmt.Printf(">>>>>>>>> %+v\n\n", db.QueryExpr())
 
