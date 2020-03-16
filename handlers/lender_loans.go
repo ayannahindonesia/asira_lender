@@ -583,7 +583,7 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 // LenderLoanInstallmentsApprove func
 func LenderLoanInstallmentsApprove(c echo.Context) error {
 	type InstallmentPayload struct {
-		PaidStatus   bool    `json:"paid_status`
+		PaidStatus   bool    `json:"paid_status"`
 		Underpayment float64 `json:"underpayment"`
 		Note         string  `json:"note"`
 	}

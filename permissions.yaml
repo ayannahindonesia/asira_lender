@@ -5,6 +5,7 @@ permissions:
   lender_loan_request_detail: lender_loan_request_detail
   lender_loan_approve_reject: lender_loan_approve_reject
   lender_loan_request_list_download: lender_loan_request_list_download
+  lender_loan_installment_approve: lender_loan_installment_approve
   lender_borrower_list: lender_borrower_list
   lender_borrower_list_detail: lender_borrower_list_detail
   lender_borrower_list_download: lender_borrower_list_download
