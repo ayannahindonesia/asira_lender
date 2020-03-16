@@ -11,6 +11,8 @@ permissions:
   lender_prospective_borrower_approval: lender_prospective_borrower_approval
   lender_service_list: lender_service_list
   lender_service_list_detail: lender_service_list_detail
+  lender_product_list: lender_product_list
+  lender_product_list_detail: lender_product_list_detail
   core_create_client: core_create_client
   core_view_image: core_view_image
   core_borrower_get_all: core_borrower_get_all

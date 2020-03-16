@@ -34,4 +34,7 @@ func LenderGroup(e *echo.Echo) {
 	// services owned by bank (lender)
 	g.GET("/services", handlers.LenderServiceList)
 	g.GET("/services/:service_id", handlers.LenderServiceLListDetail)
+
+	g.GET("/products", handlers.LenderProductList)
+	g.GET("/products/:product_id", handlers.LenderProductDetail)
 }

@@ -351,7 +351,7 @@ func Seed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_service_list", "lender_service_list_detail"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail"},
 			},
 		}
 		for _, role := range roles {
@@ -1152,7 +1152,7 @@ func TestSeed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_service_list", "lender_service_list_detail"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail"},
 			},
 		}
 		for _, role := range roles {
