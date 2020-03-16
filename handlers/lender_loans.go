@@ -16,6 +16,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo"
+	"github.com/thedevsaddam/govalidator"
 )
 
 type (
@@ -577,4 +578,87 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	adminhandlers.NAudittrail(origin, loan, c.Get("user").(*jwt.Token), "loan", fmt.Sprint(loan.ID), "change loan disburse date")
 
 	return c.JSON(http.StatusOK, loan)
+}
+
+// LenderLoanInstallmentsApprove func
+func LenderLoanInstallmentsApprove(c echo.Context) error {
+	type InstallmentPayload struct {
+		PaidStatus   bool    `json:"paid_status"`
+		Underpayment float64 `json:"underpayment"`
+		Note         string  `json:"note"`
+	}
+	var installmentPayload InstallmentPayload
+
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_installment_approve")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	loanID, err := strconv.Atoi(c.Param("loan_id"))
+	installmentID, err := strconv.Atoi(c.Param("installment_id"))
+	db := asira.App.DB
+	installment := models.Installment{}
+
+	loansQ := db.Table("loans").
+		Select("UNNEST(loans.installment_details)").
+		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
+		Where("b.bank = ?", bankRep.BankID).
+		Where("loans.id = ?", loanID).
+		QueryExpr()
+
+	err = db.Table("installments").
+		Select("*").
+		Where("id IN (?)", loansQ).
+		Where("id = ?", installmentID).
+		Scan(&installment).Error
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderLoanInstallmentsApprove", map[string]interface{}{"message": "query not found : '%v' error : %v", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Cicilan %v pada pinjaman %v tidak ditemukan", installmentID, loanID))
+	}
+
+	payloadRules := govalidator.MapData{
+		"paid_status":  []string{"bool"},
+		"underpayment": []string{"numeric"},
+		"note":         []string{},
+	}
+
+	validate := validateRequestPayload(c, payloadRules, &installmentPayload)
+	if validate != nil {
+		adminhandlers.NLog("warning", "LenderLoanInstallmentsApprove", map[string]interface{}{"message": "error validation", "error": validate}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
+	}
+
+	now := time.Now()
+	if installmentPayload.PaidStatus {
+		installment.PaidStatus = true
+		installment.PaidDate = &now
+	}
+	if installmentPayload.Underpayment > 0 {
+		installment.Underpayment = installmentPayload.Underpayment
+	}
+	if len(installmentPayload.Note) > 0 {
+		installment.Note = installmentPayload.Note
+	}
+
+	err = middlewares.SubmitKafkaPayload(installment, "installment_update")
+	if err != nil {
+		adminhandlers.NLog("error", "LenderLoanInstallmentsApprove", map[string]interface{}{"message": "error submitting kafka borrower", "error": err, "installment": installment}, user.(*jwt.Token), "", false)
+
+		returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal reject borrower")
+	}
+
+	return c.JSON(http.StatusOK, installment)
 }
