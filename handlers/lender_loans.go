@@ -42,14 +42,15 @@ type (
 	// LoanSelect select custom type
 	LoanSelect struct {
 		models.Loan
-		BorrowerName      string `json:"borrower_name"`
-		BankName          string `json:"bank_name"`
-		BankAccount       string `json:"bank_account"`
-		Service           string `json:"service"`
-		Product           string `json:"product"`
-		Category          string `json:"category"`
-		AgentName         string `json:"agent_name"`
-		AgentProviderName string `json:"agent_provider_name"`
+		BorrowerName      string               `json:"borrower_name"`
+		BankName          string               `json:"bank_name"`
+		BankAccount       string               `json:"bank_account"`
+		Service           string               `json:"service"`
+		Product           string               `json:"product"`
+		Category          string               `json:"category"`
+		AgentName         string               `json:"agent_name"`
+		AgentProviderName string               `json:"agent_provider_name"`
+		Installments      []models.Installment `json:"installment_details"`
 	}
 )
 
@@ -242,6 +243,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 	loanID, err := strconv.Atoi(c.Param("loan_id"))
 	db := asira.App.DB
 	loan := LoanSelect{}
+	installments := []models.Installment{}
 
 	err = db.Table("loans").
 		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.bank_accountnumber as bank_account, s.name as service, p.name as product, a.category, a.name as agent_name, ap.name as agent_provider_name").
@@ -261,6 +263,15 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 
 		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Pinjaman %v tidak ditemukan", loanID))
 	}
+
+	err = db.Table("installments").
+		Select("*").
+		Where("id IN (?)", strings.Fields(strings.Trim(fmt.Sprint(loan.InstallmentDetails), "[]"))).
+		Scan(&installments).Error
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderLoanRequestListDetail", map[string]interface{}{"message": "query not found : '%v' error : %v", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
+	}
+	loan.Installments = installments
 
 	return c.JSON(http.StatusOK, loan)
 }
