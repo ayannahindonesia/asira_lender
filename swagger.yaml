@@ -1085,11 +1085,13 @@ paths:
                       type: object
                     example: [{
                       "description": "Admin Fee",
-                      "amount": "2%"
+                      "amount": "2%",
+                      "fee_method": "deduct_loan"
                     },
                     {
                       "description": "Convenience Fee",
-                      "amount": "1%"
+                      "amount": "1%",
+                      "fee_method": "charge_loan"
                     }]
                   collaterals:
                     type: array
