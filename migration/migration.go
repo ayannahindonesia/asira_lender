@@ -701,6 +701,7 @@ func Seed() {
 		}
 		for _, faq := range faqs {
 			faq.Create()
+			middlewares.SubmitKafkaPayload(faq, "faq_create")
 		}
 	}
 }
