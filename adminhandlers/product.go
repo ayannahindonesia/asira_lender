@@ -24,6 +24,7 @@ type ProductPayload struct {
 	MinTimeSpan     int            `json:"min_timespan"`
 	MaxTimeSpan     int            `json:"max_timespan"`
 	Interest        float64        `json:"interest"`
+	InterestType    string         `json:"interest_type"`
 	MinLoan         int            `json:"min_loan"`
 	MaxLoan         int            `json:"max_loan"`
 	Fees            postgres.Jsonb `json:"fees"`
@@ -31,6 +32,7 @@ type ProductPayload struct {
 	FinancingSector pq.StringArray `json:"financing_sector"`
 	Assurance       string         `json:"assurance"`
 	Status          string         `json:"status"`
+	Form            postgres.Jsonb `json:"form"`
 }
 
 // ProductList get all product list
@@ -57,6 +59,7 @@ func ProductList(c echo.Context) error {
 			ID              int64  `json:"id" condition:"optional"`
 			Name            string `json:"name" condition:"LIKE,optional"`
 			Interest        string `json:"interest" condition:"LIKE,optional"`
+			InterestType    string `json:"interest_type" condition:"LIKE,optional"`
 			Fees            string `json:"fees" condition:"LIKE,optional"`
 			Collaterals     string `json:"collaterals" condition:"LIKE,optional"`
 			FinancingSector string `json:"financing_sector" condition:"LIKE,optional"`
@@ -68,6 +71,7 @@ func ProductList(c echo.Context) error {
 			ID:              id,
 			Name:            searchAll,
 			Interest:        searchAll,
+			InterestType:    searchAll,
 			Fees:            searchAll,
 			Collaterals:     searchAll,
 			FinancingSector: searchAll,
@@ -82,6 +86,7 @@ func ProductList(c echo.Context) error {
 			MinTimeSpan     string   `json:"min_timespan"`
 			MaxTimeSpan     string   `json:"max_timespan"`
 			Interest        string   `json:"interest" condition:"LIKE"`
+			InterestType    string   `json:"interest_type"`
 			MinLoan         string   `json:"min_loan"`
 			MaxLoan         string   `json:"max_loan"`
 			Fees            string   `json:"fees" condition:"LIKE"`
@@ -97,6 +102,7 @@ func ProductList(c echo.Context) error {
 			MinTimeSpan:     c.QueryParam("min_timespan"),
 			MaxTimeSpan:     c.QueryParam("max_timespan"),
 			Interest:        c.QueryParam("interest"),
+			InterestType:    c.QueryParam("interest_type"),
 			MinLoan:         c.QueryParam("min_loan"),
 			MaxLoan:         c.QueryParam("max_loan"),
 			Fees:            c.QueryParam("fee"),
@@ -133,6 +139,7 @@ func ProductNew(c echo.Context) error {
 		"min_timespan":     []string{"required", "numeric"},
 		"max_timespan":     []string{"required", "numeric"},
 		"interest":         []string{"required", "numeric"},
+		"interest_type":    []string{"required"},
 		"min_loan":         []string{"required", "numeric"},
 		"max_loan":         []string{"required", "numeric"},
 		"fees":             []string{},
@@ -140,6 +147,7 @@ func ProductNew(c echo.Context) error {
 		"financing_sector": []string{},
 		"assurance":        []string{},
 		"status":           []string{"required", "active_inactive"},
+		"form":             []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
@@ -218,6 +226,7 @@ func ProductPatch(c echo.Context) error {
 		"min_timespan":     []string{"numeric"},
 		"max_timespan":     []string{"numeric"},
 		"interest":         []string{"numeric"},
+		"interest_type":    []string{},
 		"min_loan":         []string{"numeric"},
 		"max_loan":         []string{"numeric"},
 		"fees":             []string{},
@@ -225,6 +234,7 @@ func ProductPatch(c echo.Context) error {
 		"financing_sector": []string{},
 		"assurance":        []string{},
 		"status":           []string{"active_inactive"},
+		"form":             []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
@@ -248,6 +258,9 @@ func ProductPatch(c echo.Context) error {
 	if productPayload.Interest > 0 {
 		product.Interest = productPayload.Interest
 	}
+	if len(productPayload.InterestType) > 0 {
+		product.InterestType = productPayload.InterestType
+	}
 	if productPayload.MinLoan > 0 {
 		product.MinLoan = productPayload.MinLoan
 	}
@@ -268,6 +281,9 @@ func ProductPatch(c echo.Context) error {
 	}
 	if len(productPayload.Status) > 0 {
 		product.Status = productPayload.Status
+	}
+	if len(string(productPayload.Form.RawMessage)) > 2 {
+		product.Form = productPayload.Form
 	}
 
 	err = middlewares.SubmitKafkaPayload(product, "product_update")
