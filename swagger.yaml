@@ -1085,11 +1085,13 @@ paths:
                       type: object
                     example: [{
                       "description": "Admin Fee",
-                      "amount": "2%"
+                      "amount": "2%",
+                      "fee_method": "deduct_loan"
                     },
                     {
                       "description": "Convenience Fee",
-                      "amount": "1%"
+                      "amount": "1%",
+                      "fee_method": "charge_loan"
                     }]
                   collaterals:
                     type: array
@@ -1108,6 +1110,25 @@ paths:
                     type: string
                     example: active
                     enum: [active, inactive]
+                  interest_type:
+                    type : string
+                    example: onetimepay
+                    enum: [fixed, flat, onetimepay, efektif_menurun]
+                  form:
+                    type: array
+                    items:
+                      type: object
+                      example: {
+                          "type": "checkbox",
+                          "label": "Agunan",
+                          "values": [
+                              "rumah",
+                              "kendaraan",
+                              "tanah"
+                          ],
+                          "optional": false
+                      }
+                      
       responses:
         '200':
           description: OK
@@ -2265,6 +2286,12 @@ paths:
             type: string
             example: "51278348737"
           description: fill with empty to find prospective borrower
+        - in: query
+          name: bank_id
+          schema:
+            type: string
+            example: "not null | null | bank id"
+          description: list borrower with null will show borrowers mobile 
       responses:
         '200':
           description: OK
@@ -2449,6 +2476,206 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
+# === FAQ ===
+  /admin/faq:
+    get:
+      tags:
+        - Admin - FAQ
+      summary:
+        "permission : 'core_faq_list'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+        - $ref: '#/components/parameters/rowsQuery'
+        - $ref: '#/components/parameters/pageQuery'
+        - $ref: '#/components/parameters/orderByQuery'
+        - $ref: '#/components/parameters/sortQuery'
+        - in: query
+          name: title
+          schema:
+            type: string
+            example: FAQ how to apply loan
+        - in: query
+          name: description
+          schema:
+            type: string
+            example: "<html>...<html>"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/PagedModel'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/ModelFAQ'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Admin - FAQ
+      summary:
+        "permission : 'core_faq_new'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: FAQ how to register
+                description:
+                  type: string
+                  example: "<html>...</html>"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelFAQ'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /admin/faq/:id:
+    get:
+      tags:
+        - Admin - FAQ
+      summary:
+        "permission : 'core_faq_detail'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelFAQ'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags:
+        - Admin - FAQ
+      summary:
+        "permission : 'core_faq_patch'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: FAQ how to loan
+                description:
+                  type: string
+                  example: "<html>...</html>"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelFAQ'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Admin - FAQ
+      summary:
+        "permission : 'core_faq_delete'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {"message":"FAQ is deleted"}
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
                   
 # === Custom Reports ===
   /admin/reports/convenience_fee:
@@ -2540,7 +2767,7 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
-                  
+
 # === Lender Borrower ===
   /lender/borrower_list:
     get:
@@ -2748,7 +2975,153 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
+
+# === Lender's Service ===
+  /lender/products:
+    get:
+      tags:
+        - Lender - Bank Products
+      summary: "permission : 'lender_product_list'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+        - $ref: '#/components/parameters/rowsQuery'
+        - $ref: '#/components/parameters/pageQuery'
+        - $ref: '#/components/parameters/orderByQuery'
+        - $ref: '#/components/parameters/sortQuery'
+        - $ref: '#/components/parameters/searchAll'
+        - $ref: '#/components/parameters/searchID'
+        - $ref: '#/components/parameters/searchName'
+        - $ref: '#/components/parameters/searchStatus'
+        - $ref: '#/components/parameters/searchCollaterals'
+        - $ref: '#/components/parameters/searchFinancingSector'
+        - $ref: '#/components/parameters/searchFees'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/PagedModel'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/ModelProduct'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/products/:id:
+    get:
+      tags:
+        - Lender - Bank Products
+      summary: "permission : 'lender_product_list_detail'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelProduct'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
                   
+# === Lender's Service ===
+  /lender/services:
+    get:
+      tags:
+        - Lender - Bank Services
+      summary: "permission : 'lender_service_list'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+        - $ref: '#/components/parameters/rowsQuery'
+        - $ref: '#/components/parameters/pageQuery'
+        - $ref: '#/components/parameters/orderByQuery'
+        - $ref: '#/components/parameters/sortQuery'
+        - $ref: '#/components/parameters/searchAll'
+        - $ref: '#/components/parameters/searchID'
+        - $ref: '#/components/parameters/searchName'
+        - $ref: '#/components/parameters/searchStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/PagedModel'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/ModelService'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/services/:id:
+    get:
+      tags:
+        - Lender - Bank Services
+      summary: "permission : 'lender_service_list_detail'"
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ModelService'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
 # === Lender Profile ===
   /lender/profile:
     get:
@@ -3007,6 +3380,160 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/ModelLoan'
+                  - properties:
+                      installment_detail:
+                        type: object
+                        allOf:
+                          - $ref: '#/components/schemas/ModelInstallment'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/loanrequest_list/:loan_id/detail/:approve_reject:
+    get:
+      tags:
+        - Lender - Loans
+      summary: "permission : 'lender_loan_approve_reject'"
+      description: approve / reject a loan
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ModelLoan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/loanrequest_list/:loan_id/detail/confirm_disbursement:
+    get:
+      tags:
+        - Lender - Loans
+      summary: "permission : ''"
+      description: confirms loan disbursement
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ModelLoan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/loanrequest_list/:loan_id/detail/change_disburse_date:
+    get:
+      tags:
+        - Lender - Loans
+      summary: "permission : ''"
+      description: change loan disbursement date
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ModelLoan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /lender/loanrequest_list/download:
+    get:
+      tags:
+        - Lender - Loans
+      summary: "permission : 'lender_loan_request_list_download'"
+      description: download loan list
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+  /loanrequest_list/:loan_id/detail/installment_approve/:installment_id:
+    post:
+      tags:
+        - Lender - Loans
+      summary: "permission : 'lender_loan_installment_approve'"
+      description: download loan list
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                paid_status:
+                  type: boolean
+                  example: true
+                underpayment:
+                  type: number
+                  example: 10000
+                note:
+                  type: string
+                  example: this is payment note
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ModelInstallment'
         '401':
           description: Unauthorized
         '403':
@@ -3114,6 +3641,9 @@ components:
             status:
               type: string
               example: active
+            description:
+              type: string
+              example: active
     ModelProduct:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
@@ -3134,14 +3664,35 @@ components:
               type: array
               items:
                 type: object
+              description : ada 3 parameter, description, amount, dan fee method. fee_method ada 2 opsi, 'deduct_loan' dan 'charge_loan'
               example: [{
                 "description": "Admin Fee",
-                "amount": "2%"
+                "amount": "2%",
+                "fee_method": "deduct_loan"
               },
               {
                 "description": "Convenience Fee",
-                "amount": "1%"
+                "amount": "1%",
+                "fee_method": "charge_loan"
               }]
+            interest_type:
+                    type : string
+                    example: onetimepay
+                    enum: [fixed, flat, onetimepay, efektif_menurun]
+            form:
+              type: array
+              items:
+                type: object
+              example: {
+                "type": "checkbox",
+                "label": "Agunan",
+                "values": [
+                  "rumah",
+                  "kendaraan",
+                  "tanah"
+                ],
+                "optional": false
+              }
     ModelBankType:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
@@ -3152,6 +3703,16 @@ components:
             description:
               type: string
               example: bank type description
+    ModelFAQ:
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - properties:
+            title:
+              type: string
+              example: FAQ how to apply loan
+            description:
+              type: string
+              example: "<html>...</html>"
     ModelBank:
       allOf:
         - $ref: '#/components/schemas/BaseModel'
@@ -3563,6 +4124,11 @@ components:
               type: number
               example: 12
               description: in month
+            installment_details:
+              type: array
+              items:
+                type: number
+              example: [1,2,3]
             fees:
               type: array
               items:
@@ -3592,7 +4158,7 @@ components:
               type: string
               example: its loan intention
             intention_details:
-              type: string
+              type: array
               example: the details
             borrower_info:
               type: string
@@ -3612,6 +4178,14 @@ components:
             reject_reason:
               type: string
               example: "reasons"
+            form_info:
+              type: array
+              items:
+                type: object
+                example: {
+                    "label": "Agunan",
+                    "answers": [ {"rumah": true}, {"tanah": true}]
+                }
     ModelConvenienceFeeReport:
       properties:
         bank_name:
@@ -3635,6 +4209,31 @@ components:
         convenience_fee:
           type: number
           example: 100000
+    ModelInstallment:
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - properties:
+            period:
+              type: number
+              example: 1
+            loan_payment:
+              type: number
+              example: 1000000
+            interest_payment:
+              type: number
+              example: 50000
+            paid_date:
+              type: string
+              example: "1999-12-31T00:00:00.000Z"
+            paid_status:
+              type: boolean
+              example: true
+            underpayment:
+              type: number
+              example: 10000
+            note:
+              type: string
+              example: lebih bayar 35000
   parameters:
     clienttoken:
       required: true
@@ -3708,6 +4307,24 @@ components:
       schema:
         type: string
         example: "active"
+    searchCollaterals:
+      in: query
+      name: collaterals
+      schema:
+        type: string
+        example: "Surat Tanah"
+    searchFinancingSector:
+      in: query
+      name: financing_sector
+      schema:
+        type: string
+        example: "pendidikan"
+    searchFees:
+      in: query
+      name: fees
+      schema:
+        type: string
+        example: "convenience"
 
 # Added by API Auto Mocking Plugin
 servers:
