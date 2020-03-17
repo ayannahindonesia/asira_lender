@@ -585,6 +585,9 @@ func LenderLoanInstallmentsApprove(c echo.Context) error {
 	type InstallmentPayload struct {
 		PaidStatus   bool    `json:"paid_status"`
 		Underpayment float64 `json:"underpayment"`
+		Penalty      float64 `json:"penalty"`
+		PaidAmount   float64 `json:"paid_amount"`
+		DueDate      string  `json:"due_date"`
 		Note         string  `json:"note"`
 	}
 	var installmentPayload InstallmentPayload
@@ -630,7 +633,10 @@ func LenderLoanInstallmentsApprove(c echo.Context) error {
 
 	payloadRules := govalidator.MapData{
 		"paid_status":  []string{"bool"},
-		"underpayment": []string{"numeric"},
+		"underpayment": []string{},
+		"penalty":      []string{},
+		"paid_amount":  []string{},
+		"due_date":     []string{},
 		"note":         []string{},
 	}
 
@@ -651,6 +657,15 @@ func LenderLoanInstallmentsApprove(c echo.Context) error {
 	}
 	if len(installmentPayload.Note) > 0 {
 		installment.Note = installmentPayload.Note
+	}
+	if installmentPayload.Penalty > 0 {
+		installment.Penalty = installmentPayload.Penalty
+	}
+	if installmentPayload.PaidAmount > 0 {
+		installment.PaidAmount = installmentPayload.PaidAmount
+	}
+	if parsedTime, err := time.Parse("2006-01-02", installmentPayload.DueDate); err == nil {
+		installment.DueDate = &parsedTime
 	}
 
 	err = middlewares.SubmitKafkaPayload(installment, "installment_update")
