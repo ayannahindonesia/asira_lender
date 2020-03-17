@@ -5,7 +5,9 @@ import (
 	"asira_lender/asira"
 	"asira_lender/middlewares"
 	"asira_lender/models"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"strconv"
@@ -670,10 +672,100 @@ func LenderLoanInstallmentsApprove(c echo.Context) error {
 
 	err = middlewares.SubmitKafkaPayload(installment, "installment_update")
 	if err != nil {
-		adminhandlers.NLog("error", "LenderLoanInstallmentsApprove", map[string]interface{}{"message": "error submitting kafka borrower", "error": err, "installment": installment}, user.(*jwt.Token), "", false)
+		adminhandlers.NLog("error", "LenderLoanInstallmentsApprove", map[string]interface{}{"message": "error submitting kafka installment", "error": err, "installment": installment}, user.(*jwt.Token), "", false)
 
-		returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal reject borrower")
+		returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal update installment")
 	}
 
 	return c.JSON(http.StatusOK, installment)
+}
+
+// LenderLoanInstallmentsApproveBulk func
+func LenderLoanInstallmentsApproveBulk(c echo.Context) error {
+	type InstallmentPayload struct {
+		ID           uint64  `json:"id"`
+		PaidStatus   bool    `json:"paid_status"`
+		Underpayment float64 `json:"underpayment"`
+		Penalty      float64 `json:"penalty"`
+		PaidAmount   float64 `json:"paid_amount"`
+		DueDate      string  `json:"due_date"`
+		Note         string  `json:"note"`
+	}
+	var (
+		installments        []models.Installment
+		InstallmentPayloads []InstallmentPayload
+	)
+
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_installment_approve_bulk")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	loanID, err := strconv.Atoi(c.Param("loan_id"))
+	db := asira.App.DB
+
+	loansQ := db.Table("loans").
+		Select("UNNEST(loans.installment_details)").
+		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
+		Where("b.bank = ?", bankRep.BankID).
+		Where("loans.id = ?", loanID).
+		QueryExpr()
+
+	x, _ := ioutil.ReadAll(c.Request().Body)
+	json.Unmarshal(x, &InstallmentPayloads)
+
+	now := time.Now()
+
+	for _, v := range InstallmentPayloads {
+		installment := models.Installment{}
+		err := db.Table("installments").
+			Select("*").
+			Where("id IN (?)", loansQ).
+			Where("id = ?", v.ID).
+			Scan(&installment).Error
+		if err != nil {
+			return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("Gagal menemukan installment %v", v.ID))
+		}
+		if v.PaidStatus {
+			installment.PaidStatus = true
+			installment.PaidDate = &now
+		}
+		if v.Underpayment > 0 {
+			installment.Underpayment = v.Underpayment
+		}
+		if len(v.Note) > 0 {
+			installment.Note = v.Note
+		}
+		if v.Penalty > 0 {
+			installment.Penalty = v.Penalty
+		}
+		if v.PaidAmount > 0 {
+			installment.PaidAmount = v.PaidAmount
+		}
+		if parsedTime, err := time.Parse("2006-01-02", v.DueDate); err == nil {
+			installment.DueDate = &parsedTime
+		}
+
+		err = middlewares.SubmitKafkaPayload(installment, "installment_update")
+		if err != nil {
+			adminhandlers.NLog("error", "LenderLoanInstallmentsApproveBulk", map[string]interface{}{"message": "error submitting kafka installment", "error": err, "installment": installment}, user.(*jwt.Token), "", false)
+
+			returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal update installment")
+		}
+
+		installments = append(installments, installment)
+	}
+
+	return c.JSON(http.StatusOK, installments)
 }
