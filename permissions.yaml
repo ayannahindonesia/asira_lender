@@ -10,6 +10,7 @@ permissions:
   lender_borrower_list_detail: lender_borrower_list_detail
   lender_borrower_list_download: lender_borrower_list_download
   lender_prospective_borrower_approval: lender_prospective_borrower_approval
+  lender_loan_installment_approve_bulk: lender_loan_installment_approve_bulk
   lender_service_list: lender_service_list
   lender_service_list_detail: lender_service_list_detail
   lender_product_list: lender_product_list
