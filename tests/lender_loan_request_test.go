@@ -160,3 +160,39 @@ func TestLenderConfirmDisbursement(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object()
 }
+
+func TestLenderLoanInstallmentPatch(t *testing.T) {
+	RebuildData()
+
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	lendertoken := getLenderLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+lendertoken)
+	})
+
+	payload := map[string]interface{}{
+		"paid_status":  true,
+		"underpayment": 5000000,
+		"penalty":      2500000,
+		"paid_amount":  1500000,
+		"note":         "this is note",
+		"due_date":     "2020-02-29",
+	}
+
+	// confirm disbursement
+	auth.PATCH("/lender/loanrequest_list/1/detail/installment_approve/1").WithJSON(payload).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+}

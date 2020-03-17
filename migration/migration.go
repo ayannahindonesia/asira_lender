@@ -351,7 +351,7 @@ func Seed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail", "lender_loan_installment_approve"},
 			},
 		}
 		for _, role := range roles {
@@ -1050,17 +1050,18 @@ func TestSeed() {
 		}})
 		loans := []models.Loan{
 			models.Loan{
-				Borrower:         1,
-				LoanAmount:       5000000,
-				Installment:      8,
-				LoanIntention:    "a loan 1 intention",
-				IntentionDetails: "a loan 1 intention details",
-				Fees:             postgres.Jsonb{feesMarshal},
-				Interest:         1.5,
-				TotalLoan:        float64(6500000),
-				LayawayPlan:      500000,
-				Product:          1,
-				OTPverified:      true,
+				Borrower:           1,
+				LoanAmount:         5000000,
+				Installment:        8,
+				LoanIntention:      "a loan 1 intention",
+				IntentionDetails:   "a loan 1 intention details",
+				Fees:               postgres.Jsonb{feesMarshal},
+				Interest:           1.5,
+				TotalLoan:          float64(6500000),
+				LayawayPlan:        500000,
+				Product:            1,
+				OTPverified:        true,
+				InstallmentDetails: pq.Int64Array{1, 2, 3, 4, 5},
 			},
 			models.Loan{
 				Borrower:         1,
@@ -1132,6 +1133,37 @@ func TestSeed() {
 			loan.Create()
 		}
 
+		installments := []models.Installment{
+			models.Installment{
+				Period:          1,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          2,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          3,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          4,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          5,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+		}
+		for _, installment := range installments {
+			installment.Create()
+		}
+
 		roles := []models.Roles{
 			models.Roles{
 				Name:        "Administrator",
@@ -1152,7 +1184,7 @@ func TestSeed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail", "lender_loan_installment_approve"},
 			},
 		}
 		for _, role := range roles {
