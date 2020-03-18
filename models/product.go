@@ -9,20 +9,21 @@ import (
 // Product main type
 type Product struct {
 	basemodel.BaseModel
-	Name            string         `json:"name" gorm:"column:name;type:varchar(255)"`
-	ServiceID       uint64         `json:"service_id" gorm:"column:service_id"`
-	MinTimeSpan     int            `json:"min_timespan" gorm:"column:min_timespan"`
-	MaxTimeSpan     int            `json:"max_timespan" gorm:"column:max_timespan"`
-	Interest        float64        `json:"interest" gorm:"column:interest"`
-	InterestType    string         `json:"interest_type" gorm:"column:interest_type"`
-	MinLoan         int            `json:"min_loan" gorm:"column:min_loan"`
-	MaxLoan         int            `json:"max_loan" gorm:"column:max_loan"`
-	Fees            postgres.Jsonb `json:"fees" gorm:"column:fees"`
-	Collaterals     pq.StringArray `json:"collaterals" gorm:"column:collaterals"`
-	FinancingSector pq.StringArray `json:"financing_sector" gorm:"column:financing_sector"`
-	Assurance       string         `json:"assurance" gorm:"column:assurance"`
-	Status          string         `json:"status" gorm:"column:status;type:varchar(255)"`
-	Form            postgres.Jsonb `json:"form" gorm:"column:form;type:text"`
+	Name                     string         `json:"name" gorm:"column:name;type:varchar(255)"`
+	ServiceID                uint64         `json:"service_id" gorm:"column:service_id"`
+	MinTimeSpan              int            `json:"min_timespan" gorm:"column:min_timespan"`
+	MaxTimeSpan              int            `json:"max_timespan" gorm:"column:max_timespan"`
+	Interest                 float64        `json:"interest" gorm:"column:interest"`
+	InterestType             string         `json:"interest_type" gorm:"column:interest_type"`
+	RecordInstallmentDetails bool           `json:"record_installment_details" gorm:"column:record_installment_details"`
+	MinLoan                  int            `json:"min_loan" gorm:"column:min_loan"`
+	MaxLoan                  int            `json:"max_loan" gorm:"column:max_loan"`
+	Fees                     postgres.Jsonb `json:"fees" gorm:"column:fees"`
+	Collaterals              pq.StringArray `json:"collaterals" gorm:"column:collaterals"`
+	FinancingSector          pq.StringArray `json:"financing_sector" gorm:"column:financing_sector"`
+	Assurance                string         `json:"assurance" gorm:"column:assurance"`
+	Status                   string         `json:"status" gorm:"column:status;type:varchar(255)"`
+	Form                     postgres.Jsonb `json:"form" gorm:"column:form;type:text"`
 }
 
 // Create func
