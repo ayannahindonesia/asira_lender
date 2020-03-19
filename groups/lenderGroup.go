@@ -24,6 +24,7 @@ func LenderGroup(e *echo.Echo) {
 	g.GET("/loanrequest_list/:loan_id/detail/confirm_disbursement", handlers.LenderLoanConfirmDisbursement)
 	g.GET("/loanrequest_list/:loan_id/detail/change_disburse_date", handlers.LenderLoanChangeDisburseDate)
 	g.GET("/loanrequest_list/download", handlers.LenderLoanRequestListDownload)
+	g.GET("/loanrequest_list/:loan_id/detail/installments", handlers.LenderLoanInstallmentList)
 	g.PATCH("/loanrequest_list/:loan_id/detail/installment_approve/:installment_id", handlers.LenderLoanInstallmentsApprove)
 	g.PATCH("/loanrequest_list/:loan_id/detail/installment_approve/bulk", handlers.LenderLoanInstallmentsApproveBulk)
 

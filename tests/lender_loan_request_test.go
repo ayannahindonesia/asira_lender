@@ -161,9 +161,33 @@ func TestLenderConfirmDisbursement(t *testing.T) {
 		Status(http.StatusOK).JSON().Object()
 }
 
-func TestLenderLoanInstallmentPatch(t *testing.T) {
+func TestLenderLoanInstallmentList(t *testing.T) {
 	RebuildData()
 
+	api := router.NewRouter()
+
+	server := httptest.NewServer(api)
+
+	defer server.Close()
+
+	e := httpexpect.New(t, server.URL)
+
+	auth := e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Basic "+clientBasicToken)
+	})
+
+	lendertoken := getLenderLoginToken(e, auth, "1")
+
+	auth = e.Builder(func(req *httpexpect.Request) {
+		req.WithHeader("Authorization", "Bearer "+lendertoken)
+	})
+
+	auth.GET("/lender/loanrequest_list/1/detail/installments").
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+}
+
+func TestLenderLoanInstallmentPatch(t *testing.T) {
 	api := router.NewRouter()
 
 	server := httptest.NewServer(api)

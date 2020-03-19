@@ -582,6 +582,134 @@ func LenderLoanChangeDisburseDate(c echo.Context) error {
 	return c.JSON(http.StatusOK, loan)
 }
 
+// LenderLoanInstallmentList func
+func LenderLoanInstallmentList(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_loan_request_list_installment_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	loanID, err := strconv.Atoi(c.Param("loan_id"))
+
+	db := asira.App.DB
+
+	var (
+		totalRows    int
+		offset       int
+		rows         int
+		page         int
+		lastPage     int
+		installments []models.Installment
+	)
+
+	// pagination parameters
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
+		}
+		offset = (page * rows) - rows
+	}
+
+	loansQ := db.Table("loans").
+		Select("UNNEST(loans.installment_details)").
+		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
+		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
+		Where("loans.otp_verified = ?", true).
+		Where("b.bank = ?", bankRep.BankID).
+		Where("loans.id = ?", loanID).
+		QueryExpr()
+
+	db = db.Table("installments").
+		Select("*").
+		Where("id IN (?)", loansQ)
+
+	if id := customSplit(c.QueryParam("id"), ","); len(id) > 0 {
+		db = db.Where("id IN (?)", id)
+	}
+	if period := customSplit(c.QueryParam("period"), ","); len(period) > 0 {
+		db = db.Where("period IN (?)", period)
+	}
+	if startPaidDate := c.QueryParam("start_paid_date"); len(startPaidDate) > 0 {
+		if endPaidDate := c.QueryParam("end_paid_date"); len(endPaidDate) > 0 {
+			db = db.Where("paid_date BETWEEN ? AND ?", startPaidDate, endPaidDate)
+		} else {
+			db = db.Where("paid_date BETWEEN ? AND ?", startPaidDate, startPaidDate)
+		}
+	}
+	if paidStatus := c.QueryParam("paid_status"); len(paidStatus) > 0 {
+		db = db.Where("paid_status = ?", paidStatus)
+	}
+	if underpayment := c.QueryParam("underpayment"); underpayment == "true" {
+		db = db.Where("underpayment > 0")
+	}
+	if penalty := c.QueryParam("penalty"); penalty == "true" {
+		db = db.Where("penalty > 0")
+	}
+	if startDueDate := c.QueryParam("start_due_date"); len(startDueDate) > 0 {
+		if endDueDate := c.QueryParam("end_due_date"); len(endDueDate) > 0 {
+			db = db.Where("due_date BETWEEN ? AND ?", startDueDate, endDueDate)
+		} else {
+			db = db.Where("due_date BETWEEN ? AND ?", startDueDate, startDueDate)
+		}
+	}
+	if note := c.QueryParam("note"); len(note) > 0 {
+		db = db.Where("note LIKE ?", "%"+note+"%")
+	}
+
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
+	}
+
+	tempDB := db
+	tempDB.Where("deleted_at IS NULL").Count(&totalRows)
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
+	}
+
+	err = db.Scan(&installments).Error
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderLoanInstallmentList", map[string]interface{}{"message": "error listing installments", "error": err}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada installment yang ditemukan.")
+	}
+
+	result := basemodel.PagedFindResult{
+		TotalData:   totalRows,
+		Rows:        rows,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		From:        offset + 1,
+		To:          offset + rows,
+		Data:        installments,
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
 // LenderLoanInstallmentsApprove func
 func LenderLoanInstallmentsApprove(c echo.Context) error {
 	type InstallmentPayload struct {
