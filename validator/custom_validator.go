@@ -325,6 +325,15 @@ func (a *AsiraValidator) CustomValidatorRules() {
 		}
 		return nil
 	})
+
+	// active / inactive string only.
+	govalidator.AddCustomRule("loan_payment_status", func(field string, rule string, message string, value interface{}) error {
+		val := value.(string)
+		if strings.ToLower(val) != "terbayar" && strings.ToLower(val) != "gagal_bayar" {
+			return fmt.Errorf("The %s field must be contain word: terbayar or gagal_bayar", field)
+		}
+		return nil
+	})
 }
 
 // isEmpty check a type is Zero
