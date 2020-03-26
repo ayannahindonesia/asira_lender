@@ -267,7 +267,7 @@ func LenderLoanRequestListDetail(c echo.Context) error {
 
 	err = db.Table("installments").
 		Select("*").
-		Where("id IN (?)", strings.Fields(strings.Trim(fmt.Sprint(loan.InstallmentDetails), "[]"))).
+		Where("id IN (?)", strings.Fields(strings.Trim(fmt.Sprint(loan.InstallmentID), "[]"))).
 		Scan(&installments).Error
 	if err != nil {
 		adminhandlers.NLog("warning", "LenderLoanRequestListDetail", map[string]interface{}{"message": "query not found : '%v' error : %v", "query": db.QueryExpr(), "error": err}, c.Get("user").(*jwt.Token), "", false)
