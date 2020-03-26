@@ -612,7 +612,7 @@ func LenderLoanInstallmentsApprove(c echo.Context) error {
 	installment := models.Installment{}
 
 	loansQ := db.Table("loans").
-		Select("UNNEST(loans.installment_details)").
+		Select("UNNEST(loans.installment_id)").
 		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
 		Joins("LEFT JOIN banks ba ON b.bank = ba.id").
 		Where("loans.otp_verified = ?", true).
