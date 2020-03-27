@@ -33,6 +33,7 @@ type ProductPayload struct {
 	Assurance       string         `json:"assurance"`
 	Status          string         `json:"status"`
 	Form            postgres.Jsonb `json:"form"`
+	Description     string         `json:"description"`
 }
 
 // ProductList get all product list
@@ -148,6 +149,7 @@ func ProductNew(c echo.Context) error {
 		"assurance":        []string{},
 		"status":           []string{"required", "active_inactive"},
 		"form":             []string{},
+		"description":      []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
@@ -235,6 +237,7 @@ func ProductPatch(c echo.Context) error {
 		"assurance":        []string{},
 		"status":           []string{"active_inactive"},
 		"form":             []string{},
+		"description":      []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
@@ -284,6 +287,9 @@ func ProductPatch(c echo.Context) error {
 	}
 	if len(string(productPayload.Form.RawMessage)) > 2 {
 		product.Form = productPayload.Form
+	}
+	if len(string(productPayload.Description)) > 2 {
+		product.Description = productPayload.Description
 	}
 
 	err = middlewares.SubmitKafkaPayload(product, "product_update")
