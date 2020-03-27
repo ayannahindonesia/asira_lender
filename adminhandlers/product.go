@@ -288,7 +288,7 @@ func ProductPatch(c echo.Context) error {
 	if len(string(productPayload.Form.RawMessage)) > 2 {
 		product.Form = productPayload.Form
 	}
-	if len(string(productPayload.Description)) > 2 {
+	if len(productPayload.Description) > 2 {
 		product.Description = productPayload.Description
 	}
 
