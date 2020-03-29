@@ -4124,7 +4124,7 @@ components:
               type: number
               example: 12
               description: in month
-            installment_details:
+              installment_id:
               type: array
               items:
                 type: number
