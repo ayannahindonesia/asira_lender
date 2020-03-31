@@ -3050,7 +3050,40 @@ paths:
                 type: object
                 allOf:
                   - $ref: '#/components/schemas/ErrorResponse'
-                  
+  /loanrequest_list/:loan_id/change_payment_status:
+    patch:
+      tags:
+        - Lender - Loans
+      summary: "permission : 'lender_loan_installment_approve_bulk'"
+      description: patch edit loan payment status and payment note
+      parameters:
+        - $ref: '#/components/parameters/authtoken'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                  - $ref: '#/components/schemas/LoanPaymentStatus'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ModelLoan'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Status Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
 # === Lender's Service ===
   /lender/services:
     get:
@@ -3581,6 +3614,14 @@ components:
         password:
           type: string
           example: userpassword
+    LoanPaymentStatus:
+      properties:
+        payment_status:
+          type: string
+          example: "terbayar | gagal_bayar"
+        payment_note:
+          type: string
+          example: "pensiun dari dunia ini"
     BaseModel:
       properties:
         id:
@@ -4124,7 +4165,7 @@ components:
               type: number
               example: 12
               description: in month
-            installment_details:
+              installment_id:
               type: array
               items:
                 type: number
@@ -4186,6 +4227,12 @@ components:
                     "label": "Agunan",
                     "answers": [ {"rumah": true}, {"tanah": true}]
                 }
+            payment_status:
+              type: string
+              example: "terbayar | gagal_bayar"
+            payment_note:
+              type: string
+              example: "pensiun dari dunia ini"
     ModelConvenienceFeeReport:
       properties:
         bank_name:

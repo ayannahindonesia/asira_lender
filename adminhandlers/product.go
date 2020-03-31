@@ -19,20 +19,22 @@ import (
 
 // ProductPayload handles product request body
 type ProductPayload struct {
-	Name            string         `json:"name"`
-	ServiceID       uint64         `json:"service_id"`
-	MinTimeSpan     int            `json:"min_timespan"`
-	MaxTimeSpan     int            `json:"max_timespan"`
-	Interest        float64        `json:"interest"`
-	InterestType    string         `json:"interest_type"`
-	MinLoan         int            `json:"min_loan"`
-	MaxLoan         int            `json:"max_loan"`
-	Fees            postgres.Jsonb `json:"fees"`
-	Collaterals     pq.StringArray `json:"collaterals"`
-	FinancingSector pq.StringArray `json:"financing_sector"`
-	Assurance       string         `json:"assurance"`
-	Status          string         `json:"status"`
-	Form            postgres.Jsonb `json:"form"`
+	Name                     string         `json:"name"`
+	ServiceID                uint64         `json:"service_id"`
+	MinTimeSpan              int            `json:"min_timespan"`
+	MaxTimeSpan              int            `json:"max_timespan"`
+	Interest                 float64        `json:"interest"`
+	InterestType             string         `json:"interest_type"`
+	RecordInstallmentDetails bool           `json:"record_installment_details"`
+	MinLoan                  int            `json:"min_loan"`
+	MaxLoan                  int            `json:"max_loan"`
+	Fees                     postgres.Jsonb `json:"fees"`
+	Collaterals              pq.StringArray `json:"collaterals"`
+	FinancingSector          pq.StringArray `json:"financing_sector"`
+	Assurance                string         `json:"assurance"`
+	Status                   string         `json:"status"`
+	Form                     postgres.Jsonb `json:"form"`
+	Description              string         `json:"description"`
 }
 
 // ProductList get all product list
@@ -80,36 +82,38 @@ func ProductList(c echo.Context) error {
 		})
 	} else {
 		type Filter struct {
-			ID              []string `json:"id"`
-			Name            string   `json:"name" condition:"LIKE"`
-			ServiceID       []string `json:"service_id"`
-			MinTimeSpan     string   `json:"min_timespan"`
-			MaxTimeSpan     string   `json:"max_timespan"`
-			Interest        string   `json:"interest" condition:"LIKE"`
-			InterestType    string   `json:"interest_type"`
-			MinLoan         string   `json:"min_loan"`
-			MaxLoan         string   `json:"max_loan"`
-			Fees            string   `json:"fees" condition:"LIKE"`
-			Collaterals     string   `json:"collaterals" condition:"LIKE"`
-			FinancingSector string   `json:"financing_sector" condition:"LIKE"`
-			Assurance       string   `json:"assurance" condition:"LIKE"`
-			Status          string   `json:"status" condition:"LIKE"`
+			ID                       []string `json:"id"`
+			Name                     string   `json:"name" condition:"LIKE"`
+			ServiceID                []string `json:"service_id"`
+			MinTimeSpan              string   `json:"min_timespan"`
+			MaxTimeSpan              string   `json:"max_timespan"`
+			Interest                 string   `json:"interest" condition:"LIKE"`
+			InterestType             string   `json:"interest_type"`
+			RecordInstallmentDetails string   `json:"record_installment_details"`
+			MinLoan                  string   `json:"min_loan"`
+			MaxLoan                  string   `json:"max_loan"`
+			Fees                     string   `json:"fees" condition:"LIKE"`
+			Collaterals              string   `json:"collaterals" condition:"LIKE"`
+			FinancingSector          string   `json:"financing_sector" condition:"LIKE"`
+			Assurance                string   `json:"assurance" condition:"LIKE"`
+			Status                   string   `json:"status" condition:"LIKE"`
 		}
 		result, err = product.PagedFindFilter(page, rows, order, sort, &Filter{
-			ID:              customSplit(c.QueryParam("id"), ","),
-			Name:            c.QueryParam("name"),
-			ServiceID:       customSplit(c.QueryParam("service_id"), ","),
-			MinTimeSpan:     c.QueryParam("min_timespan"),
-			MaxTimeSpan:     c.QueryParam("max_timespan"),
-			Interest:        c.QueryParam("interest"),
-			InterestType:    c.QueryParam("interest_type"),
-			MinLoan:         c.QueryParam("min_loan"),
-			MaxLoan:         c.QueryParam("max_loan"),
-			Fees:            c.QueryParam("fee"),
-			Collaterals:     c.QueryParam("collaterals"),
-			FinancingSector: c.QueryParam("financing_sector"),
-			Assurance:       c.QueryParam("assurance"),
-			Status:          c.QueryParam("status"),
+			ID:                       customSplit(c.QueryParam("id"), ","),
+			Name:                     c.QueryParam("name"),
+			ServiceID:                customSplit(c.QueryParam("service_id"), ","),
+			MinTimeSpan:              c.QueryParam("min_timespan"),
+			MaxTimeSpan:              c.QueryParam("max_timespan"),
+			Interest:                 c.QueryParam("interest"),
+			InterestType:             c.QueryParam("interest_type"),
+			RecordInstallmentDetails: c.QueryParam("record_installment_details"),
+			MinLoan:                  c.QueryParam("min_loan"),
+			MaxLoan:                  c.QueryParam("max_loan"),
+			Fees:                     c.QueryParam("fee"),
+			Collaterals:              c.QueryParam("collaterals"),
+			FinancingSector:          c.QueryParam("financing_sector"),
+			Assurance:                c.QueryParam("assurance"),
+			Status:                   c.QueryParam("status"),
 		})
 	}
 
@@ -134,20 +138,22 @@ func ProductNew(c echo.Context) error {
 	productPayload := ProductPayload{}
 
 	payloadRules := govalidator.MapData{
-		"name":             []string{"required"},
-		"service_id":       []string{"required", "valid_id:services"},
-		"min_timespan":     []string{"required", "numeric"},
-		"max_timespan":     []string{"required", "numeric"},
-		"interest":         []string{"required", "numeric"},
-		"interest_type":    []string{"required"},
-		"min_loan":         []string{"required", "numeric"},
-		"max_loan":         []string{"required", "numeric"},
-		"fees":             []string{},
-		"collaterals":      []string{},
-		"financing_sector": []string{},
-		"assurance":        []string{},
-		"status":           []string{"required", "active_inactive"},
-		"form":             []string{},
+		"name":                       []string{"required"},
+		"service_id":                 []string{"required", "valid_id:services"},
+		"min_timespan":               []string{"required", "numeric"},
+		"max_timespan":               []string{"required", "numeric"},
+		"interest":                   []string{"required", "numeric"},
+		"interest_type":              []string{"required"},
+		"record_installment_details": []string{"bool"},
+		"min_loan":                   []string{"required", "numeric"},
+		"max_loan":                   []string{"required", "numeric"},
+		"fees":                       []string{},
+		"collaterals":                []string{},
+		"financing_sector":           []string{},
+		"assurance":                  []string{},
+		"status":                     []string{"required", "active_inactive"},
+		"form":                       []string{},
+		"description":                []string{},
 	}
 
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
@@ -221,20 +227,22 @@ func ProductPatch(c echo.Context) error {
 	origin := product
 
 	payloadRules := govalidator.MapData{
-		"name":             []string{},
-		"service_id":       []string{"valid_id:services"},
-		"min_timespan":     []string{"numeric"},
-		"max_timespan":     []string{"numeric"},
-		"interest":         []string{"numeric"},
-		"interest_type":    []string{},
-		"min_loan":         []string{"numeric"},
-		"max_loan":         []string{"numeric"},
-		"fees":             []string{},
-		"collaterals":      []string{},
-		"financing_sector": []string{},
-		"assurance":        []string{},
-		"status":           []string{"active_inactive"},
-		"form":             []string{},
+		"name":                       []string{},
+		"service_id":                 []string{"valid_id:services"},
+		"min_timespan":               []string{"numeric"},
+		"max_timespan":               []string{"numeric"},
+		"interest":                   []string{"numeric"},
+		"interest_type":              []string{},
+		"record_installment_details": []string{"bool"},
+		"min_loan":                   []string{"numeric"},
+		"max_loan":                   []string{"numeric"},
+		"fees":                       []string{},
+		"collaterals":                []string{},
+		"financing_sector":           []string{},
+		"assurance":                  []string{},
+		"status":                     []string{"active_inactive"},
+		"form":                       []string{},
+		"description":                []string{},
 	}
 	validate := validateRequestPayload(c, payloadRules, &productPayload)
 	if validate != nil {
@@ -284,6 +292,12 @@ func ProductPatch(c echo.Context) error {
 	}
 	if len(string(productPayload.Form.RawMessage)) > 2 {
 		product.Form = productPayload.Form
+	}
+	if product.RecordInstallmentDetails != productPayload.RecordInstallmentDetails {
+		product.RecordInstallmentDetails = productPayload.RecordInstallmentDetails
+	}
+	if len(productPayload.Description) > 0 {
+		product.Description = productPayload.Description
 	}
 
 	err = middlewares.SubmitKafkaPayload(product, "product_update")
