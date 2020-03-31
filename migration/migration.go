@@ -344,14 +344,14 @@ func Seed() {
 				Status:      "active",
 				Description: "Ops",
 				System:      "Core",
-				Permissions: pq.StringArray{"core_create_client", "core_view_image", "core_borrower_get_all", "core_borrower_get_details", "core_loan_get_all", "core_loan_get_details", "core_bank_type_list", "core_bank_type_new", "core_bank_type_detail", "core_bank_type_patch", "core_bank_list", "core_bank_new", "core_bank_detail", "core_bank_patch", "core_service_list", "core_service_new", "core_service_detail", "core_service_patch", "core_product_list", "core_product_new", "core_product_detail", "core_product_patch", "core_loan_purpose_list", "core_loan_purpose_new", "core_loan_purpose_detail", "core_loan_purpose_patch", "core_role_list", "core_role_details", "core_role_new", "core_role_patch", "core_role_range", "core_permission_list", "core_user_list", "core_user_details", "core_user_new", "core_user_patch", "convenience_fee_report"},
+				Permissions: pq.StringArray{"core_create_client", "core_view_image", "core_borrower_get_all", "core_borrower_get_details", "core_loan_get_all", "core_loan_get_details", "core_bank_type_list", "core_bank_type_new", "core_bank_type_detail", "core_bank_type_patch", "core_bank_list", "core_bank_new", "core_bank_detail", "core_bank_patch", "core_service_list", "core_service_new", "core_service_detail", "core_service_patch", "core_product_list", "core_product_new", "core_product_detail", "core_product_patch", "core_loan_purpose_list", "core_loan_purpose_new", "core_loan_purpose_detail", "core_loan_purpose_patch", "core_role_list", "core_role_details", "core_role_new", "core_role_patch", "core_role_range", "core_permission_list", "core_user_list", "core_user_details", "core_user_new", "core_user_patch", "convenience_fee_report", "lender_loan_patch_payment_status"},
 			},
 			models.Roles{
 				Name:        "Banker",
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail", "lender_loan_installment_approve", "lender_loan_installment_approve_bulk", "lender_service_list", "lender_service_list_detail"},
 			},
 		}
 		for _, role := range roles {
@@ -1061,6 +1061,7 @@ func TestSeed() {
 				LayawayPlan:      500000,
 				Product:          1,
 				OTPverified:      true,
+				InstallmentID:    pq.Int64Array{1, 2, 3, 4, 5},
 			},
 			models.Loan{
 				Borrower:         1,
@@ -1132,6 +1133,37 @@ func TestSeed() {
 			loan.Create()
 		}
 
+		installments := []models.Installment{
+			models.Installment{
+				Period:          1,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          2,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          3,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          4,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+			models.Installment{
+				Period:          5,
+				LoanPayment:     1000000,
+				InterestPayment: 200000,
+			},
+		}
+		for _, installment := range installments {
+			installment.Create()
+		}
+
 		roles := []models.Roles{
 			models.Roles{
 				Name:        "Administrator",
@@ -1152,7 +1184,7 @@ func TestSeed() {
 				Status:      "active",
 				Description: "ini untuk Finance",
 				System:      "Dashboard",
-				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail"},
+				Permissions: pq.StringArray{"lender_profile", "lender_profile_edit", "lender_loan_request_list", "lender_loan_request_detail", "lender_loan_approve_reject", "lender_loan_request_list_download", "lender_borrower_list", "lender_borrower_list_detail", "lender_borrower_list_download", "lender_prospective_borrower_approval", "lender_product_list", "lender_product_list_detail", "lender_loan_installment_approve", "lender_loan_installment_approve_bulk", "lender_loan_patch_payment_status", "lender_service_list", "lender_service_list_detail"},
 			},
 		}
 		for _, role := range roles {

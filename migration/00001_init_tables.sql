@@ -65,6 +65,7 @@ CREATE TABLE "products" (
     "max_timespan" int,
     "interest" int,
     "interest_type" varchar(255),
+    "record_installment_details" BOOLEAN DEFAULT TRUE,
     "min_loan" int,
     "max_loan" int,
     "fees" jsonb DEFAULT '[]',
@@ -72,6 +73,7 @@ CREATE TABLE "products" (
     "financing_sector" varchar(255) ARRAY,
     "assurance" varchar(255),
     "form" jsonb DEFAULT '[]',
+    "description" text,
     FOREIGN KEY ("service_id") REFERENCES services(id),
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
@@ -117,7 +119,7 @@ CREATE TABLE "borrowers" (
     "fullname" varchar(255) NOT NULL,
     "nickname" varchar(255),
     "gender" varchar(1),
-    "image" text,
+    "image_profile" text,
     "idcard_number" varchar(255),
     "idcard_image" text,
     "taxid_number" varchar(255),
@@ -167,6 +169,9 @@ CREATE TABLE "borrowers" (
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
 
+DROP TYPE IF EXISTS  loan_paid_status;
+CREATE TYPE loan_paid_status AS ENUM ('processing', 'terbayar', 'gagal_bayar');
+
 CREATE TABLE "loans" (
     "id" bigserial,
     "created_at" timestamptz DEFAULT CURRENT_TIMESTAMP,
@@ -177,7 +182,7 @@ CREATE TABLE "loans" (
     "status" varchar(255) DEFAULT ('processing'),
     "loan_amount" FLOAT NOT NULL,
     "installment" int NOT NULL,
-    "installment_details" int ARRAY,
+    "installment_id" int ARRAY,
     "fees" jsonb DEFAULT '[]',
     "interest" FLOAT NOT NULL,
     "total_loan" FLOAT NOT NULL,
@@ -194,6 +199,8 @@ CREATE TABLE "loans" (
     "approval_date" timestamptz,
     "reject_reason" text,
     "form_info" jsonb DEFAULT '[]',
+    "payment_status" loan_paid_status DEFAULT  ('processing'), 
+    "payment_note" text,
     FOREIGN KEY ("borrower") REFERENCES borrowers(id),
     FOREIGN KEY ("product") REFERENCES products(id),
     PRIMARY KEY ("id")
@@ -209,7 +216,10 @@ CREATE TABLE "installments" (
     "interest_payment" FLOAT,
     "paid_date" timestamptz,
     "paid_status" BOOLEAN,
+    "paid_amount" FLOAT,
     "underpayment" FLOAT,
+    "penalty" FLOAT,
+    "due_date" timestamptz,
     "note" text,
     PRIMARY KEY ("id")
 ) WITH (OIDS = FALSE);
