@@ -5,14 +5,12 @@ import (
 	"asira_lender/middlewares"
 	"asira_lender/models"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/dgrijalva/jwt-go"
@@ -235,9 +233,7 @@ func AgentNew(c echo.Context) error {
 	json.Unmarshal(marshal, &agent)
 
 	if len(agentPayload.Image) > 0 {
-		unbased, _ := base64.StdEncoding.DecodeString(agentPayload.Image)
-		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
-		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		url, err := UploadCloudImage("agt", agentPayload.Image)
 		if err != nil {
 			NLog("error", "AgentNew", map[string]interface{}{"message": fmt.Sprintf("error uploading image when creating agent : %v", agent.ID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
@@ -341,21 +337,20 @@ func AgentPatch(c echo.Context) error {
 		agent.Status = agentPayload.Status
 	}
 	if len(agentPayload.Image) > 0 {
-		unbased, _ := base64.StdEncoding.DecodeString(agentPayload.Image)
-		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
-		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		url, err := UploadCloudImage("agt", agentPayload.Image)
 		if err != nil {
 			NLog("error", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error uploading image to agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat agent baru")
 		}
 
-		i := strings.Split(agent.Image, "/")
-		delImage := i[len(i)-1]
-		err = asira.App.S3.DeleteObject(delImage)
-		if err != nil {
-			NLog("error", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error deleting old image of agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
-		}
+		// @ToDo remove previous image
+		// i := strings.Split(agent.Image, "/")
+		// delImage := i[len(i)-1]
+		// err = asira.App.S3.DeleteObject(delImage)
+		// if err != nil {
+		// 	NLog("error", "AgentPatch", map[string]interface{}{"message": fmt.Sprintf("error deleting old image of agent %v", id), "error": err}, c.Get("user").(*jwt.Token), "", false)
+		// }
 
 		agent.Image = url
 	}

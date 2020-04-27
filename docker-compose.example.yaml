@@ -14,6 +14,8 @@ services:
       - ENV=dev
       - APPPORT=8001
       - CONFIGPATH=$$GOPATH/src/asira_lender
+      - GOOGLE_APPLICATION_CREDENTIALS=assets/Ayannah-Infra-ID-c8f376addb00.json
+      - GCS_BUCKET=artifacts.ayannah-infra-id.appspot.com
     container_name: asira_lender
     
   zookeeper:

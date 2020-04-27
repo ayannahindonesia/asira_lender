@@ -3,8 +3,13 @@ package handlers
 import (
 	"asira_lender/adminhandlers"
 	"asira_lender/asira"
+	"asira_lender/custommodule/gcs"
+	"encoding/base64"
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -172,4 +177,31 @@ func SendMail(subject string, message string, recipients ...string) error {
 	}
 
 	return nil
+}
+
+// UploadCloudImage uploads image file to cloud
+func UploadCloudImage(prefix string, base64Image string) (url string, err error) {
+	unbased, _ := base64.StdEncoding.DecodeString(base64Image)
+	filename := prefix + strconv.FormatInt(time.Now().Unix(), 10)
+	switch os.Getenv("FILE_UPLOAD_METHOD") {
+	default:
+	case "gcs":
+		file, _ := os.Create(filename + ".jpeg")
+		defer file.Close()
+		file.Write(unbased)
+		file.Sync()
+		open, _ := os.Open(filename + ".jpeg")
+		defer open.Close()
+		defer os.Remove(filename + ".jpeg")
+
+		err = gcs.WriteFile(filename + ".jpeg")
+		url = "https://storage.googleapis.com/" + os.Getenv("GCS_BUCKET") + "/" + filename + ".jpeg"
+	case "s3":
+		url, err = asira.App.S3.UploadJPEG(unbased, filename)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	return url, err
 }

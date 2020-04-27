@@ -4,15 +4,12 @@ import (
 	"asira_lender/asira"
 	"asira_lender/middlewares"
 	"asira_lender/models"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/dgrijalva/jwt-go"
@@ -171,9 +168,7 @@ func BankNew(c echo.Context) error {
 	json.Unmarshal(marshal, &bank)
 
 	if len(bankPayload.Image) > 0 {
-		unbased, _ := base64.StdEncoding.DecodeString(bankPayload.Image)
-		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
-		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		url, err := UploadCloudImage("agt", bankPayload.Image)
 		if err != nil {
 			NLog("error", "BankNew", map[string]interface{}{"message": fmt.Sprintf("error upload image bank %v", bank.ID), "error": err}, c.Get("user").(*jwt.Token), "", false)
 
@@ -292,19 +287,18 @@ func BankPatch(c echo.Context) error {
 		bank.Phone = bankPayload.Phone
 	}
 	if len(bankPayload.Image) > 0 {
-		unbased, _ := base64.StdEncoding.DecodeString(bankPayload.Image)
-		filename := "agt" + strconv.FormatInt(time.Now().Unix(), 10)
-		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		url, err := UploadCloudImage("agt", bankPayload.Image)
 		if err != nil {
 			return returnInvalidResponse(http.StatusInternalServerError, err, "Gagal membuat bank baru")
 		}
 
-		i := strings.Split(bank.Image, "/")
-		delImage := i[len(i)-1]
-		err = asira.App.S3.DeleteObject(delImage)
-		if err != nil {
-			log.Printf("failed to delete image %v from s3 bucket", delImage)
-		}
+		// @ToDo remove previous image
+		// i := strings.Split(bank.Image, "/")
+		// delImage := i[len(i)-1]
+		// err = asira.App.S3.DeleteObject(delImage)
+		// if err != nil {
+		// 	log.Printf("failed to delete image %v from s3 bucket", delImage)
+		// }
 
 		bank.Image = url
 	}
