@@ -1,15 +1,12 @@
 package adminhandlers
 
 import (
-	"asira_lender/asira"
 	"asira_lender/middlewares"
 	"asira_lender/models"
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ayannahindonesia/basemodel"
 	"github.com/dgrijalva/jwt-go"
@@ -101,9 +98,7 @@ func ServiceNew(c echo.Context) error {
 		return returnInvalidResponse(http.StatusUnprocessableEntity, validate, "Hambatan validasi")
 	}
 
-	unbased, _ := base64.StdEncoding.DecodeString(servicePayload.Image)
-	filename := "svc" + strconv.FormatInt(time.Now().Unix(), 10)
-	url, err := asira.App.S3.UploadJPEG(unbased, filename)
+	url, err := UploadCloudImage("svc", servicePayload.Image)
 	if err != nil {
 		NLog("error", "ServiceNew", map[string]interface{}{"message": "upload image error", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
@@ -194,9 +189,7 @@ func ServicePatch(c echo.Context) error {
 		service.Name = servicePayload.Name
 	}
 	if len(servicePayload.Image) > 0 {
-		unbased, _ := base64.StdEncoding.DecodeString(servicePayload.Image)
-		filename := "svc" + strconv.FormatInt(time.Now().Unix(), 10)
-		url, err := asira.App.S3.UploadJPEG(unbased, filename)
+		url, err := UploadCloudImage("svc", servicePayload.Image)
 		if err != nil {
 			NLog("error", "ServicePatch", map[string]interface{}{"message": "error upload image", "error": err}, c.Get("user").(*jwt.Token), "", false)
 
