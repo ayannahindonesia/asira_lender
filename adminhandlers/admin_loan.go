@@ -200,6 +200,7 @@ func LoanGetDetails(c echo.Context) error {
 	}
 	err = db.Table("installments").
 		Select("*").
+		Order("period ASC").
 		Where("id IN (?)", strings.Fields(strings.Trim(fmt.Sprint(loan.InstallmentID), "[]"))).
 		Scan(&installments).Error
 	if err != nil {
