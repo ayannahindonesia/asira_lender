@@ -28,6 +28,9 @@ func LenderGroup(e *echo.Echo) {
 	g.PATCH("/loanrequest_list/:loan_id/detail/installment_approve/bulk", handlers.LenderLoanInstallmentsApproveBulk)
 	g.PATCH("/loanrequest_list/:loan_id/change_payment_status", handlers.LenderLoanEditPaymentStatus)
 
+	// loan installments
+	g.GET("/installments", handlers.LenderInstallmentList)
+
 	// Borrowers endpoints
 	g.GET("/borrower_list", handlers.LenderBorrowerList)
 	g.GET("/borrower_list/:borrower_id/detail", handlers.LenderBorrowerListDetail)

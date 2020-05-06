@@ -29,6 +29,9 @@ func AdminGroup(e *echo.Echo) {
 	g.GET("/loan", adminhandlers.LoanGetAll)
 	g.GET("/loan/:loan_id", adminhandlers.LoanGetDetails)
 
+	// loan installments
+	g.GET("/installments", adminhandlers.AdminInstallmentList)
+
 	// Bank Types
 	g.GET("/bank_types", adminhandlers.BankTypeList)
 	g.POST("/bank_types", adminhandlers.BankTypeNew)

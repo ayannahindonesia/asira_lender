@@ -210,3 +210,92 @@ func LoanGetDetails(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, loan)
 }
+
+// AdminInstallmentList func
+func AdminInstallmentList(c echo.Context) error {
+	defer c.Request().Body.Close()
+
+	err := validatePermission(c, "admin_installment_list")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	db := asira.App.DB
+	var (
+		totalRows int
+		offset    int
+		rows      int
+		page      int
+		lastPage  int
+		loans     []LoanSelect
+	)
+
+	// pagination parameters
+	rows, _ = strconv.Atoi(c.QueryParam("rows"))
+	if rows > 0 {
+		page, _ = strconv.Atoi(c.QueryParam("page"))
+		if page <= 0 {
+			page = 1
+		}
+		offset = (page * rows) - rows
+	}
+
+	db = db.Table("installments").
+		Select("installments.*")
+
+	if period := c.QueryParam("period"); len(period) > 0 {
+		db = db.Where("installments.period = ?", strings.ToLower(period))
+	}
+	if startDate := c.QueryParam("start_duedate"); len(startDate) > 0 {
+		if endDate := c.QueryParam("end_duedate"); len(endDate) > 0 {
+			db = db.Where("installments.due_date BETWEEN ? AND ?", startDate, endDate)
+		} else {
+			db = db.Where("installments.due_date BETWEEN ? AND ?", startDate, startDate)
+		}
+	}
+	if loanID := c.QueryParam("loan_id"); len(loanID) > 0 {
+		db = db.Joins("INNER JOIN loans l ON installments.id IN (SELECT UNNEST(l.installment_id))").
+			Where("l.id = ?", loanID)
+	}
+
+	if order := strings.Split(c.QueryParam("orderby"), ","); len(order) > 0 {
+		if sort := strings.Split(c.QueryParam("sort"), ","); len(sort) > 0 {
+			for k, v := range order {
+				q := v
+				if len(sort) > k {
+					value := sort[k]
+					if strings.ToUpper(value) == "ASC" || strings.ToUpper(value) == "DESC" {
+						q = v + " " + strings.ToUpper(value)
+					}
+				}
+				db = db.Order(q)
+			}
+		}
+	}
+
+	tempDB := db
+	tempDB.Where("installments.deleted_at IS NULL").Count(&totalRows)
+
+	if rows > 0 {
+		db = db.Limit(rows).Offset(offset)
+		lastPage = int(math.Ceil(float64(totalRows) / float64(rows)))
+	}
+	err = db.Find(&loans).Error
+	if err != nil {
+		NLog("warning", "LenderInstallmentList", map[string]interface{}{"message": "error listing installments", "error": err}, c.Get("user").(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, "Tidak ada installment yang ditemukan.")
+	}
+
+	result := basemodel.PagedFindResult{
+		TotalData:   totalRows,
+		Rows:        rows,
+		CurrentPage: page,
+		LastPage:    lastPage,
+		From:        offset + 1,
+		To:          offset + rows,
+		Data:        loans,
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
