@@ -6,6 +6,7 @@ permissions:
   lender_loan_approve_reject: lender_loan_approve_reject
   lender_loan_request_list_download: lender_loan_request_list_download
   lender_loan_installment_approve: lender_loan_installment_approve
+  lender_installment_list: lender_installment_list
   lender_borrower_list: lender_borrower_list
   lender_borrower_list_detail: lender_borrower_list_detail
   lender_borrower_list_download: lender_borrower_list_download
@@ -47,6 +48,7 @@ permissions:
   core_loan_purpose_detail: core_loan_purpose_detail
   core_loan_purpose_patch: core_loan_purpose_patch
   core_loan_purpose_delete: core_loan_purpose_delete
+  core_installment_list: core_installment_list
   core_role_list: core_role_list
   core_role_details: core_role_details
   core_role_new: core_role_new
