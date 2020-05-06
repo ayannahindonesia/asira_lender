@@ -215,7 +215,7 @@ func LoanGetDetails(c echo.Context) error {
 func AdminInstallmentList(c echo.Context) error {
 	defer c.Request().Body.Close()
 
-	err := validatePermission(c, "admin_installment_list")
+	err := validatePermission(c, "core_installment_list")
 	if err != nil {
 		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
 	}
