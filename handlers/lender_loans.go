@@ -25,13 +25,17 @@ type (
 	// LoanRequestListCSV type
 	LoanRequestListCSV struct {
 		ID                uint64         `json:"id"`
+		BorrowerID        uint64         `json:"borrower_id"`
 		BorrowerName      string         `json:"borrower_name"`
 		BankName          string         `json:"bank_name"`
+		ProductID         uint64         `json:"product_id"`
+		ProductName       string         `json:"product_name"`
 		Status            string         `json:"status"`
 		LoanAmount        float64        `json:"loan_amount"`
 		Installment       string         `json:"installment"`
 		Fees              postgres.Jsonb `json:"fees"`
 		Interest          float64        `json:"interest"`
+		InterestType      string         `json:"interest_type"`
 		TotalLoan         float64        `json:"total_loan"`
 		DueDate           time.Time      `json:"due_date"`
 		LayawayPlan       float64        `json:"layaway_plan"`
@@ -41,6 +45,15 @@ type (
 		OtherIncome       string         `json:"other_income"`
 		OtherIncomesource string         `json:"other_incomesource"`
 		BankAccount       string         `json:"bank_account"`
+		DisburseStatus    string         `json:"disburse_status"`
+		DisburseDate      time.Time      `json:"disburse_date"`
+		ApprovalDate      time.Time      `json:"approval_date"`
+		PaymentStatus     string         `json:"payment_status"`
+		AgentID           uint64         `json:"agent_id"`
+		AgentName         string         `json:"agent_name"`
+		AgentProvider     string         `json:"agent_provider"`
+		PaymentNote       string         `json:"payment_note"`
+		RejectReason      string         `json:"reject_reason"`
 	}
 	// LoanSelect select custom type
 	LoanSelect struct {
@@ -388,7 +401,7 @@ func LenderLoanRequestListDownload(c echo.Context) error {
 	var results []LoanRequestListCSV
 
 	db = db.Table("loans").
-		Select("loans.*, b.fullname as borrower_name, ba.name as bank_name, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber as bank_account").
+		Select("loans.*, b.id as borrower_id, b.fullname as borrower_name, ba.name as bank_name, b.monthly_income, b.other_income, b.other_incomesource, b.bank_accountnumber as bank_account, p.id as product_id, p.name as product_name, p.interest_type, a.id as agent_id, a.name as agent_name, ap.name as agent_provider").
 		Joins("LEFT JOIN products p ON loans.product = p.id").
 		Joins("LEFT JOIN services s ON p.service_id = s.id").
 		Joins("LEFT JOIN borrowers b ON b.id = loans.borrower").
