@@ -36,6 +36,7 @@ func LenderGroup(e *echo.Echo) {
 	g.GET("/borrower_list/:borrower_id/detail", handlers.LenderBorrowerListDetail)
 	g.GET("/borrower_list/download", handlers.LenderBorrowerListDownload)
 	g.GET("/borrower_list/:borrower_id/:approval", handlers.LenderApproveRejectProspectiveBorrower)
+	g.GET("/borrower_list/delete_request/:borrower_id/:approval", handlers.LenderApproveRejectBorrowerDeleteRequest)
 
 	// services owned by bank (lender)
 	g.GET("/services", handlers.LenderServiceList)

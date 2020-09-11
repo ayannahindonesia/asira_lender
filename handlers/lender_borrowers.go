@@ -468,6 +468,77 @@ func LenderApproveRejectProspectiveBorrower(c echo.Context) error {
 	return c.JSON(http.StatusOK, borrower)
 }
 
+//LenderApproveRejectBorrowerDeleteRequest approve or reject delete account request
+func LenderApproveRejectBorrowerDeleteRequest(c echo.Context) error {
+	defer c.Request().Body.Close()
+	err := validatePermission(c, "lender_approve_reject_borrower_delete_request")
+	if err != nil {
+		return returnInvalidResponse(http.StatusForbidden, err, fmt.Sprintf("%s", err))
+	}
+
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	lenderID, _ := strconv.Atoi(claims["jti"].(string))
+	bankRep := models.BankRepresentatives{}
+	bankRep.FindbyUserID(lenderID)
+
+	borrowerID, err := strconv.Atoi(c.Param("borrower_id"))
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderApproveRejectBorrowerDeleteRequest", map[string]interface{}{"message": "atoi error", "error": err}, user.(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusUnprocessableEntity, err, "Terjadi kesalahan")
+	}
+	type Filter struct {
+		Bank   sql.NullInt64 `json:"bank"`
+		ID     int           `json:"id"`
+		Status string        `json:"status"`
+	}
+
+	borrower := models.Borrower{}
+	err = borrower.SingleFindFilter(&Filter{
+		Bank: sql.NullInt64{
+			Int64: int64(bankRep.BankID),
+			Valid: true,
+		},
+		ID:     borrowerID,
+		Status: "delete_request",
+	})
+	if err != nil {
+		adminhandlers.NLog("warning", "LenderApproveRejectBorrowerDeleteRequest", map[string]interface{}{"message": fmt.Sprintf("error finding borrower %v", borrowerID), "error": err}, user.(*jwt.Token), "", false)
+
+		return returnInvalidResponse(http.StatusNotFound, err, fmt.Sprintf("ID %v tidak ditemukan", borrowerID))
+	}
+	origin := borrower
+
+	approval := c.Param("approval")
+	switch approval {
+	case "approve":
+		err = middlewares.SubmitKafkaPayload(borrower, "borrower_delete")
+		if err != nil {
+			adminhandlers.NLog("error", "LenderApproveRejectBorrowerDeleteRequest", map[string]interface{}{"message": "error submitting borrower kafka", "error": err, "borrower": borrower}, user.(*jwt.Token), "", false)
+
+			returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal approve borrower")
+		}
+		break
+	case "reject":
+		borrower.Status = "approved"
+		err = middlewares.SubmitKafkaPayload(borrower, "borrower_update")
+		if err != nil {
+			adminhandlers.NLog("error", "LenderApproveRejectBorrowerDeleteRequest", map[string]interface{}{"message": "error submitting kafka borrower", "error": err, "borrower": borrower}, user.(*jwt.Token), "", false)
+
+			returnInvalidResponse(http.StatusUnprocessableEntity, err, "Gagal reject borrower")
+		}
+		break
+	}
+	adminhandlers.NLog("info", "LenderApproveRejectBorrowerDeleteRequest", map[string]interface{}{"message": fmt.Sprintf("borrower %v status changed to %v", borrower.ID, approval)}, user.(*jwt.Token), "", false)
+
+	adminhandlers.NAudittrail(origin, borrower, c.Get("user").(*jwt.Token), "borrower", fmt.Sprint(borrower.ID), "update")
+
+	return c.JSON(http.StatusOK, borrower)
+}
+
 func mapnewBorrowerStruct(m []BorrowerSelect) []BorrowerCSV {
 	var r []BorrowerCSV
 	for _, v := range m {
