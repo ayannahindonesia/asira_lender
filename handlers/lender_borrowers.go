@@ -131,8 +131,13 @@ func LenderBorrowerList(c echo.Context) error {
 		Joins("LEFT JOIN agents a ON borrowers.agent_referral = a.id").
 		Joins("LEFT JOIN banks ba ON ba.id = borrowers.bank").
 		Joins("LEFT JOIN agent_providers ap ON a.agent_provider = ap.id").
-		Where("ba.id = ?", bankRep.BankID).
-		Where("borrowers.status != ?", "rejected")
+		Where("ba.id = ?", bankRep.BankID)
+
+	if d := c.QueryParam("delete_requests"); d == "true" {
+		db = db.Where("borrowers.status == ?", "delete_request")
+	} else {
+		db = db.Where("borrowers.status NOT IN (?)", []string{"rejected", "delete_request"})
+	}
 
 	accountNumber := c.QueryParam("account_number")
 
