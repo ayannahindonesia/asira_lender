@@ -134,7 +134,7 @@ func LenderBorrowerList(c echo.Context) error {
 		Where("ba.id = ?", bankRep.BankID)
 
 	if d := c.QueryParam("delete_requests"); d == "true" {
-		db = db.Where("borrowers.status == ?", "delete_request")
+		db = db.Where("borrowers.status = ?", "delete_request")
 	} else {
 		db = db.Where("borrowers.status NOT IN (?)", []string{"rejected", "delete_request"})
 	}
